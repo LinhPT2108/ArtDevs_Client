@@ -27,7 +27,7 @@ const SearchComponent = () => {
   };
 
   return (
-    <div className="bg-white flex rounded-2xl shadow-md">
+    <div className="bg-white flex rounded-2xl shadow-md min-[0px]:hidden min-[600px]:flex">
       <input
         type="search"
         onFocus={handleFocus}
@@ -37,7 +37,7 @@ const SearchComponent = () => {
           setSearch(e.target.value);
         }}
         placeholder="Start typing to start..."
-        className="focus:rounded-r-none focus:rounded-l-2xl text-search text-black rounded-2xl px-4 py-2 p-right-5 input-search focus:outline-none min-[320px]:w-40 min-[500px]:w-60 min-[600px]:w-80 min-[768px]:w-96 min-[900px]:w-48 min-[1023px]:w-56"
+        className="focus:rounded-r-none focus:rounded-l-2xl text-search text-black rounded-2xl px-4 py-2 p-right-5 input-search focus:outline-none min-[600px]:w-36 min-[700px]:w-48 min-[800px]:w-52 min-[1023px]:w-56"
       />
       {/* {(isFocused || (!isFocused && search)) && ( */}
       <Button

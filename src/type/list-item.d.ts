@@ -4,3 +4,8 @@ interface ListItem {
   icon: SvgIconProps;
   bgColor: string;
 }
+interface MessageExample {
+  primary: string;
+  secondary: string;
+  person: string;
+}

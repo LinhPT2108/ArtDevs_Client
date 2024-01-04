@@ -98,6 +98,7 @@ const AppMenu = () => {
                   bgcolor: "#293145",
                   color: "white",
                   fontWeight: "bold",
+                  zIndex: "0",
                 }}
                 component="div"
                 id="nested-list-subheader"
