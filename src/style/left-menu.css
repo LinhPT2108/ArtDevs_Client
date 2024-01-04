@@ -1,0 +1,14 @@
+.css-1r1q3b8-MuiButtonBase-root-MuiListItemButton-root.MuiListItemButton-root {
+  transition: all 0.25s ease-in-out;
+}
+.css-1r1q3b8-MuiButtonBase-root-MuiListItemButton-root.MuiListItemButton-root:hover {
+  background-color: rgb(155, 157, 160, 0.25);
+}
+.css-1r1q3b8-MuiButtonBase-root-MuiListItemButton-root.Mui-selected {
+  background-color: rgb(155, 157, 160);
+  box-shadow: none;
+  border-left: 1px solid #293145;
+}
+.css-1r1q3b8-MuiButtonBase-root-MuiListItemButton-root.Mui-selected:hover {
+  background-color: rgb(155, 157, 160, 0.8);
+}
