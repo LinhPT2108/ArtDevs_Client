@@ -9,3 +9,8 @@ interface MessageExample {
   secondary: string;
   person: string;
 }
+interface AccountExample {
+  avatar: SvgIconProps;
+  name: string;
+  manualFriend: string;
+}

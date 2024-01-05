@@ -22,7 +22,7 @@ const Post = (pros: IPros) => {
             key={index + person}
             sx={{
               borderRadius: "12px",
-              backgroundColor: "#8b8e95",
+              backgroundColor: "#bdc0c7",
               margin: "0 0 24px 0",
               boxShadow:
                 "rgba(0, 0, 0, 0.16) 0px 2px 4px, rgba(0, 0, 0, 0.23) 0px 2px 4px",

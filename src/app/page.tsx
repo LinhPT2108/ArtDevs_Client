@@ -2,6 +2,7 @@
 import AppHeader from "@/components/header/app.header";
 import BottomNavbar from "@/components/header/header.bottom";
 import AppMenu from "@/components/left-menu/app.menu";
+import RightPost from "@/components/left-menu/app.right.menu";
 import Post from "@/components/posts/post.main";
 import { Box, Grid } from "@mui/material";
 import { useState } from "react";
@@ -41,22 +42,35 @@ export default function Home() {
             item
             xs={16}
             sm={10}
-            md={12}
-            lg={8}
+            md={8}
+            lg={6}
             sx={{
               marginTop: "12px",
-              padding: "0 24px",
+              padding: { xs: "0 24px", md: "0 0 0 24px" },
             }}
           >
             <Post messsages={post} />
           </Grid>
-
           <Grid
             item
             xs={12}
             sm={6}
             md={4}
-            lg={4}
+            lg={3}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              padding: "0px 12px 0px 12px",
+              justifyContent: "flex-start",
+            }}
+          >
+            <RightPost />
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            lg={3}
             sx={{
               display: { xs: "none", lg: "flex" },
               padding: "0px 12px 0px 12px",
