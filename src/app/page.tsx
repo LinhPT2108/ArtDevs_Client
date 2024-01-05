@@ -3,6 +3,7 @@ import AppHeader from "@/components/header/app.header";
 import BottomNavbar from "@/components/header/header.bottom";
 import AppMenu from "@/components/left-menu/app.menu";
 import RightPost from "@/components/left-menu/app.right.menu";
+import ContactMenu from "@/components/left-menu/app.contact";
 import Post from "@/components/posts/post.main";
 import { Box, Grid } from "@mui/material";
 import { useState } from "react";
@@ -77,7 +78,7 @@ export default function Home() {
               justifyContent: "flex-end",
             }}
           >
-            <AppMenu />
+            <ContactMenu />
           </Grid>
         </Grid>
       </Box>

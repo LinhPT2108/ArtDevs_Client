@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import "@/style/left-menu.css";
+import "@/style/right-menu.css";
 import MenuAccept from "./right-menu/menu.accept";
 import MenuMentor from "./right-menu/menu.mentor";
 

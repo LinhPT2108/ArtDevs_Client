@@ -5,12 +5,17 @@ import FeedIcon from "@mui/icons-material/Feed";
 import {
   Box,
   Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
   Stack,
+  Typography,
 } from "@mui/material";
 const MenuMentor = () => {
   const acountAccept: AccountExample[] = [
@@ -62,60 +67,34 @@ const MenuMentor = () => {
             }}
             component="div"
             id="nested-list-subheader"
-            className="rounded-md"
+            className="rounded-t-md border-b"
           >
-            Mentor
+            Suggest Mentor
           </ListSubheader>
         }
       >
         {acountAccept.map((item, index) => {
           return (
-            <Box
+            <Card
+              sx={{ maxWidth: 345, bgcolor: "#293145", padding: "12px 0" }}
               key={index}
-              sx={{ paddingBottom: "24px" }}
-              className={`${index < acountAccept.length - 1 ? "border-b" : ""}`}
             >
-              <ListItemButton
-                sx={{ padding: "6px 12px", margin: " 0" }}
-                //   selected={selectedIndex === item.index}
-                //   onClick={(event) => handleListItemClick(event, item.index)}
-              >
-                <ListItemIcon
-                  sx={{
-                    color: "white",
-                    backgroundColor: `gray`,
-                    padding: "8px",
-                    minWidth: "40px",
-                    marginRight: "24px",
-                  }}
-                  className="rounded-full"
-                >
-                  {item.avatar}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.name}
-                  secondary={item.manualFriend}
-                />
-              </ListItemButton>
-              <Stack
-                direction="row"
-                spacing={2}
-                className="flex justify-center"
-              >
+              <CardMedia
+                component="img"
+                alt="green iguana"
+                height="140"
+                image="/Art_Devs_y-removebg-preview.png"
+              />
+              <CardActions className="justify-center">
                 <Button
+                  size="small"
                   variant="contained"
-                  className="bg-sky-700 rounded-[30px] px-5"
+                  className="bg-gray-200 text-stone-950 rounded-[30px] hover:bg-gray-600 hover:text-white"
                 >
-                  Đồng ý
+                  Mentor được yêu thích
                 </Button>
-                <Button
-                  // variant="outlined"
-                  className="bg-neutral-300 rounded-[30px] px-5"
-                >
-                  Từ chối
-                </Button>
-              </Stack>
-            </Box>
+              </CardActions>
+            </Card>
           );
         })}
       </List>

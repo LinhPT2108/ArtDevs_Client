@@ -14,3 +14,12 @@ interface AccountExample {
   name: string;
   manualFriend: string;
 }
+interface Post{
+  avatar: SvgIconProps;
+  name:string;
+  timeCreate:Date;
+  content:string;
+  image:string[];
+  totalLike: number;
+  totalComment: number;
+}

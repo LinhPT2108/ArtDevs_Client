@@ -99,7 +99,7 @@ const MenuAccept = () => {
               </ListItemButton>
               <Stack
                 direction="row"
-                spacing={2}
+                spacing={1}
                 className="flex justify-center"
               >
                 <Button
