@@ -15,9 +15,14 @@ import SearchComponent from "./header.search";
 import HomeIcon from "@mui/icons-material/Home";
 import LeakAddIcon from "@mui/icons-material/LeakAdd";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import { CardMedia, Link } from "@mui/material";
+import { Button, CardMedia, Drawer, Link, ToggleButton } from "@mui/material";
 import IconTabs from "./header.nav";
 import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
+import AppMenu from "../left-menu/app.menu";
+import ContactMenu from "../left-menu/app.contact";
+
+type Anchor = "top" | "left" | "bottom" | "right";
 
 export default function AppHeader() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -117,18 +122,64 @@ export default function AppHeader() {
       </MenuItem>
     </Menu>
   );
+  const [selectedContact, setSelectedContact] = React.useState(false);
+  const [selectedMenu, setSelectedMenu] = React.useState(false);
+  const [state, setState] = React.useState({
+    top: false,
+    left: false,
+    bottom: false,
+    right: false,
+  });
+  const toggleDrawer =
+    (anchor: Anchor, open: boolean) =>
+    (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === "keydown" &&
+        ((event as React.KeyboardEvent).key === "Tab" ||
+          (event as React.KeyboardEvent).key === "Shift")
+      ) {
+        return;
+      }
+      {
+        anchor == "right" && !open && setSelectedContact(open);
+      }
+      {
+        anchor == "left" && !open && setSelectedMenu(open);
+      }
+      setState({ ...state, [anchor]: open });
+    };
 
+  const list = (anchor: Anchor) => (
+    <Box
+      sx={{
+        width: anchor === "top" || anchor === "bottom" ? "auto" : 210,
+        paddingTop: { xs: "58px", sm: "85px" },
+        backgroundColor: "#293145",
+      }}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+      {anchor === "left" ? <AppMenu /> : <ContactMenu />}
+    </Box>
+  );
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
-        position="static"
+        position="fixed"
         sx={{
           bgcolor: "#293145",
           color: "text.white",
-          padding: { xs: "0", lg: "0 64px" },
+          padding: { xs: "0px", lg: "0 64px" },
+          zIndex: "1201",
         }}
       >
-        <Toolbar className="flex">
+        <Toolbar
+          className="flex"
+          sx={{
+            padding: { xs: "0 6px", sm: "0 12px", md: "0 16px", lg: "0 24px" },
+          }}
+        >
           <Typography
             variant="h5"
             noWrap
@@ -173,29 +224,54 @@ export default function AppHeader() {
           <SearchComponent />
           <IconTabs />
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { md: "flex" }, fontSize: {} }}>
+          <Box sx={{ display: { md: "flex" }, alignItems: "center" }}>
             <IconButton
               size="large"
               color="inherit"
               sx={{
                 display: { xs: "inline", sm: "none" },
-                padding: { xs: "8px", sm: "12px" },
               }}
+              className="min-[0px]:p-0 min-[300px]:p-2 min-[600px]:p-3"
             >
               <Badge>
                 <SearchIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
               </Badge>
             </IconButton>
-            <IconButton
-              size="large"
-              aria-label="show 4 new mails"
-              color="inherit"
-              sx={{ padding: { xs: "8px", sm: "12px" } }}
-            >
-              <Badge badgeContent={10} color="error">
-                <MailIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
-              </Badge>
-            </IconButton>
+
+            {(["right"] as const).map((anchor) => (
+              <React.Fragment key={anchor}>
+                <ToggleButton
+                  onClick={toggleDrawer(anchor, !selectedContact)}
+                  value="check"
+                  className="text-white rounded-full "
+                  selected={selectedContact}
+                  onChange={() => {
+                    setSelectedContact(!selectedContact);
+                  }}
+                  sx={{
+                    padding: { xs: "6px", sm: "12px" },
+                    "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
+                    minWidth: { xs: "32px", md: "48px" },
+                  }}
+                >
+                  <Badge badgeContent={10} color="error">
+                    <MailIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
+                  </Badge>
+                </ToggleButton>
+                <Drawer
+                  anchor={anchor}
+                  open={state[anchor]}
+                  onClose={toggleDrawer(anchor, false)}
+                  sx={{
+                    "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                      backgroundColor: "#293145",
+                    },
+                  }}
+                >
+                  {list(anchor)}
+                </Drawer>
+              </React.Fragment>
+            ))}
             <IconButton
               size="large"
               aria-label="show 17 new notifications"
@@ -214,10 +290,45 @@ export default function AppHeader() {
               aria-haspopup="true"
               onClick={handleProfileMenuOpen}
               color="inherit"
-              sx={{ padding: { xs: "8px", sm: "12px" } }}
+              sx={{
+                display: { xs: "none", sm: "inline" },
+                padding: { xs: "8px", sm: "12px" },
+              }}
             >
               <AccountCircle className="min-[0px]:text-base min-[400px]:text-2xl" />
             </IconButton>
+            {(["left"] as const).map((anchor) => (
+              <React.Fragment key={anchor}>
+                <ToggleButton
+                  onClick={toggleDrawer(anchor, !selectedMenu)}
+                  value="check"
+                  className="text-white rounded-full"
+                  selected={selectedMenu}
+                  onChange={() => {
+                    setSelectedMenu(!selectedMenu);
+                  }}
+                  sx={{
+                    display: { xs: "inline", sm: "none" },
+                    minWidth: { xs: "36px", sm: "48px" },
+                    padding: { xs: "3px", sm: "6px" },
+                  }}
+                >
+                  <MenuIcon />
+                </ToggleButton>
+                <Drawer
+                  anchor={anchor}
+                  open={state[anchor]}
+                  onClose={toggleDrawer(anchor, false)}
+                  sx={{
+                    "& .css-4t3x6l-MuiPaper-root-MuiDrawer-paper": {
+                      backgroundColor: "#293145",
+                    },
+                  }}
+                >
+                  {list(anchor)}
+                </Drawer>
+              </React.Fragment>
+            ))}
           </Box>
         </Toolbar>
       </AppBar>

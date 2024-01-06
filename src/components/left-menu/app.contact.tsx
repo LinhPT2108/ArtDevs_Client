@@ -198,88 +198,105 @@ const ContactMenu = () => {
       sx={{
         width: "100%",
         maxWidth: 250,
+        position: "relative",
       }}
     >
-      {rightMenu?.map((items, index) => {
-        return (
-          <List
-            key={`${index}-out${items[index].user.index}`}
-            sx={{
-              width: "100%",
-              bgcolor: "#293145",
-              color: "white",
-              marginTop: "12px",
-              "& p": {
-                color: "gray",
-              },
-            }}
-            className="rounded-md"
-            component="nav"
-            aria-label="main mailbox folders"
-            subheader={
-              <ListSubheader
-                sx={{
-                  bgcolor: "#293145",
-                  color: "white",
-                  fontWeight: "bold",
-                  zIndex: "0",
-                  position: "relative",
-                }}
-                component="div"
-                id="nested-list-subheader"
-                className="rounded-md"
-              >
-                {titleMenu[index]}
-              </ListSubheader>
-            }
-          >
-            {items?.map((item, index) => {
-              return (
-                <ListItemButton
-                  sx={{ padding: "6px 12px", margin: " 0" }}
-                  key={index}
-                  //   selected={selectedIndex === item.index}
-                  //   onClick={(event) => handleListItemClick(event, item.index)}
+      <Box
+        sx={{
+          position: "fixed",
+          top: { xs: "58px", md: "85px" },
+          right: { xs: "0", sm: "12px" },
+          overflow: "auto",
+          maxHeight: "calc(100vh - 120px)",
+          "&::-webkit-scrollbar": {
+            width: "1px",
+          },
+        }}
+      >
+        {rightMenu?.map((items, index) => {
+          return (
+            <List
+              key={`${index}-out${items[index].user.index}`}
+              sx={{
+                width: "100%",
+                bgcolor: "#293145",
+                color: "white",
+                marginTop: "12px",
+                "& p": {
+                  color: "gray",
+                },
+              }}
+              className="rounded-md"
+              component="nav"
+              aria-label="main mailbox folders"
+              subheader={
+                <ListSubheader
+                  sx={{
+                    bgcolor: "#293145",
+                    color: "white",
+                    fontWeight: "bold",
+                    zIndex: "0",
+                    position: "relative",
+                  }}
+                  component="div"
+                  id="nested-list-subheader"
+                  className="rounded-md"
                 >
-                  <ListItemIcon
+                  {titleMenu[index]}
+                </ListSubheader>
+              }
+            >
+              {items?.map((item, index) => {
+                return (
+                  <ListItemButton
                     sx={{
-                      color: "white",
-                      backgroundColor: `${item?.user.bgColor}`,
-                      padding: "8px",
-                      minWidth: "40px",
-                      marginRight: "24px",
+                      padding: { xs: "6px", xl: "6px 12px" },
+                      margin: " 0",
                     }}
-                    className="rounded-full"
+                    key={index}
+                    //   selected={selectedIndex === item.index}
+                    //   onClick={(event) => handleListItemClick(event, item.index)}
                   >
-                    {item.user.icon}
-                  </ListItemIcon>
+                    <ListItemIcon
+                      sx={{
+                        color: "white",
+                        backgroundColor: `${item?.user.bgColor}`,
+                        padding: "8px",
+                        minWidth: "40px",
+                        marginRight: { xs: "6px", xl: "24px" },
+                      }}
+                      className="rounded-full"
+                    >
+                      {item.user.icon}
+                    </ListItemIcon>
 
-                  <ListItemText
-                    primary={item.user.content}
-                    secondary={`${
-                      item.active
-                        ? ""
-                        : formatTimeDifference(new Date(), item.timeActive)
-                    }`}
-                  />
+                    <ListItemText
+                      primary={item.user.content}
+                      secondary={`${
+                        item.active
+                          ? ""
+                          : formatTimeDifference(new Date(), item.timeActive)
+                      }`}
+                    />
 
-                  <ListItemIcon
-                    sx={{
-                      color: "white",
-                      backgroundColor: `${
-                        item.active ? "success.main" : "#7a837e"
-                      }`,
-                      padding: "6px",
-                      minWidth: "6px",
-                    }}
-                    className="rounded-full"
-                  ></ListItemIcon>
-                </ListItemButton>
-              );
-            })}
-          </List>
-        );
-      })}
+                    <ListItemIcon
+                      sx={{
+                        color: "white",
+                        backgroundColor: `${
+                          item.active ? "success.main" : "#7a837e"
+                        }`,
+                        padding: "6px",
+                        minWidth: "6px",
+                      }}
+                      className="rounded-full"
+                    ></ListItemIcon>
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          );
+        })}
+      </Box>
     </Box>
   );
 };

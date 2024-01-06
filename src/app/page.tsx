@@ -24,7 +24,14 @@ export default function Home() {
           </Grid>
         </Grid>
       </Box>
-      <Box sx={{ flexGrow: 1, marginTop: "0px", backgroundColor: "#9b9da0" }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          marginTop: "0px",
+          backgroundColor: "#9b9da0",
+          paddingTop: "85px",
+        }}
+      >
         <Grid container spacing={0} columns={16}>
           <Grid
             item
@@ -34,6 +41,7 @@ export default function Home() {
             sx={{
               display: { xs: "none", sm: "block" },
               padding: "0px 12px 0px 12px",
+              position: "relative",
             }}
           >
             <AppMenu />

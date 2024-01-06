@@ -77,65 +77,79 @@ const AppMenu = () => {
       sx={{
         width: "100%",
         maxWidth: 250,
+        position: "relative",
       }}
     >
-      {leftMenu.map((items, index) => {
-        return (
-          <List
-            key={index}
-            sx={{
-              width: "100%",
-              bgcolor: "#293145",
-              color: "white",
-              marginTop: "12px",
-            }}
-            className="rounded-md"
-            component="nav"
-            aria-label="main mailbox folders"
-            subheader={
-              <ListSubheader
-                sx={{
-                  bgcolor: "#293145",
-                  color: "white",
-                  fontWeight: "bold",
-                  zIndex: "0",
-                  position: "relative",
-                }}
-                component="div"
-                id="nested-list-subheader"
-                className="rounded-md"
-              >
-                {titleMenu[index]}
-              </ListSubheader>
-            }
-          >
-            {items?.map((item) => {
-              return (
-                <ListItemButton
-                  sx={{ padding: "6px 12px", margin: " 0" }}
-                  key={item.index}
-                  selected={selectedIndex === item.index}
-                  onClick={(event) => handleListItemClick(event, item.index)}
+      <Box
+        sx={{
+          position: "fixed",
+          top: { xs: "58px", md: "85px" },
+          left: { xs: "0", sm: "12px" },
+          overflow: "auto",
+          maxHeight: "calc(100vh - 120px)",
+          "&::-webkit-scrollbar": {
+            width: "1px",
+          },
+        }}
+      >
+        {leftMenu.map((items, index) => {
+          return (
+            <List
+              key={index}
+              sx={{
+                width: "100%",
+                bgcolor: "#293145",
+                color: "white",
+                marginTop: "12px",
+              }}
+              className="rounded-md"
+              component="nav"
+              aria-label="main mailbox folders"
+              subheader={
+                <ListSubheader
+                  sx={{
+                    bgcolor: "#293145",
+                    color: "white",
+                    fontWeight: "bold",
+                    zIndex: "0",
+                    position: "relative",
+                  }}
+                  component="div"
+                  id="nested-list-subheader"
+                  className="rounded-md"
                 >
-                  <ListItemIcon
-                    sx={{
-                      color: "white",
-                      backgroundColor: `${item.bgColor}`,
-                      padding: "8px",
-                      minWidth: "40px",
-                      marginRight: "24px",
-                    }}
-                    className="rounded-full"
+                  {titleMenu[index]}
+                </ListSubheader>
+              }
+            >
+              {items?.map((item) => {
+                return (
+                  <ListItemButton
+                    sx={{ padding: "6px 12px", margin: " 0" }}
+                    key={item.index}
+                    selected={selectedIndex === item.index}
+                    onClick={(event) => handleListItemClick(event, item.index)}
                   >
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.content} />
-                </ListItemButton>
-              );
-            })}
-          </List>
-        );
-      })}
+                    <ListItemIcon
+                      sx={{
+                        color: "white",
+                        backgroundColor: `${item.bgColor}`,
+                        padding: "8px",
+                        minWidth: "40px",
+                        marginRight: "24px",
+                      }}
+                      className="rounded-full"
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={item.content} />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          );
+        })}
+      </Box>
     </Box>
   );
 };

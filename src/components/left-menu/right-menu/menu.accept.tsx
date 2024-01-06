@@ -100,17 +100,17 @@ const MenuAccept = () => {
               <Stack
                 direction="row"
                 spacing={1}
-                className="flex justify-center"
+                className="flex justify-center "
               >
                 <Button
                   variant="contained"
-                  className="bg-sky-700 rounded-[30px] px-5"
+                  className="bg-sky-700 rounded-[30px] p4-5"
                 >
                   Đồng ý
                 </Button>
                 <Button
                   // variant="outlined"
-                  className="bg-neutral-300 rounded-[30px] px-5"
+                  className="bg-neutral-300 rounded-[30px] p4-5"
                 >
                   Từ chối
                 </Button>

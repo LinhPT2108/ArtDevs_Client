@@ -4,7 +4,35 @@
   transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
   animation: fadeIn 1s ease-in-out forwards;
 }
+.css-1ca18su-MuiButtonBase-root-MuiToggleButton-root,
+.css-1draxuz-MuiButtonBase-root-MuiToggleButton-root{
+  transition: all 0.3s;
+}
+.css-1ca18su-MuiButtonBase-root-MuiToggleButton-root:hover,
+.css-1draxuz-MuiButtonBase-root-MuiToggleButton-root:hover {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #4d566d;
+}
+.css-1ca18su-MuiButtonBase-root-MuiToggleButton-root.Mui-selected,
+.css-1draxuz-MuiButtonBase-root-MuiToggleButton-root.Mui-selected 
+ {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #7d8496;
+}
+.css-1ca18su-MuiButtonBase-root-MuiToggleButton-root.Mui-selected:hover,
+.css-1draxuz-MuiButtonBase-root-MuiToggleButton-root.Mui-selected:hover {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #4d566d;
+}
 
+.css-1bjk3jo-MuiButtonBase-root-MuiBottomNavigationAction-root.Mui-selected {
+  color: #066f05;background-color: #cad1db;
+}
+.css-imwso6-MuiBottomNavigationAction-label.Mui-selected{
+  border: none;
+  background: none;
+  box-shadow: none;
+}
 @keyframes fadeIn {
   0% {
     opacity: 0;
