@@ -1,5 +1,4 @@
 import * as React from "react";
-import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
@@ -15,16 +14,44 @@ import SearchComponent from "./header.search";
 import HomeIcon from "@mui/icons-material/Home";
 import LeakAddIcon from "@mui/icons-material/LeakAdd";
 import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import { Button, CardMedia, Drawer, Link, ToggleButton } from "@mui/material";
+import {
+  Button,
+  CardMedia,
+  CssBaseline,
+  Drawer,
+  Link,
+  ToggleButton,
+} from "@mui/material";
 import IconTabs from "./header.nav";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import AppMenu from "../left-menu/app.menu";
 import ContactMenu from "../left-menu/app.contact";
+import { styled, useTheme } from "@mui/material/styles";
+import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 
+const drawerWidth = 210;
 type Anchor = "top" | "left" | "bottom" | "right";
-
-export default function AppHeader() {
+interface AppBarProps extends MuiAppBarProps {
+  open?: boolean;
+}
+const AppBar = styled(MuiAppBar, {
+  shouldForwardProp: (prop) => prop !== "open",
+})<AppBarProps>(({ theme, open }) => ({
+  transition: theme.transitions.create(["margin", "width"], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  }),
+  ...(open && {
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginRight: drawerWidth,
+  }),
+}));
+export default function AppHeader(pros: any) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
@@ -122,7 +149,7 @@ export default function AppHeader() {
       </MenuItem>
     </Menu>
   );
-  const [selectedContact, setSelectedContact] = React.useState(false);
+  const [selectedContact, setSelectedContact] = React.useState(true);
   const [selectedMenu, setSelectedMenu] = React.useState(false);
   const [state, setState] = React.useState({
     top: false,
@@ -149,6 +176,20 @@ export default function AppHeader() {
       setState({ ...state, [anchor]: open });
     };
 
+  const [windowSize, setWindowSize] = React.useState<number>(0);
+  React.useEffect(() => {
+    const handleResize = () => {
+      const isLargeScreen = window.innerWidth > 600;
+      setWindowSize(window.innerWidth);
+      if (isLargeScreen && selectedMenu) {
+        toggleDrawer("left", !selectedMenu)({} as React.MouseEvent);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [windowSize]);
   const list = (anchor: Anchor) => (
     <Box
       sx={{
@@ -165,6 +206,7 @@ export default function AppHeader() {
   );
   return (
     <Box sx={{ flexGrow: 1 }}>
+      <CssBaseline />
       <AppBar
         position="fixed"
         sx={{
@@ -237,8 +279,26 @@ export default function AppHeader() {
                 <SearchIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
               </Badge>
             </IconButton>
-
-            {(["right"] as const).map((anchor) => (
+            <ToggleButton
+              onClick={pros.pros}
+              value="check"
+              className="text-white rounded-full "
+              selected={selectedContact}
+              aria-label="open drawer"
+              onChange={() => {
+                setSelectedContact(!selectedContact);
+              }}
+              sx={{
+                padding: { xs: "6px", sm: "12px" },
+                "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
+                minWidth: { xs: "32px", md: "48px" },
+              }}
+            >
+              <Badge badgeContent={10} color="error">
+                <MailIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
+              </Badge>
+            </ToggleButton>
+            {/* {(["right"] as const).map((anchor) => (
               <React.Fragment key={anchor}>
                 <ToggleButton
                   onClick={toggleDrawer(anchor, !selectedContact)}
@@ -271,7 +331,7 @@ export default function AppHeader() {
                   {list(anchor)}
                 </Drawer>
               </React.Fragment>
-            ))}
+            ))} */}
             <IconButton
               size="large"
               aria-label="show 17 new notifications"

@@ -83,12 +83,12 @@ const AppMenu = () => {
       <Box
         sx={{
           position: "fixed",
-          top: { xs: "58px", md: "85px" },
+          top: { xs: "58px", sm: "85px" },
           left: { xs: "0", sm: "12px" },
           overflow: "auto",
-          maxHeight: "calc(100vh - 120px)",
+          maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },
           "&::-webkit-scrollbar": {
-            width: "1px",
+            width: "5px",
           },
         }}
       >
