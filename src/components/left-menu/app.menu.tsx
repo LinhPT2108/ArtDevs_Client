@@ -6,35 +6,43 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material";
-import InboxIcon from "@mui/icons-material/Inbox";
 import React from "react";
 import FeedIcon from "@mui/icons-material/Feed";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import "@/style/left-menu.css";
+import Link from "next/link";
 
 const AppMenu = () => {
   const leftMenu = [];
   const info: ListItem[] = [
-    { index: 0, content: "Bản tin", icon: <FeedIcon />, bgColor: "#9b2828" },
+    {
+      index: 0,
+      content: "Bảng tin",
+      icon: <FeedIcon />,
+      bgColor: "#9b2828",
+      url: "/bang-tin",
+    },
     {
       index: 1,
       content: "Giảng viên",
       icon: <PersonSearchIcon />,
       bgColor: "#9c933c",
+      url: "/mentor",
     },
     {
       index: 2,
       content: "Hash tag",
       icon: <BookmarksIcon />,
       bgColor: "#1e8d10",
+      url: "/hash-tag",
     },
     {
       index: 3,
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
       bgColor: "#263797",
+      url: "/trang-ca-nhan",
     },
   ];
   const recent: ListItem[] = [
@@ -43,21 +51,59 @@ const AppMenu = () => {
       content: "Hộp thư điện tử",
       icon: <FeedIcon />,
       bgColor: "#263797",
+      url: "/hop-thu-dien-tu",
     },
-    { index: 5, content: "Near post", icon: <FeedIcon />, bgColor: "#263797" },
-    { index: 6, content: "Last event", icon: <FeedIcon />, bgColor: "#263797" },
-    { index: 7, content: "Live", icon: <FeedIcon />, bgColor: "#263797" },
+    {
+      index: 5,
+      content: "Near post",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/near-post",
+    },
+    {
+      index: 6,
+      content: "Last event",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/last-event",
+    },
+    {
+      index: 7,
+      content: "Live",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/live",
+    },
   ];
   const setting: ListItem[] = [
-    { index: 8, content: "Cài đặt", icon: <FeedIcon />, bgColor: "#263797" },
-    { index: 9, content: "Thống kê", icon: <FeedIcon />, bgColor: "#263797" },
+    {
+      index: 8,
+      content: "Cài đặt",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/cai-dat",
+    },
+    {
+      index: 9,
+      content: "Thống kê",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/thong-ke",
+    },
     {
       index: 10,
       content: "Quyền riêng tư",
       icon: <FeedIcon />,
       bgColor: "#263797",
+      url: "/quyen-rieng-tu",
     },
-    { index: 11, content: "Đăng xuất", icon: <FeedIcon />, bgColor: "#263797" },
+    {
+      index: 11,
+      content: "Đăng xuất",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/dang-xuat",
+    },
   ];
   leftMenu.push(info);
   leftMenu.push(recent);
@@ -101,8 +147,8 @@ const AppMenu = () => {
                 bgcolor: "#293145",
                 color: "white",
                 marginTop: "12px",
+                borderRadius: "6px",
               }}
-              className="rounded-md"
               component="nav"
               aria-label="main mailbox folders"
               subheader={
@@ -113,10 +159,10 @@ const AppMenu = () => {
                     fontWeight: "bold",
                     zIndex: "0",
                     position: "relative",
+                    borderRadius: "6px",
                   }}
                   component="div"
                   id="nested-list-subheader"
-                  className="rounded-md"
                 >
                   {titleMenu[index]}
                 </ListSubheader>
@@ -125,24 +171,39 @@ const AppMenu = () => {
               {items?.map((item) => {
                 return (
                   <ListItemButton
-                    sx={{ padding: "6px 12px", margin: " 0" }}
+                    sx={{
+                      padding: "6px 12px",
+                      margin: " 0",
+                      "& a": {
+                        display: "flex",
+                        width: "100%",
+                        textDecoration: "none",
+                      },
+                    }}
                     key={item.index}
                     selected={selectedIndex === item.index}
                     onClick={(event) => handleListItemClick(event, item.index)}
                   >
-                    <ListItemIcon
-                      sx={{
-                        color: "white",
-                        backgroundColor: `${item.bgColor}`,
-                        padding: "8px",
-                        minWidth: "40px",
-                        marginRight: "24px",
-                      }}
-                      className="rounded-full"
-                    >
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText primary={item.content} />
+                    <Link href={`${item.url}`}>
+                      <ListItemIcon
+                        sx={{
+                          color: "white",
+                          backgroundColor: `${item.bgColor}`,
+                          padding: "8px",
+                          minWidth: "40px",
+                          marginRight: "24px",
+                          borderRadius: "100%",
+                        }}
+                      >
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText
+                        primary={item.content}
+                        sx={{
+                          color: "#ffffff",
+                        }}
+                      />
+                    </Link>
                   </ListItemButton>
                 );
               })}

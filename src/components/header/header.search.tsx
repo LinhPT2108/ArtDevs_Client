@@ -1,7 +1,7 @@
 "user client";
 import { useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { Button } from "@mui/material";
+import { Box, Button, InputBase } from "@mui/material";
 
 const SearchComponent = () => {
   const svgRef = useRef<SVGSVGElement>(null);
@@ -27,8 +27,22 @@ const SearchComponent = () => {
   };
 
   return (
-    <div className="bg-white flex rounded-2xl shadow-md min-[0px]:hidden min-[600px]:flex">
-      <input
+    <Box
+      sx={{
+        backgroundColor: "white",
+        display: "flex",
+        borderRadius: "16px",
+        boxShadow:
+          "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "@media (min-width: 600px)": {
+          display: "flex",
+        },
+        "@media (max-width: 599px)": {
+          display: "none",
+        },
+      }}
+    >
+      <InputBase
         type="search"
         onFocus={handleFocus}
         onBlur={handleBlur}
@@ -37,17 +51,62 @@ const SearchComponent = () => {
           setSearch(e.target.value);
         }}
         placeholder="Start typing to start..."
-        className="focus:rounded-r-none focus:rounded-l-2xl text-search text-black rounded-2xl px-4 py-2 p-right-5 input-search focus:outline-none min-[600px]:w-36 min-[700px]:w-48 min-[1023px]:w-56"
+        sx={{
+          color: "black",
+          borderRadius: "16px",
+          padding: "4px 16px",
+          paddingRight: "5",
+          "@media (min-width: 600px)": {
+            width: "144px",
+          },
+          "@media (min-width: 700px)": {
+            width: "192px",
+          },
+          "@media (min-width: 1023px)": {
+            width: "224px",
+          },
+          "& input": {
+            "&:focus": {
+              outline: "none",
+              borderTopRightRadius: "0px",
+              borderBottomRightRadius: "0px",
+              borderTopLeftRadius: "16PX",
+              borderBottomLeftRadius: "16px",
+            },
+            "@media (min-width: 600px)": {
+              width: "144px",
+            },
+            "@media (min-width: 700px)": {
+              width: "192px",
+            },
+            "@media (min-width: 1023px)": {
+              width: "224px",
+            },
+          },
+        }}
       />
-      {/* {(isFocused || (!isFocused && search)) && ( */}
       <Button
-        className={`w-10 h-10 rounded-l-none rounded-r-2xl bg-slate-200 hover:bg-slate-300`}
+        sx={{
+          width: "40px",
+          height: "40px",
+          borderRadius: "0",
+          borderTopRightRadius: "16px",
+          borderBottomRightRadius: "16px",
+          backgroundColor: "#bdbdbd",
+          color: "#0277bd",
+          border: "none",
+          "&:hover": {
+            backgroundColor: "#e0e0e0",
+            outline: "none",
+            border: "none",
+          },
+        }}
         onClick={() => handleSearch()}
       >
         <SearchIcon />
       </Button>
       {/* )} */}
-    </div>
+    </Box>
   );
 };
 

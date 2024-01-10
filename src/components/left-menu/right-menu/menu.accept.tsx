@@ -59,6 +59,16 @@ const MenuAccept = () => {
               fontWeight: "bold",
               zIndex: "0",
               position: "relative",
+              "@media (min-width: 900px)": {
+                "&": {
+                  fontSize: "12px",
+                },
+              },
+              "@media (min-width: 1023px)": {
+                "&": {
+                  fontSize: "14px",
+                },
+              },
             }}
             component="div"
             id="nested-list-subheader"
@@ -72,7 +82,18 @@ const MenuAccept = () => {
           return (
             <Box
               key={index}
-              sx={{ paddingBottom: "24px" }}
+              sx={{
+                paddingBottom: "24px",
+                "& p": {
+                  fontSize: { md: "10px", lg: "14px" },
+                },
+                "& span": {
+                  fontSize: { md: "14px", lg: "16px" },
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                },
+              }}
               className={`${index < acountAccept.length - 1 ? "border-b" : ""}`}
             >
               <ListItemButton
@@ -86,9 +107,9 @@ const MenuAccept = () => {
                     backgroundColor: `gray`,
                     padding: "8px",
                     minWidth: "40px",
-                    marginRight: "24px",
+                    marginRight: { md: "6px", lg: "24px" },
+                    borderRadius: "100%",
                   }}
-                  className="rounded-full"
                 >
                   {item.avatar}
                 </ListItemIcon>
@@ -99,18 +120,62 @@ const MenuAccept = () => {
               </ListItemButton>
               <Stack
                 direction="row"
-                spacing={1}
-                className="flex justify-center "
+                spacing={0}
+                className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
               >
                 <Button
                   variant="contained"
-                  className="bg-sky-700 rounded-[30px] p4-5"
+                  color="success"
+                  sx={{
+                    borderRadius: "30px",
+                    "@media (min-width: 900px)": {
+                      "&": {
+                        fontSize: "10px",
+                        paddingX: "4px",
+                      },
+                    },
+                    "@media (min-width: 1023px)": {
+                      "&": {
+                        paddingX: "12px",
+                      },
+                    },
+                    "@media (min-width: 1200px)": {
+                      "&": {
+                        fontSize: "14px",
+                        paddingX: "16px",
+                      },
+                    },
+                  }}
                 >
                   Đồng ý
                 </Button>
                 <Button
-                  // variant="outlined"
-                  className="bg-neutral-300 rounded-[30px] p4-5"
+                  variant="outlined"
+                  sx={{
+                    borderRadius: "30px",
+                    backgroundColor: "#eeeeee",
+                    color: "#4d3869",
+                    border: "none",
+                    "&:hover": {
+                      backgroundColor: "#ffffff",
+                      outline: "none",
+                      border: "none",
+                    },
+                    "@media (min-width: 900px)": {
+                      "&": {
+                        fontSize: "10px",
+                        marginLeft: "4px",
+                        paddingX: "10px",
+                      },
+                    },
+                    "@media (min-width: 1200px)": {
+                      "&": {
+                        fontSize: "14px",
+                        marginLeft: "8px",
+                        paddingX: "16px",
+                      },
+                    },
+                  }}
                 >
                   Từ chối
                 </Button>

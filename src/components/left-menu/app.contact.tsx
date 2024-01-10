@@ -1,5 +1,6 @@
 import {
   Box,
+  Drawer,
   List,
   ListItemButton,
   ListItemIcon,
@@ -8,14 +9,32 @@ import {
 } from "@mui/material";
 import React from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import "@/style/left-menu.css";
+import ChatMessagesForm from "../chat/chat.form";
+import { styled } from "@mui/system";
+
 interface IUser {
   user: ListItem;
   active: boolean;
   timeActive: Date;
 }
+interface IPros {
+  openContact: boolean;
+}
 
-const ContactMenu = () => {
+type Anchor = "top" | "left" | "bottom" | "right";
+
+export const openDrawer = () => {
+  const body = document.body;
+  body.classList.add("drawer-open");
+};
+
+export const closeDrawer = () => {
+  const body = document.body;
+  body.classList.remove("drawer-open");
+};
+
+const ContactMenu = (pros: IPros) => {
+  const { openContact } = pros;
   const rightMenu = [];
   const info: IUser[] = [
     {
@@ -24,6 +43,7 @@ const ContactMenu = () => {
         content: "Linh Phan",
         icon: <AccountCircleIcon />,
         bgColor: "#9b2828",
+        url: "/",
       },
       active: false,
       timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
@@ -34,6 +54,7 @@ const ContactMenu = () => {
         content: "Trần Chí Nguyễn",
         icon: <AccountCircleIcon />,
         bgColor: "#9c933c",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
@@ -44,6 +65,7 @@ const ContactMenu = () => {
         content: "Vinh Olo",
         icon: <AccountCircleIcon />,
         bgColor: "#1e8d10",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
@@ -54,86 +76,95 @@ const ContactMenu = () => {
         content: "Vương Gia Khánh",
         icon: <AccountCircleIcon />,
         bgColor: "#263797",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 0,
+        index: 4,
         content: "Linh Phan",
         icon: <AccountCircleIcon />,
         bgColor: "#9b2828",
+        url: "/",
       },
       active: false,
       timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
     },
     {
       user: {
-        index: 1,
+        index: 5,
         content: "Trần Chí Nguyễn",
         icon: <AccountCircleIcon />,
         bgColor: "#9c933c",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 2,
+        index: 6,
         content: "Vinh Olo",
         icon: <AccountCircleIcon />,
         bgColor: "#1e8d10",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 3,
+        index: 7,
         content: "Vương Gia Khánh",
         icon: <AccountCircleIcon />,
         bgColor: "#263797",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 0,
+        index: 8,
         content: "Linh Phan",
         icon: <AccountCircleIcon />,
         bgColor: "#9b2828",
+        url: "/",
       },
       active: false,
       timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
     },
     {
       user: {
-        index: 1,
+        index: 9,
         content: "Trần Chí Nguyễn",
         icon: <AccountCircleIcon />,
         bgColor: "#9c933c",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 2,
+        index: 10,
         content: "Vinh Olo",
         icon: <AccountCircleIcon />,
         bgColor: "#1e8d10",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 3,
+        index: 11,
         content: "Vương Gia Khánh",
         icon: <AccountCircleIcon />,
         bgColor: "#263797",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
@@ -142,20 +173,22 @@ const ContactMenu = () => {
   const recent: IUser[] = [
     {
       user: {
-        index: 4,
+        index: 12,
         content: "Nguyễn C2BT",
         icon: <AccountCircleIcon />,
         bgColor: "pink",
+        url: "/",
       },
       active: true,
       timeActive: new Date(),
     },
     {
       user: {
-        index: 5,
+        index: 13,
         content: "Thầy Vinh",
         icon: <AccountCircleIcon />,
         bgColor: "pink",
+        url: "/",
       },
       active: false,
       timeActive: new Date(new Date().getTime() - 18 * 60 * 1000),
@@ -167,22 +200,14 @@ const ContactMenu = () => {
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
-  const handleListItemClick = (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>,
-    index: number
-  ) => {
-    setSelectedIndex(index);
-  };
   function formatTimeDifference(startTime: Date, endTime: Date): string {
     const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 
-    // Chuyển đổi sang giây, phút, giờ và ngày
     const seconds = Math.floor(differenceInMilliseconds / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    // Lựa chọn đơn vị thời gian phù hợp để hiển thị
     if (days > 0) {
       return `${days} ngày trước`;
     } else if (hours > 0) {
@@ -193,19 +218,59 @@ const ContactMenu = () => {
       return `${seconds} giây trước`;
     }
   }
+  const [openMessages, setOpenMessages] = React.useState<boolean>(false);
+  const [state, setState] = React.useState({
+    top: false,
+    left: false,
+    bottom: false,
+    right: false,
+  });
+  const [user, setUser] = React.useState<IUser>();
+  const toggleDrawer =
+    (anchor: Anchor, open: boolean, item: IUser) =>
+    (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === "keydown" &&
+        ((event as React.KeyboardEvent).key === "Tab" ||
+          (event as React.KeyboardEvent).key === "Shift")
+      ) {
+        return;
+      }
+      {
+        anchor == "right" && !open && setOpenMessages(open);
+      }
+      {
+        open ? openDrawer() : closeDrawer();
+      }
+      setUser(item);
+      setState({ ...state, [anchor]: open });
+    };
+  const list = (anchor: Anchor) => (
+    <Box
+      sx={{
+        width: anchor === "top" || anchor === "bottom" ? "auto" : 320,
+        backgroundColor: "#293145",
+      }}
+      role="presentation"
+    >
+      <ChatMessagesForm
+        toggleDrawer={toggleDrawer}
+        data={user}
+        formatTimeDifference={formatTimeDifference}
+      />
+    </Box>
+  );
   return (
     <Box
       sx={{
         width: "100%",
-        maxWidth: 250,
-        position: "relative",
+        maxWidth: 320,
+        marginTop: { xs: "0", md: "85px" },
+        zIndex: "2000",
       }}
     >
       <Box
         sx={{
-          position: "fixed",
-          top: { xs: "58px", sm: "85px" },
-          right: { xs: "0", sm: "12px" },
           overflow: "auto",
           maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },
           "&::-webkit-scrollbar": {
@@ -246,53 +311,96 @@ const ContactMenu = () => {
                 </ListSubheader>
               }
             >
-              {items?.map((item, index) => {
-                return (
-                  <ListItemButton
+              {(["right"] as const).map((anchor) => (
+                <React.Fragment key={anchor}>
+                  {/* <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button> */}
+
+                  {items?.map((item, index) => {
+                    return (
+                      <ListItemButton
+                        sx={{
+                          padding: { xs: "6px" },
+                          margin: " 0",
+                        }}
+                        key={index}
+                        selected={selectedIndex === item.user.index}
+                        onClick={toggleDrawer(anchor, true, item)}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            color: "white",
+                            backgroundColor: `${item?.user.bgColor}`,
+                            padding: "8px",
+                            minWidth: "40px",
+                            marginRight: { xs: "6px" },
+                            borderRadius: "100%",
+                          }}
+                        >
+                          {item.user.icon}
+                        </ListItemIcon>
+
+                        <ListItemText
+                          primary={item.user.content}
+                          secondary={`${
+                            item.active
+                              ? ""
+                              : formatTimeDifference(
+                                  new Date(),
+                                  item.timeActive
+                                )
+                          }`}
+                        />
+
+                        <ListItemIcon
+                          sx={{
+                            color: "white",
+                            backgroundColor: `${
+                              item.active ? "success.main" : "#7a837e"
+                            }`,
+                            padding: "6px",
+                            minWidth: "6px",
+                          }}
+                          className="rounded-full"
+                        ></ListItemIcon>
+                      </ListItemButton>
+                    );
+                  })}
+                  <Drawer
+                    className="hello"
+                    anchor={anchor}
+                    open={state[anchor]}
                     sx={{
-                      padding: { xs: "6px", xl: "6px 12px" },
-                      margin: " 0",
+                      top: "auto",
+                      left: "auto",
+                      right: "auto",
+                      bottom: "auto",
+                      overflow: "auto",
+                      "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                        height: "400px",
+                        borderRadius: "6px 6px 0 0",
+                      },
+                      "& .MuiBackdrop-root": {
+                        top: "auto",
+                        left: "auto",
+                        right: "auto",
+                        bottom: "auto",
+                      },
+                      "& .MuiPaper-root": {
+                        top: "auto",
+                        right: `${openContact ? "210px" : 0}`,
+                        "@media (min-width: 600px)": {
+                          bottom: "56px",
+                        },
+                        "@media (min-width: 900px)": {
+                          bottom: "0",
+                        },
+                      },
                     }}
-                    key={index}
-                    //   selected={selectedIndex === item.index}
-                    //   onClick={(event) => handleListItemClick(event, item.index)}
                   >
-                    <ListItemIcon
-                      sx={{
-                        color: "white",
-                        backgroundColor: `${item?.user.bgColor}`,
-                        padding: "8px",
-                        minWidth: "40px",
-                        marginRight: { xs: "6px", xl: "24px" },
-                      }}
-                      className="rounded-full"
-                    >
-                      {item.user.icon}
-                    </ListItemIcon>
-
-                    <ListItemText
-                      primary={item.user.content}
-                      secondary={`${
-                        item.active
-                          ? ""
-                          : formatTimeDifference(new Date(), item.timeActive)
-                      }`}
-                    />
-
-                    <ListItemIcon
-                      sx={{
-                        color: "white",
-                        backgroundColor: `${
-                          item.active ? "success.main" : "#7a837e"
-                        }`,
-                        padding: "6px",
-                        minWidth: "6px",
-                      }}
-                      className="rounded-full"
-                    ></ListItemIcon>
-                  </ListItemButton>
-                );
-              })}
+                    {list(anchor)}
+                  </Drawer>
+                </React.Fragment>
+              ))}
             </List>
           );
         })}

@@ -3,6 +3,7 @@ interface ListItem {
   content: string;
   icon: SvgIconProps;
   bgColor: string;
+  url: string;
 }
 interface MessageExample {
   primary: string;

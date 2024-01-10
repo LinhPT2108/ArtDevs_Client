@@ -7,15 +7,9 @@ import {
   Button,
   Card,
   CardActions,
-  CardContent,
   CardMedia,
   List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   ListSubheader,
-  Stack,
-  Typography,
 } from "@mui/material";
 const MenuMentor = () => {
   const acountAccept: AccountExample[] = [
@@ -64,6 +58,16 @@ const MenuMentor = () => {
               fontWeight: "bold",
               zIndex: "0",
               position: "relative",
+              "@media (min-width: 900px)": {
+                "&": {
+                  fontSize: "12px",
+                },
+              },
+              "@media (min-width: 1023px)": {
+                "&": {
+                  fontSize: "14px",
+                },
+              },
             }}
             component="div"
             id="nested-list-subheader"
@@ -89,7 +93,16 @@ const MenuMentor = () => {
                 <Button
                   size="small"
                   variant="contained"
-                  className="bg-gray-200 text-stone-950 rounded-[30px] hover:bg-gray-600 hover:text-white"
+                  sx={{
+                    borderRadius: "30px",
+                    backgroundColor: "#eeeeee",
+                    color: "#4d3869",
+                    "&:hover": {
+                      backgroundColor: "#ffffff",
+                      outline: "none",
+                      border: "none",
+                    },
+                  }}
                 >
                   Mentor được yêu thích
                 </Button>

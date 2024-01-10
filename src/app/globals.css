@@ -1,6 +1,11 @@
-@tailwind base;
+/* @tailwind base; */
 @tailwind components;
 @tailwind utilities;
+
+.drawer-open {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
 /*
 :root {
   --foreground-rgb: 0, 0, 0;

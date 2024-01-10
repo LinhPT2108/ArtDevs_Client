@@ -5,21 +5,35 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 
-export default function IconTabs() {
-  const [value, setValue] = React.useState(0);
+const IconTabs = (pros: any) => {
+  const [value, setValue] = React.useState<number>(pros?.tabValue);
 
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
+  React.useEffect(() => {
+    setValue(pros?.tabValue);
+  }, [pros?.tabValue]);
 
   return (
     <Tabs
       sx={{
         display: { xs: "none", md: "flex" },
         marginLeft: { md: "6px", lg: "24px" },
+        "& .MuiButtonBase-root": {
+          backgroundColor: "#d5d8db2e",
+        },
+        "& .Mui-selected": {
+          backgroundColor: "#2d679785",
+          transition: "all 0.3s ease-in",
+          boxShadow: " 0px 0px 0px 1px rgba(0, 0, 0, 0.2)",
+        },
+        "& .MuiTabs-indicator": {
+          display: "none",
+        },
       }}
       value={value}
-      onChange={handleChange}
+      onChange={(event, newValue) => {
+        setValue(newValue);
+        pros.handleChangeTab(newValue);
+      }}
       aria-label="icon tabs example"
     >
       <Tab
@@ -28,8 +42,8 @@ export default function IconTabs() {
           padding: "10px 0",
           margin: "6px",
           color: "white",
+          borderRadius: "100%",
         }}
-        className="rounded-full "
         color=""
         icon={<PhoneIcon />}
         aria-label="phone"
@@ -40,8 +54,8 @@ export default function IconTabs() {
           padding: "10px 0",
           margin: "6px",
           color: "white",
+          borderRadius: "100%",
         }}
-        className=" rounded-full"
         icon={<FavoriteIcon />}
         aria-label="favorite"
       />
@@ -51,8 +65,8 @@ export default function IconTabs() {
           padding: "10px 0",
           margin: "6px",
           color: "white",
+          borderRadius: "100%",
         }}
-        className=" rounded-full"
         icon={<PersonPinIcon />}
         aria-label="person"
       />
@@ -62,11 +76,12 @@ export default function IconTabs() {
           padding: "10px 0",
           margin: "6px",
           color: "white",
+          borderRadius: "100%",
         }}
-        className=" rounded-full"
         icon={<FavoriteIcon />}
         aria-label="favorite"
       />
     </Tabs>
   );
-}
+};
+export default IconTabs;

@@ -9,13 +9,8 @@ import Menu from "@mui/material/Menu";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreIcon from "@mui/icons-material/MoreVert";
 import SearchComponent from "./header.search";
-import HomeIcon from "@mui/icons-material/Home";
-import LeakAddIcon from "@mui/icons-material/LeakAdd";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import {
-  Button,
   CardMedia,
   CssBaseline,
   Drawer,
@@ -27,7 +22,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import AppMenu from "../left-menu/app.menu";
 import ContactMenu from "../left-menu/app.contact";
-import { styled, useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 
 const drawerWidth = 210;
@@ -57,7 +52,6 @@ export default function AppHeader(pros: any) {
     React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -70,10 +64,6 @@ export default function AppHeader(pros: any) {
   const handleMenuClose = () => {
     setAnchorEl(null);
     handleMobileMenuClose();
-  };
-
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMoreAnchorEl(event.currentTarget);
   };
 
   const menuId = "primary-search-account-menu";
@@ -98,58 +88,8 @@ export default function AppHeader(pros: any) {
     </Menu>
   );
 
-  const mobileMenuId = "primary-search-account-menu-mobile";
-  const renderMobileMenu = (
-    <Menu
-      anchorEl={mobileMoreAnchorEl}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right",
-      }}
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      id={mobileMenuId}
-      keepMounted
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
-    >
-      <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={6} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
-        <IconButton
-          size="large"
-          aria-label="show 17 new notifications"
-          color="inherit"
-        >
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
-    </Menu>
-  );
-  const [selectedContact, setSelectedContact] = React.useState(true);
+  const [selectedContact, setSelectedContact] = React.useState(false);
+  const [openContact, setOpenContact] = React.useState(false);
   const [selectedMenu, setSelectedMenu] = React.useState(false);
   const [state, setState] = React.useState({
     top: false,
@@ -168,15 +108,18 @@ export default function AppHeader(pros: any) {
         return;
       }
       {
-        anchor == "right" && !open && setSelectedContact(open);
+        anchor == "right" && !open && setOpenContact(open);
       }
       {
         anchor == "left" && !open && setSelectedMenu(open);
       }
       setState({ ...state, [anchor]: open });
     };
+  // const windowS: Window = window;
+  const [windowSize, setWindowSize] = React.useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 900
+  );
 
-  const [windowSize, setWindowSize] = React.useState<number>(0);
   React.useEffect(() => {
     const handleResize = () => {
       const isLargeScreen = window.innerWidth > 600;
@@ -184,12 +127,32 @@ export default function AppHeader(pros: any) {
       if (isLargeScreen && selectedMenu) {
         toggleDrawer("left", !selectedMenu)({} as React.MouseEvent);
       }
+      if (
+        window.innerWidth < 900 &&
+        !selectedContact &&
+        pros &&
+        typeof pros.handleDrawerOpen === "function"
+      ) {
+        setSelectedContact(true);
+        pros.handleDrawerOpen(selectedContact);
+      }
+      if (window.innerWidth >= 900 && openContact) {
+        toggleDrawer("right", !openContact)({} as React.MouseEvent);
+      }
     };
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, [windowSize]);
+  React.useEffect(() => {
+    const windowWidth = window.innerWidth;
+
+    if (windowWidth < 900) {
+      setSelectedContact(true);
+      pros.handleDrawerOpen(selectedContact);
+    }
+  }, []);
   const list = (anchor: Anchor) => (
     <Box
       sx={{
@@ -198,12 +161,21 @@ export default function AppHeader(pros: any) {
         backgroundColor: "#293145",
       }}
       role="presentation"
-      onClick={toggleDrawer(anchor, false)}
-      onKeyDown={toggleDrawer(anchor, false)}
+      onClick={
+        anchor === "left" ? () => toggleDrawer(anchor, false) : undefined
+      }
+      onKeyDown={
+        anchor === "left" ? () => toggleDrawer(anchor, false) : undefined
+      }
     >
-      {anchor === "left" ? <AppMenu /> : <ContactMenu />}
+      {anchor === "left" ? (
+        <AppMenu />
+      ) : (
+        <ContactMenu openContact={pros.openContact} />
+      )}
     </Box>
   );
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <CssBaseline />
@@ -213,7 +185,7 @@ export default function AppHeader(pros: any) {
           bgcolor: "#293145",
           color: "text.white",
           padding: { xs: "0px", lg: "0 64px" },
-          zIndex: "1201",
+          zIndex: "1202",
         }}
       >
         <Toolbar
@@ -232,7 +204,6 @@ export default function AppHeader(pros: any) {
               padding: "6px 0",
               marginRight: { xs: "0", sm: "12px" },
             }}
-            className="font-bold"
           >
             <Link href="#">
               <CardMedia
@@ -252,19 +223,32 @@ export default function AppHeader(pros: any) {
               display: { sm: "inline" },
               padding: "6px 0",
               margin: "0 6px",
+              fontWeight: "bolder",
             }}
-            className="font-bold"
           >
             <Link
               href="#"
-              sx={{ textDecoration: "none" }}
-              className="min-[0px]:text-sm  min-[310px]:text-base min-[400px]:text-xl"
+              sx={{
+                textDecoration: "none",
+                "@media (min-width: 0px)": {
+                  fontSize: "14px",
+                },
+                "@media (min-width: 310px)": {
+                  fontSize: "16px",
+                },
+                "@media (min-width: 400px)": {
+                  fontSize: "20px",
+                },
+              }}
             >
               Art Devs
             </Link>
           </Typography>
           <SearchComponent />
-          <IconTabs />
+          <IconTabs
+            tabValue={pros?.tabValue}
+            handleChangeTab={pros?.handleChangeTab}
+          />
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { md: "flex" }, alignItems: "center" }}>
             <IconButton
@@ -272,66 +256,108 @@ export default function AppHeader(pros: any) {
               color="inherit"
               sx={{
                 display: { xs: "inline", sm: "none" },
+                "@media (min-width: 0px)": {
+                  padding: "0",
+                },
+                "@media (min-width: 300px)": {
+                  padding: "8px",
+                },
+                "@media (min-width: 600px)": {
+                  padding: "12px",
+                },
               }}
-              className="min-[0px]:p-0 min-[300px]:p-2 min-[600px]:p-3"
             >
               <Badge>
-                <SearchIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
-              </Badge>
-            </IconButton>
-            <ToggleButton
-              onClick={pros.pros}
-              value="check"
-              className="text-white rounded-full "
-              selected={selectedContact}
-              aria-label="open drawer"
-              onChange={() => {
-                setSelectedContact(!selectedContact);
-              }}
-              sx={{
-                padding: { xs: "6px", sm: "12px" },
-                "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
-                minWidth: { xs: "32px", md: "48px" },
-              }}
-            >
-              <Badge badgeContent={10} color="error">
-                <MailIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
-              </Badge>
-            </ToggleButton>
-            {/* {(["right"] as const).map((anchor) => (
-              <React.Fragment key={anchor}>
-                <ToggleButton
-                  onClick={toggleDrawer(anchor, !selectedContact)}
-                  value="check"
-                  className="text-white rounded-full "
-                  selected={selectedContact}
-                  onChange={() => {
-                    setSelectedContact(!selectedContact);
-                  }}
+                <SearchIcon
                   sx={{
-                    padding: { xs: "6px", sm: "12px" },
-                    "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
-                    minWidth: { xs: "32px", md: "48px" },
-                  }}
-                >
-                  <Badge badgeContent={10} color="error">
-                    <MailIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
-                  </Badge>
-                </ToggleButton>
-                <Drawer
-                  anchor={anchor}
-                  open={state[anchor]}
-                  onClose={toggleDrawer(anchor, false)}
-                  sx={{
-                    "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-                      backgroundColor: "#293145",
+                    "@media (min-width: 0px)": {
+                      fontSize: "16px",
+                    },
+                    "@media (min-width: 400px)": {
+                      fontSize: "24px",
                     },
                   }}
-                >
-                  {list(anchor)}
-                </Drawer>
-              </React.Fragment>
-            ))} */}
+                />
+              </Badge>
+            </IconButton>
+            {windowSize >= 900 && (
+              <ToggleButton
+                onClick={() => {
+                  pros.handleDrawerOpen(selectedContact);
+                }}
+                value="check"
+                selected={selectedContact}
+                // aria-label="open drawer"
+                onChange={() => {
+                  setSelectedContact(!selectedContact);
+                }}
+                sx={{
+                  color: "#ffffff",
+                  borderRadius: "100%",
+                  padding: { xs: "6px", sm: "12px" },
+                  "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
+                  minWidth: { xs: "32px", md: "48px" },
+                }}
+              >
+                <Badge badgeContent={11} color="error">
+                  <MailIcon
+                    sx={{
+                      "@media (min-width: 0px)": {
+                        fontSize: "16px",
+                      },
+                      "@media (min-width: 400px)": {
+                        fontSize: "24px",
+                      },
+                    }}
+                  />
+                </Badge>
+              </ToggleButton>
+            )}
+            {windowSize < 900 &&
+              (["right"] as const).map((anchor, index) => (
+                <React.Fragment key={anchor + index}>
+                  <ToggleButton
+                    onClick={toggleDrawer(anchor, !openContact)}
+                    value="check"
+                    selected={openContact}
+                    onChange={() => {
+                      setOpenContact(!openContact);
+                    }}
+                    sx={{
+                      color: "#ffffff",
+                      borderRadius: "100%",
+                      padding: { xs: "6px", sm: "12px" },
+                      "$ .css-imxc6v-MuiBadge-badge": { fontSize: "0.5rem" },
+                      minWidth: { xs: "32px", md: "48px" },
+                    }}
+                  >
+                    <Badge badgeContent={11} color="error">
+                      <MailIcon
+                        sx={{
+                          "@media (min-width: 0px)": {
+                            fontSize: "16px",
+                          },
+                          "@media (min-width: 400px)": {
+                            fontSize: "24px",
+                          },
+                        }}
+                      />
+                    </Badge>
+                  </ToggleButton>
+                  <Drawer
+                    anchor={anchor}
+                    open={state[anchor]}
+                    onClose={toggleDrawer(anchor, false)}
+                    sx={{
+                      "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                        backgroundColor: "#293145",
+                      },
+                    }}
+                  >
+                    {list(anchor)}
+                  </Drawer>
+                </React.Fragment>
+              ))}
             <IconButton
               size="large"
               aria-label="show 17 new notifications"
@@ -339,7 +365,16 @@ export default function AppHeader(pros: any) {
               sx={{ padding: { xs: "8px", sm: "12px" } }}
             >
               <Badge badgeContent={17} color="error">
-                <NotificationsIcon className="min-[0px]:text-base min-[400px]:text-2xl" />
+                <NotificationsIcon
+                  sx={{
+                    "@media (min-width: 0px)": {
+                      fontSize: "16px",
+                    },
+                    "@media (min-width: 400px)": {
+                      fontSize: "24px",
+                    },
+                  }}
+                />
               </Badge>
             </IconButton>
             <IconButton
@@ -355,19 +390,29 @@ export default function AppHeader(pros: any) {
                 padding: { xs: "8px", sm: "12px" },
               }}
             >
-              <AccountCircle className="min-[0px]:text-base min-[400px]:text-2xl" />
+              <AccountCircle
+                sx={{
+                  "@media (min-width: 0px)": {
+                    fontSize: "16px",
+                  },
+                  "@media (min-width: 400px)": {
+                    fontSize: "24px",
+                  },
+                }}
+              />
             </IconButton>
             {(["left"] as const).map((anchor) => (
-              <React.Fragment key={anchor}>
+              <React.Fragment key={anchor + "123"}>
                 <ToggleButton
                   onClick={toggleDrawer(anchor, !selectedMenu)}
                   value="check"
-                  className="text-white rounded-full"
                   selected={selectedMenu}
                   onChange={() => {
                     setSelectedMenu(!selectedMenu);
                   }}
                   sx={{
+                    color: "#ffffff",
+                    borderRadius: "100%",
                     display: { xs: "inline", sm: "none" },
                     minWidth: { xs: "36px", sm: "48px" },
                     padding: { xs: "3px", sm: "6px" },
@@ -392,7 +437,6 @@ export default function AppHeader(pros: any) {
           </Box>
         </Toolbar>
       </AppBar>
-      {renderMobileMenu}
       {renderMenu}
     </Box>
   );
