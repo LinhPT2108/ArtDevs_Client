@@ -24,3 +24,9 @@ interface Post{
   totalLike: number;
   totalComment: number;
 }
+interface MessageContent{
+  content: String,
+  image?: any,
+  from: String,
+  to: String
+}

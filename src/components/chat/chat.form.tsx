@@ -1,3 +1,4 @@
+"use client";
 import {
   Box,
   IconButton,
@@ -12,6 +13,14 @@ import MessageBox from "./chat.input";
 
 const ChatMessagesForm = (pros: any) => {
   const { data, formatTimeDifference } = pros;
+  const [content, setContent] = React.useState<MessageContent>();
+
+  const handleContent = (messageContent: MessageContent) => {
+    messageContent.from = "123";
+    messageContent.to = data.user.content;
+    setContent(messageContent);
+  };
+  console.log(">>> check content messages: ", content);
 
   return (
     <Box
@@ -92,7 +101,7 @@ const ChatMessagesForm = (pros: any) => {
           </ListItemButton>
         )}
         <Messsages />
-        <MessageBox />
+        <MessageBox handleContent={handleContent} />
       </Box>
     </Box>
   );
