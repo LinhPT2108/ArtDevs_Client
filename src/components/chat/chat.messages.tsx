@@ -1,8 +1,27 @@
 import { Box } from "@mui/material";
-
-const Messsages = () => {
+interface IPros {
+  preViewImage: boolean;
+}
+const Messsages = (pros: IPros) => {
+  const { preViewImage } = pros;
   return (
-    <Box sx={{ margin: "16px 0", height: "240px", overflow: "auto" }}>
+    <Box
+      sx={{
+        margin: "0",
+        height: `${!preViewImage ? "274px" : "200px"}`,
+        overflow: "auto",
+        "::-webkit-scrollbar": {
+          width: "5px",
+        },
+        "::-webkit-scrollbar-thumb": {
+          backgroundColor: "#4CAF50",
+          borderRadius: "4px",
+        },
+        "::-webkit-scrollbar-track": {
+          backgroundColor: "#f1f1f1",
+        },
+      }}
+    >
       <Box sx={{ display: "flex", margin: "16px" }}>
         <Box
           sx={{

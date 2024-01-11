@@ -14,11 +14,15 @@ import MessageBox from "./chat.input";
 const ChatMessagesForm = (pros: any) => {
   const { data, formatTimeDifference } = pros;
   const [content, setContent] = React.useState<MessageContent>();
-
+  const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
   const handleContent = (messageContent: MessageContent) => {
     messageContent.from = "123";
     messageContent.to = data.user.content;
     setContent(messageContent);
+  };
+
+  const handelPreview = (isPre: boolean) => {
+    setPreviewImage(isPre);
   };
   console.log(">>> check content messages: ", content);
 
@@ -100,8 +104,11 @@ const ChatMessagesForm = (pros: any) => {
             </IconButton>
           </ListItemButton>
         )}
-        <Messsages />
-        <MessageBox handleContent={handleContent} />
+        <Messsages preViewImage={preViewImage} />
+        <MessageBox
+          handleContent={handleContent}
+          handelPreview={handelPreview}
+        />
       </Box>
     </Box>
   );
