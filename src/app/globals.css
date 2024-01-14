@@ -2,10 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-.drawer-open {
-  overflow: auto !important;
-  padding-right: 0 !important;
-}
+
 /*
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -37,4 +34,12 @@ html,
 body {
   padding: 0;
   margin: 0;
+  height: 100vh;
+}
+.drawer-open {
+  overflow: auto !important;
+  padding-right: 0 !important;
+}
+.drawer-open__header{
+  padding: 0 64px !important;
 }

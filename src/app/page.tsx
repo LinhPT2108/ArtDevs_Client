@@ -6,8 +6,9 @@ import RightPost from "@/components/left-menu/app.right.menu";
 import ContactMenu from "@/components/left-menu/app.contact";
 import Post from "@/components/posts/post.main";
 import { Box, CssBaseline, Drawer, Grid } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import { styled } from "@mui/material/styles";
+import OptionChat from "@/components/chat/option/chat.option";
 
 const drawerWidth = 200;
 
@@ -35,6 +36,7 @@ export default function Home() {
   const [post, setPost] = React.useState<MessageExample[]>([]);
   const [value, setValue] = React.useState<number>(0);
   const [openContact, setOpenContact] = React.useState<boolean>(true);
+  const [pageUrl, setPageUrl] = React.useState<string>("home");
   const handlePost = (message: MessageExample[]) => {
     setPost(message);
   };
@@ -220,6 +222,8 @@ export default function Home() {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
     handlePost(messageExamples);
   }, [value]);
+  console.log(">check url : ", pageUrl);
+
   return (
     <>
       <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
@@ -230,6 +234,7 @@ export default function Home() {
               tabValue={value}
               handleChangeTab={handleChange}
               openContact={openContact}
+              pageUrl={pageUrl}
             />
           </Grid>
         </Grid>
@@ -312,7 +317,11 @@ export default function Home() {
           anchor="right"
           open={openContact}
         >
-          <ContactMenu openContact={openContact} />
+          {pageUrl == "home" ? (
+            <ContactMenu openContact={openContact} pageUrl={pageUrl} />
+          ) : (
+            <OptionChat />
+          )}
         </Drawer>
       </Box>
       <Box sx={{ flexGrow: 1, marginTop: "0px" }}>

@@ -19,22 +19,28 @@ interface IUser {
 }
 interface IPros {
   openContact: boolean;
+  pageUrl: string;
+  getUser?: (user: IUser) => void;
 }
 
 type Anchor = "top" | "left" | "bottom" | "right";
 
 export const openDrawer = () => {
   const body = document.body;
+  const header = document.querySelector("header") as HTMLElement | null;
   body.classList.add("drawer-open");
+  header && header.classList.add("drawer-open__header");
 };
 
 export const closeDrawer = () => {
   const body = document.body;
+  const header = document.querySelector("header") as HTMLElement | null;
   body.classList.remove("drawer-open");
+  header && header.classList.remove("drawer-open__header");
 };
 
 const ContactMenu = (pros: IPros) => {
-  const { openContact } = pros;
+  const { openContact, pageUrl, getUser } = pros;
   const rightMenu = [];
   const info: IUser[] = [
     {
@@ -218,6 +224,7 @@ const ContactMenu = (pros: IPros) => {
       return `${seconds} giây trước`;
     }
   }
+
   const [openMessages, setOpenMessages] = React.useState<boolean>(false);
   const [state, setState] = React.useState({
     top: false,
@@ -225,26 +232,23 @@ const ContactMenu = (pros: IPros) => {
     bottom: false,
     right: false,
   });
-  const [user, setUser] = React.useState<IUser>();
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean, item: IUser) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event.type === "keydown" &&
-        ((event as React.KeyboardEvent).key === "Tab" ||
-          (event as React.KeyboardEvent).key === "Shift")
-      ) {
-        return;
-      }
-      {
-        anchor == "right" && !open && setOpenMessages(open);
-      }
-      {
-        open ? openDrawer() : closeDrawer();
-      }
-      setUser(item);
-      setState({ ...state, [anchor]: open });
-    };
+  const [user, setUser] = React.useState<IUser | undefined>();
+  const toggleDrawer = (
+    anchor: Anchor,
+    open: boolean,
+    item: IUser | undefined
+  ) => {
+    {
+      anchor == "right" && !open && setOpenMessages(open);
+    }
+    {
+      open ? openDrawer() : closeDrawer();
+    }
+    setUser(item);
+    console.log(">>> check user:P ", item);
+
+    setState({ ...state, [anchor]: open });
+  };
   const list = (anchor: Anchor) => (
     <Box
       sx={{
@@ -257,6 +261,7 @@ const ContactMenu = (pros: IPros) => {
         toggleDrawer={toggleDrawer}
         data={user}
         formatTimeDifference={formatTimeDifference}
+        pageUrl={pageUrl}
       />
     </Box>
   );
@@ -265,14 +270,24 @@ const ContactMenu = (pros: IPros) => {
       sx={{
         width: "100%",
         maxWidth: 320,
-        marginTop: { xs: "0", md: "85px" },
+        marginTop: { xs: "0", md: `${pageUrl == "home" ? "85px" : "0"}` },
         zIndex: "2000",
+        position: "relative",
       }}
     >
       <Box
         sx={{
+          position: `${pageUrl == "home" ? "static" : "fixed"}`,
+          top: { xs: "58px", sm: `${pageUrl == "home" ? "85px" : "70px"}` },
+          left: { xs: "0", sm: `${pageUrl == "home" ? "12px" : "0"}` },
+          width: `${pageUrl == "home" ? "auto" : "240px"}`,
           overflow: "auto",
-          maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },
+          maxHeight: {
+            xs: "calc(100vh - 120px)",
+            md: `${
+              pageUrl == "home" ? "calc(100vh - 85px)" : "calc(100vh - 70px)"
+            }`,
+          },
           "&::-webkit-scrollbar": {
             width: "1px",
           },
@@ -313,8 +328,6 @@ const ContactMenu = (pros: IPros) => {
             >
               {(["right"] as const).map((anchor) => (
                 <React.Fragment key={anchor}>
-                  {/* <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button> */}
-
                   {items?.map((item, index) => {
                     return (
                       <ListItemButton
@@ -324,7 +337,13 @@ const ContactMenu = (pros: IPros) => {
                         }}
                         key={index}
                         selected={selectedIndex === item.user.index}
-                        onClick={toggleDrawer(anchor, true, item)}
+                        onClick={() => {
+                          if (pageUrl === "home") {
+                            toggleDrawer(anchor, true, item);
+                          } else {
+                            getUser && getUser(item);
+                          }
+                        }}
                       >
                         <ListItemIcon
                           sx={{

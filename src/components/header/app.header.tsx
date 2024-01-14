@@ -24,6 +24,7 @@ import AppMenu from "../left-menu/app.menu";
 import ContactMenu from "../left-menu/app.contact";
 import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
+import OptionChat from "../chat/option/chat.option";
 
 const drawerWidth = 210;
 type Anchor = "top" | "left" | "bottom" | "right";
@@ -153,10 +154,16 @@ export default function AppHeader(pros: any) {
       pros.handleDrawerOpen(selectedContact);
     }
   }, []);
+
   const list = (anchor: Anchor) => (
     <Box
       sx={{
-        width: anchor === "top" || anchor === "bottom" ? "auto" : 210,
+        width:
+          anchor === "top" || anchor === "bottom"
+            ? "auto"
+            : anchor === "right" && pros?.pageUrl == "chat"
+            ? 280
+            : 210,
         paddingTop: { xs: "58px", sm: "85px" },
         backgroundColor: "#293145",
       }}
@@ -169,9 +176,15 @@ export default function AppHeader(pros: any) {
       }
     >
       {anchor === "left" ? (
-        <AppMenu />
+        pros.pageUrl == "home" ? (
+          <AppMenu />
+        ) : (
+          <ContactMenu openContact={pros.openContact} pageUrl={"home"} />
+        )
+      ) : pros.pageUrl == "home" ? (
+        <ContactMenu openContact={pros.openContact} pageUrl={"home"} />
       ) : (
-        <ContactMenu openContact={pros.openContact} />
+        <OptionChat />
       )}
     </Box>
   );
@@ -205,7 +218,7 @@ export default function AppHeader(pros: any) {
               marginRight: { xs: "0", sm: "12px" },
             }}
           >
-            <Link href="#">
+            <Link href="/">
               <CardMedia
                 sx={{ width: { xs: "60px", sm: "100px" } }}
                 component="img"
@@ -227,7 +240,7 @@ export default function AppHeader(pros: any) {
             }}
           >
             <Link
-              href="#"
+              href="/"
               sx={{
                 textDecoration: "none",
                 "@media (min-width: 0px)": {

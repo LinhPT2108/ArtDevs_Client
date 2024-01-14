@@ -5,6 +5,11 @@ interface ListItem {
   bgColor: string;
   url: string;
 }
+interface IUser {
+  user: ListItem;
+  active: boolean;
+  timeActive: Date;
+}
 interface MessageExample {
   primary: string;
   secondary: string;

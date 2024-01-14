@@ -4,8 +4,15 @@ import SendIcon from "@mui/icons-material/Send";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Translate } from "@mui/icons-material";
-const MessageBox = (pros: any) => {
-  const { handleContent, handelPreview } = pros;
+
+interface IPros {
+  handleContent: (messageContent: MessageContent) => void;
+  handelPreview: (isPre: boolean) => void;
+  pageUrl: string;
+}
+
+const MessageBox = (pros: IPros) => {
+  const { handleContent, handelPreview, pageUrl } = pros;
   const [formData, setFormData] = React.useState<MessageContent>({
     content: "",
     image: null,
@@ -29,7 +36,7 @@ const MessageBox = (pros: any) => {
 
     const selected = fileInput.files;
 
-    if (selected || (selected == undefined && selectedFiles != undefined)) {
+    if (selected || (selected == undefined && selectedFiles.length > 0)) {
       const newSelectedFiles = Array.from(
         selected == null ? selectedFiles : selected
       );
@@ -91,7 +98,10 @@ const MessageBox = (pros: any) => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        borderTop: "1px solid gray",
+        borderTop: "1px solid #80808026",
+        "& form": {
+          width: `${pageUrl === "home" ? "auto" : "100%"}`,
+        },
       }}
     >
       {previewURLs.length > 0 && (
@@ -127,7 +137,7 @@ const MessageBox = (pros: any) => {
       <form onSubmit={handleClickSendMess}>
         <Box
           sx={{
-            width: "fit-content",
+            width: `${pageUrl === "home" ? "fit-content" : "100%"}`,
             height: "40px",
             display: "flex",
             alignItems: "center",
@@ -195,7 +205,7 @@ const MessageBox = (pros: any) => {
             name="content"
             value={formData.content}
             sx={{
-              width: "200px",
+              width: `${pageUrl === "home" ? "200px" : "100%"}`,
               height: "100%",
               backgroundColor: "transparent",
               outline: "none",
@@ -207,6 +217,7 @@ const MessageBox = (pros: any) => {
               },
               "&::before": {
                 border: "none",
+
                 display: "none",
               },
             }}
@@ -214,7 +225,6 @@ const MessageBox = (pros: any) => {
           <Button
             type="submit"
             id="sendButton"
-            // onClick={handleClickSendMess}
             sx={{
               width: "fit-content",
               height: "100%",

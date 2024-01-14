@@ -11,13 +11,26 @@ import ClearIcon from "@mui/icons-material/Clear";
 import Messsages from "./chat.messages";
 import MessageBox from "./chat.input";
 
-const ChatMessagesForm = (pros: any) => {
-  const { data, formatTimeDifference } = pros;
+type Anchor = "top" | "left" | "bottom" | "right";
+
+interface IPros {
+  data?: IUser;
+  formatTimeDifference: (startTime: Date, endTime: Date) => string;
+  toggleDrawer?: (
+    anchor: Anchor,
+    open: boolean,
+    item: IUser | undefined
+  ) => void;
+  pageUrl: string;
+}
+
+const ChatMessagesForm = (pros: IPros) => {
+  const { data, formatTimeDifference, toggleDrawer, pageUrl } = pros;
   const [content, setContent] = React.useState<MessageContent>();
   const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
   const handleContent = (messageContent: MessageContent) => {
     messageContent.from = "123";
-    messageContent.to = data.user.content;
+    messageContent.to = data ? data.user.content : "";
     setContent(messageContent);
   };
 
@@ -30,14 +43,15 @@ const ChatMessagesForm = (pros: any) => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 320,
-        height: 400,
+        maxWidth: `${pageUrl == "home" ? 320 : "auto"}`,
+        height: `${pageUrl == "home" ? 400 : "86vh"}`,
         backgroundColor: "#fff",
       }}
     >
       <Box
         sx={{
-          overflow: "auto",
+          height: "100%",
+          // overflow: "auto",
           "&::-webkit-scrollbar": {
             width: "1px",
           },
@@ -48,7 +62,7 @@ const ChatMessagesForm = (pros: any) => {
             sx={{
               padding: { xs: "6px" },
               margin: " 0",
-              borderBottom: "1px solid gray",
+              borderBottom: "1px solid #80808026",
             }}
           >
             <ListItemIcon
@@ -95,19 +109,22 @@ const ChatMessagesForm = (pros: any) => {
                     )}`
               }`}
             />
-            <IconButton
-              aria-label="delete"
-              size="large"
-              onClick={pros.toggleDrawer("right", false)}
-            >
-              <ClearIcon />
-            </IconButton>
+            {toggleDrawer && (
+              <IconButton
+                aria-label="delete"
+                size="large"
+                onClick={() => toggleDrawer("right", false, undefined)}
+              >
+                <ClearIcon />
+              </IconButton>
+            )}
           </ListItemButton>
         )}
-        <Messsages preViewImage={preViewImage} />
+        <Messsages preViewImage={preViewImage} pageUrl={pageUrl} />
         <MessageBox
           handleContent={handleContent}
           handelPreview={handelPreview}
+          pageUrl={pageUrl}
         />
       </Box>
     </Box>

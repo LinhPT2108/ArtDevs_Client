@@ -56,7 +56,8 @@ const Post = (pros: IPros) => {
         sx={{
           display: "flex",
           justifyContent: "center",
-          minHeight: "100px",
+          // minHeight: "100px",
+          height: "86vh",
           alignItems: "center",
         }}
       >

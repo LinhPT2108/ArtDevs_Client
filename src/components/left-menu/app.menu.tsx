@@ -11,6 +11,7 @@ import FeedIcon from "@mui/icons-material/Feed";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import SmsIcon from "@mui/icons-material/Sms";
 import Link from "next/link";
 
 const AppMenu = () => {
@@ -49,9 +50,9 @@ const AppMenu = () => {
     {
       index: 4,
       content: "Hộp thư điện tử",
-      icon: <FeedIcon />,
+      icon: <SmsIcon />,
       bgColor: "#263797",
-      url: "/hop-thu-dien-tu",
+      url: "/chat",
     },
     {
       index: 5,

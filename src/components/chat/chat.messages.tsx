@@ -1,14 +1,23 @@
 import { Box } from "@mui/material";
 interface IPros {
   preViewImage: boolean;
+  pageUrl: string;
 }
 const Messsages = (pros: IPros) => {
-  const { preViewImage } = pros;
+  const { preViewImage, pageUrl } = pros;
   return (
     <Box
       sx={{
         margin: "0",
-        height: `${!preViewImage ? "274px" : "200px"}`,
+        height: `${
+          pageUrl === "home"
+            ? !preViewImage
+              ? "274px"
+              : "200px"
+            : !preViewImage
+            ? "88%"
+            : "79%"
+        }`,
         overflow: "auto",
         "::-webkit-scrollbar": {
           width: "5px",
