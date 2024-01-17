@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /*
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -36,10 +35,13 @@ body {
   margin: 0;
   height: 100vh;
 }
+body {
+  background-color: #eff2f5;
+}
 .drawer-open {
   overflow: auto !important;
   padding-right: 0 !important;
 }
-.drawer-open__header{
+.drawer-open__header {
   padding: 0 64px !important;
 }

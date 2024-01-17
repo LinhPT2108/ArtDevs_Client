@@ -9,6 +9,7 @@ import { Box, CssBaseline, Drawer, Grid } from "@mui/material";
 import React from "react";
 import { styled } from "@mui/material/styles";
 import OptionChat from "@/components/chat/option/chat.option";
+import SignUp from "@/components/sign/sing.up";
 
 const drawerWidth = 200;
 
@@ -218,130 +219,132 @@ export default function Home() {
   ];
 
   const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
-    handlePost(messageExamples);
-  }, [value]);
+  // React.useEffect(() => {
+  //   (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
+  //   handlePost(messageExamples);
+  // }, [value]);
   console.log(">check url : ", pageUrl);
 
   return (
-    <>
-      <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
-        <Grid container spacing={0} columns={16}>
-          <Grid item xs={16}>
-            <AppHeader
-              handleDrawerOpen={handleDrawerOpen}
-              tabValue={value}
-              handleChangeTab={handleChange}
-              openContact={openContact}
-              pageUrl={pageUrl}
-            />
-          </Grid>
-        </Grid>
-      </Box>
-      <Box
-        ref={ref}
-        sx={{
-          display: "flex",
-          flexGrow: 1,
-          marginTop: "0px",
-          backgroundColor: "#9b9da0",
-          paddingTop: "85px",
-        }}
-      >
-        <CssBaseline />
-        <Main
-          open={openContact}
-          sx={{
-            paddingTop: "0",
-            paddingLeft: { xs: 0, sm: "24px", md: "48px", lg: "24px" },
-            paddingRight: { xs: 0, sm: "24px", md: "12px", lg: "24px" },
-          }}
-        >
-          <Grid container spacing={0} columns={16}>
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              sx={{
-                display: { xs: "none", sm: "block" },
-                padding: "0px 12px 0px 12px",
-                position: "relative",
-              }}
-            >
-              <AppMenu />
-            </Grid>
+    <SignUp />
+    // <FacebookLogin />
+    // <>
+    //   <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
+    //     <Grid container spacing={0} columns={16}>
+    //       <Grid item xs={16}>
+    //         <AppHeader
+    //           handleDrawerOpen={handleDrawerOpen}
+    //           tabValue={value}
+    //           handleChangeTab={handleChange}
+    //           openContact={openContact}
+    //           pageUrl={pageUrl}
+    //         />
+    //       </Grid>
+    //     </Grid>
+    //   </Box>
+    //   <Box
+    //     ref={ref}
+    //     sx={{
+    //       display: "flex",
+    //       flexGrow: 1,
+    //       marginTop: "0px",
+    //       backgroundColor: "#9b9da0",
+    //       paddingTop: "85px",
+    //     }}
+    //   >
+    //     <CssBaseline />
+    //     <Main
+    //       open={openContact}
+    //       sx={{
+    //         paddingTop: "0",
+    //         paddingLeft: { xs: 0, sm: "24px", md: "48px", lg: "24px" },
+    //         paddingRight: { xs: 0, sm: "24px", md: "12px", lg: "24px" },
+    //       }}
+    //     >
+    //       <Grid container spacing={0} columns={16}>
+    //         <Grid
+    //           item
+    //           xs={12}
+    //           sm={6}
+    //           md={4}
+    //           sx={{
+    //             display: { xs: "none", sm: "block" },
+    //             padding: "0px 12px 0px 12px",
+    //             position: "relative",
+    //           }}
+    //         >
+    //           <AppMenu />
+    //         </Grid>
 
-            <Grid
-              item
-              xs={16}
-              sm={10}
-              md={8}
-              lg={8}
-              sx={{
-                marginTop: "12px",
-                padding: { xs: "0 24px", md: "0 0 0 24px" },
-              }}
-            >
-              <Post messages={post} />
-            </Grid>
+    //         <Grid
+    //           item
+    //           xs={16}
+    //           sm={10}
+    //           md={8}
+    //           lg={8}
+    //           sx={{
+    //             marginTop: "12px",
+    //             padding: { xs: "0 24px", md: "0 0 0 24px" },
+    //           }}
+    //         >
+    //           <Post messages={post} />
+    //         </Grid>
 
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={4}
-              sx={{
-                display: { xs: "none", md: "flex" },
-                padding: "0px 12px 0px 12px",
-                justifyContent: "flex-start",
-              }}
-            >
-              <RightPost />
-            </Grid>
-          </Grid>
-        </Main>
-        <Drawer
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              backgroundColor: "#293145",
-            },
-            zIndex: `${openContact ? "1201" : "999"}`,
-          }}
-          variant="persistent"
-          anchor="right"
-          open={openContact}
-        >
-          {pageUrl == "home" ? (
-            <ContactMenu openContact={openContact} pageUrl={pageUrl} />
-          ) : (
-            <OptionChat />
-          )}
-        </Drawer>
-      </Box>
-      <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
-        <Grid container spacing={0} columns={16}>
-          <Grid
-            item
-            xs={16}
-            sx={{
-              display: { xs: "block", md: "none" },
-            }}
-          >
-            <BottomNavbar
-              pros={handlePost}
-              tabValue={value}
-              handleChangeTab={handleChange}
-              sx={{ zIndex: 1 }}
-            />
-          </Grid>
-        </Grid>
-      </Box>
-    </>
+    //         <Grid
+    //           item
+    //           xs={12}
+    //           sm={6}
+    //           md={4}
+    //           lg={4}
+    //           sx={{
+    //             display: { xs: "none", md: "flex" },
+    //             padding: "0px 12px 0px 12px",
+    //             justifyContent: "flex-start",
+    //           }}
+    //         >
+    //           <RightPost />
+    //         </Grid>
+    //       </Grid>
+    //     </Main>
+    //     <Drawer
+    //       sx={{
+    //         width: drawerWidth,
+    //         flexShrink: 0,
+    //         "& .MuiDrawer-paper": {
+    //           width: drawerWidth,
+    //           backgroundColor: "#293145",
+    //         },
+    //         zIndex: `${openContact ? "1201" : "999"}`,
+    //       }}
+    //       variant="persistent"
+    //       anchor="right"
+    //       open={openContact}
+    //     >
+    //       {pageUrl == "home" ? (
+    //         <ContactMenu openContact={openContact} pageUrl={pageUrl} />
+    //       ) : (
+    //         <OptionChat />
+    //       )}
+    //     </Drawer>
+    //   </Box>
+    //   <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
+    //     <Grid container spacing={0} columns={16}>
+    //       <Grid
+    //         item
+    //         xs={16}
+    //         sx={{
+    //           display: { xs: "block", md: "none" },
+    //         }}
+    //       >
+    //         <BottomNavbar
+    //           pros={handlePost}
+    //           tabValue={value}
+    //           handleChangeTab={handleChange}
+    //           sx={{ zIndex: 1 }}
+    //         />
+    //       </Grid>
+    //     </Grid>
+    //   </Box>
+    // </>
   );
 }
