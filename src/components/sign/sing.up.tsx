@@ -1,15 +1,13 @@
 import React, { useCallback } from "react";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import InforSign from "./sing-up/infor.sign";
-import RoleSign from "./sing-up/role.sign";
-import KnowlegdeSign from "./sing-up/knowledge.sign";
+import InforSign from "./sign-up/infor.sign";
+import RoleSign from "./sign-up/role.sign";
+import KnowlegdeSign from "./sign-up/knowledge.sign";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
 

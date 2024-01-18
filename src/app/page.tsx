@@ -10,6 +10,8 @@ import React from "react";
 import { styled } from "@mui/material/styles";
 import OptionChat from "@/components/chat/option/chat.option";
 import SignUp from "@/components/sign/sing.up";
+import SignIn from "@/components/sign/sign.in";
+import About from "@/components/about/app.about";
 
 const drawerWidth = 200;
 
@@ -226,8 +228,9 @@ export default function Home() {
   console.log(">check url : ", pageUrl);
 
   return (
-    <SignUp />
-    // <FacebookLogin />
+    // <SignIn />
+    // <SignUp />
+    <About />
     // <>
     //   <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
     //     <Grid container spacing={0} columns={16}>
