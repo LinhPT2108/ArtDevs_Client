@@ -35,3 +35,7 @@ interface MessageContent{
   from: String,
   to: String
 }
+interface IColor {
+  bgColor: string;
+  textColor: string;
+}
