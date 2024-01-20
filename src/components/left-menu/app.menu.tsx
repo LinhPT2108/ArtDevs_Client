@@ -103,7 +103,7 @@ const AppMenu = () => {
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/dang-xuat",
+      url: "/api/auth/signout",
     },
   ];
   leftMenu.push(info);

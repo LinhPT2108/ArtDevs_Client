@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -11,6 +12,7 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SearchComponent from "./header.search";
 import {
+  Avatar,
   CardMedia,
   CssBaseline,
   Drawer,
@@ -25,6 +27,7 @@ import ContactMenu from "../left-menu/app.contact";
 import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import OptionChat from "../chat/option/chat.option";
+import { useSession } from "next-auth/react";
 
 const drawerWidth = 210;
 type Anchor = "top" | "left" | "bottom" | "right";
@@ -47,7 +50,20 @@ const AppBar = styled(MuiAppBar, {
     marginRight: drawerWidth,
   }),
 }));
-export default function AppHeader(pros: any) {
+
+interface IPros {
+  handleDrawerOpen: (openContact: boolean) => void;
+  tabValue: number;
+  handleChangeTab: (newValue: number) => void;
+  openContact: boolean;
+  pageUrl: string;
+  user: User;
+}
+export default function AppHeader(pros: IPros) {
+  const { data: session, status } = useSession();
+  const { user } = pros;
+  console.log(">>> check user: ", user);
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
     React.useState<null | HTMLElement>(null);
@@ -403,16 +419,39 @@ export default function AppHeader(pros: any) {
                 padding: { xs: "8px", sm: "12px" },
               }}
             >
-              <AccountCircle
-                sx={{
-                  "@media (min-width: 0px)": {
-                    fontSize: "16px",
-                  },
-                  "@media (min-width: 400px)": {
-                    fontSize: "24px",
-                  },
-                }}
-              />
+              {status === "loading" ? (
+                <AccountCircle
+                  sx={{
+                    "@media (min-width: 0px)": {
+                      fontSize: "16px",
+                    },
+                    "@media (min-width: 400px)": {
+                      fontSize: "40px",
+                    },
+                  }}
+                />
+              ) : (
+                ""
+              )}
+              {user ? (
+                session?.user?.image && (
+                  <Avatar
+                    alt={session?.user?.name || ""}
+                    src={session?.user?.image}
+                  />
+                )
+              ) : (
+                <AccountCircle
+                  sx={{
+                    "@media (min-width: 0px)": {
+                      fontSize: "16px",
+                    },
+                    "@media (min-width: 400px)": {
+                      fontSize: "24px",
+                    },
+                  }}
+                />
+              )}
             </IconButton>
             {(["left"] as const).map((anchor) => (
               <React.Fragment key={anchor + "123"}>

@@ -1,3 +1,4 @@
+"use client";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
@@ -11,7 +12,7 @@ import SliderAbout from "./about.slide";
 import ShareAbout from "./about.share";
 import LanguageAbout from "./about.language";
 import FooterAbout from "./about.footer";
-import BgUtils from "../utils/bg.utils";
+import { signIn } from "next-auth/react";
 
 const About = () => {
   return (
@@ -108,8 +109,8 @@ const About = () => {
                 },
               }}
             >
-              <Button>
-                <Link href="/sign-in">Đăng nhập</Link>
+              <Button onClick={() => signIn()}>
+                <Link href="#">Đăng nhập</Link>
               </Button>
               <Button>
                 <Link href="/sign-up">Đăng ký</Link>

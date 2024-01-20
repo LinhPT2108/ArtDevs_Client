@@ -1,3 +1,5 @@
+import { DefaultSession } from "next-auth";
+
 interface ListItem {
   index: number;
   content: string;
@@ -20,22 +22,28 @@ interface AccountExample {
   name: string;
   manualFriend: string;
 }
-interface Post{
+interface Post {
   avatar: SvgIconProps;
-  name:string;
-  timeCreate:Date;
-  content:string;
-  image:string[];
+  name: string;
+  timeCreate: Date;
+  content: string;
+  image: string[];
   totalLike: number;
   totalComment: number;
 }
-interface MessageContent{
-  content: String,
-  image?: any,
-  from: String,
-  to: String
+interface MessageContent {
+  content: String;
+  image?: any;
+  from: String;
+  to: String;
 }
 interface IColor {
   bgColor: string;
   textColor: string;
+}
+
+interface User {
+  name: string;
+  email: string;
+  image: string;
 }

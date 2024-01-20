@@ -1,5 +1,4 @@
 "use client";
-import * as React from "react";
 import Box from "@mui/material/Box";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
@@ -7,11 +6,11 @@ import RestoreIcon from "@mui/icons-material/Restore";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import Paper from "@mui/material/Paper";
+import { useEffect, useState } from "react";
 
 const BottomNavbar = (pros: any) => {
-  const [value, setValue] = React.useState<number>(pros?.tabValue);
-
-  React.useEffect(() => {
+  const [value, setValue] = useState<number>(pros?.tabValue);
+  useEffect(() => {
     setValue(pros?.tabValue);
   }, [pros?.tabValue]);
 
