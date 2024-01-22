@@ -4,6 +4,7 @@ import About from "@/components/about/app.about";
 import NextWrapper from "@/lib/next.wrapper";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { User } from "@/type/items";
 
 export default async function Home() {
   const session: User | null = await getServerSession(authOptions);

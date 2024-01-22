@@ -12,12 +12,16 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user, account, profile, trigger }) {
       if (trigger === "signIn" && account?.provider === "github") {
-        token.user._id;
+        // token.user.isVerify = false;
+        token.user.address = "Cần Thơ";
+        console.log(">>>. check voo khong");
       }
       return token;
     },
     async session({ session, user, token }) {
-      session.user.address = token.user.address;
+      if (token) {
+        session.user.address = token.user.address;
+      }
       return session;
     },
   },
