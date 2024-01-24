@@ -1,26 +1,85 @@
+import { sendRequest } from "@/components/utils/api";
 import { AuthOptions } from "next-auth";
 import NextAuth from "next-auth/next";
 import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import FacebookProvider from "next-auth/providers/facebook";
+import CredentialsProvider from "next-auth/providers/credentials";
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        username: { label: "Username", type: "text", placeholder: "..." },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials, req) {
+        const res = await sendRequest<IBackendRes<UserLogin>>({
+          url: "https://artdevs-server.azurewebsites.net/api/login",
+          method: "POST",
+          body: {
+            email: credentials?.username,
+            password: credentials?.password,
+          },
+        });
+        if (res?.userdto) {
+          return res as any;
+        } else {
+          //@ts-ignore
+          throw new Error(res?.error as string);
+        }
+      },
+    }),
     GithubProvider({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID!,
+      clientSecret: process.env.GOOGLE_SECRET!,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_ID!,
+      clientSecret: process.env.FACEBOOK_SECRET!,
+    }),
   ],
   callbacks: {
     async jwt({ token, user, account, profile, trigger }) {
-      if (trigger === "signIn" && account?.provider === "github") {
-        // token.user.isVerify = false;
-        token.user.address = "Cần Thơ";
-        console.log(">>>. check voo khong");
+      if (trigger === "signIn" && account?.provider !== "credentials") {
+        const res = await sendRequest<IBackendRes<UserLogin>>({
+          url: "https://artdevs-server.azurewebsites.net/api/user-social",
+          method: "GET",
+          queryParams: {
+            email: `${profile?.email}`,
+            provider: `${account?.provider}`,
+          },
+        });
+
+        if (res.userdto) {
+          if (token.picture) {
+            res.userdto.profilePicUrl = token.picture;
+          }
+          token.access_token = res.token;
+          token.refresh_token = res.refeshToken;
+          token.user = res.userdto;
+        }
+      }
+      if (trigger === "signIn" && account?.provider === "credentials") {
+        //@ts-ignore
+        token.access_token = user.token;
+        //@ts-ignore
+        token.refresh_token = user.refeshToken;
+        //@ts-ignore
+        token.user = user.userdto;
       }
       return token;
     },
     async session({ session, user, token }) {
       if (token) {
-        session.user.address = token.user.address;
+        session.access_token = token.access_token;
+        session.refresh_token = token.refresh_token;
+        session.user = token.user;
       }
       return session;
     },

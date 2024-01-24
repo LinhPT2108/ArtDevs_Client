@@ -109,8 +109,8 @@ const About = () => {
                 },
               }}
             >
-              <Button onClick={() => signIn()}>
-                <Link href="#">Đăng nhập</Link>
+              <Button>
+                <Link href="/login">Đăng nhập</Link>
               </Button>
               <Button>
                 <Link href="/sign-up">Đăng ký</Link>

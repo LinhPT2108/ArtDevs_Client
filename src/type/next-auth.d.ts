@@ -26,21 +26,21 @@
 //   }
 // }
 import NextAuth from "next-auth";
-interface IUsers {
-  //   _id: string;
-  //   username: string;
-  //   email: string;
-  //   isVerify: boolean;
-  //   type: string;
-  //   role: string;
-  address: string;
-  //   image: string;
-}
+// interface IUsers {
+//   //   _id: string;
+//   //   username: string;
+//   //   email: string;
+//   //   isVerify: boolean;
+//   //   type: string;
+//   //   role: string;
+//   // address: string;
+//   //   image: string;
+// }
 declare module "next-auth/jwt" {
   interface JWT {
     access_token: string;
     refresh_token: string;
-    user: IUsers;
+    user: UserLogin;
   }
 }
 
@@ -48,6 +48,6 @@ declare module "next-auth" {
   interface Session {
     access_token: string;
     refresh_token: string;
-    user: IUsers;
+    user: UserLogin;
   }
 }

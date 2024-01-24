@@ -61,8 +61,7 @@ interface IPros {
 }
 export default function AppHeader(pros: IPros) {
   const { data: session, status } = useSession();
-  const { user } = pros;
-  console.log(">>> check user: ", user);
+  console.log(">>> check user: ", session);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
@@ -419,25 +418,22 @@ export default function AppHeader(pros: IPros) {
                 padding: { xs: "8px", sm: "12px" },
               }}
             >
-              {status === "loading" ? (
-                <AccountCircle
-                  sx={{
-                    "@media (min-width: 0px)": {
-                      fontSize: "16px",
-                    },
-                    "@media (min-width: 400px)": {
-                      fontSize: "40px",
-                    },
-                  }}
-                />
-              ) : (
-                ""
-              )}
-              {user ? (
-                session?.user?.image && (
+              {session?.user ? (
+                session?.user?.profilePicUrl ? (
                   <Avatar
-                    alt={session?.user?.name || ""}
-                    src={session?.user?.image}
+                    alt={session?.user?.firstName || ""}
+                    src={session?.user?.profilePicUrl}
+                  />
+                ) : (
+                  <AccountCircle
+                    sx={{
+                      "@media (min-width: 0px)": {
+                        fontSize: "16px",
+                      },
+                      "@media (min-width: 400px)": {
+                        fontSize: "24px",
+                      },
+                    }}
                   />
                 )
               ) : (

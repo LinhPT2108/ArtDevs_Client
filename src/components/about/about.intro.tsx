@@ -7,7 +7,7 @@ import BgUtils from "../utils/bg.utils";
 const IntroAbout = () => {
   return (
     <Box sx={{ flexGrow: 1, position: "relative" }}>
-      <BgUtils />
+      <BgUtils color="#ffffff" />
       <Grid
         container
         spacing={0}

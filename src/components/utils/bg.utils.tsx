@@ -4,8 +4,11 @@ import Particles from "react-particles";
 //import { loadFull } from "tsparticles"; // if you are going to use `loadFull`, install the "tsparticles" package too.
 import { loadSlim } from "tsparticles-slim";
 import { Box } from "@mui/material";
-
-const BgUtils = () => {
+interface IColor {
+  color: string;
+}
+const BgUtils = (pros: IColor) => {
+  const { color } = pros;
   const particlesInit = useCallback(async (engine: Engine) => {
     console.log(engine);
     await loadSlim(engine);
@@ -63,10 +66,10 @@ const BgUtils = () => {
           },
           particles: {
             color: {
-              value: "#ffffff",
+              value: `${color}`,
             },
             links: {
-              color: "#ffffff",
+              color: `${color}`,
               distance: 150,
               enable: true,
               opacity: 0.5,
@@ -79,15 +82,15 @@ const BgUtils = () => {
                 default: "bounce",
               },
               random: false,
-              speed: 6,
+              speed: 4,
               straight: false,
             },
             number: {
               density: {
                 enable: true,
-                area: 800,
+                area: 1000,
               },
-              value: 80,
+              value: 50,
             },
             opacity: {
               value: 0.5,

@@ -1,6 +1,6 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import {
-  Container,
   Typography,
   TextField,
   Button,
@@ -8,13 +8,105 @@ import {
   Box,
   Grid,
   Divider,
+  InputAdornment,
+  IconButton,
+  Alert,
 } from "@mui/material";
-import FacebookIcon from "@mui/icons-material/Facebook";
 import GoogleIcon from "@mui/icons-material/Google";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
+import { signIn } from "next-auth/react";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import BgUtils from "../utils/bg.utils";
+import Snackbar, { SnackbarOrigin } from "@mui/material/Snackbar";
+import Snowfall from "react-snowfall";
+
+interface State extends SnackbarOrigin {
+  open: boolean;
+}
 
 const SignIn = () => {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
+  const [isErrorPassword, setIsErrorPassword] = useState<boolean>(false);
+
+  const [messageErrorEmail, setMessageErrorEmail] = useState<string>("");
+  const [messageErrorPassword, setMessageErrorPassword] = useState<string>("");
+
+  const [state, setState] = React.useState<State>({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+  });
+  const { vertical, horizontal, open } = state;
+
+  const handleChangeEmail = (value: string) => {
+    setIsErrorEmail(false);
+    setMessageErrorEmail("");
+    setEmail(value);
+  };
+  const handleChangePassword = (value: string) => {
+    setIsErrorPassword(false);
+    setMessageErrorPassword("");
+    setPassword(value);
+  };
+
+  const handleSubmit = async () => {
+    setIsErrorEmail(false);
+    setIsErrorPassword(false);
+    setMessageErrorEmail("");
+    setMessageErrorPassword("");
+    if (!email) {
+      setIsErrorEmail(true);
+      setMessageErrorEmail("Email không được để trống !");
+      return;
+    }
+    if (!password) {
+      setIsErrorPassword(true);
+      setMessageErrorPassword("Mật khẩu không được để trống !");
+      return;
+    }
+    const res = await signIn("credentials", {
+      username: email,
+      password: password,
+      redirect: false,
+    });
+    if (!res?.error) {
+      router.push("/");
+    } else {
+      setIsErrorEmail(true);
+      setIsErrorPassword(true);
+      handleClick({ vertical: "top", horizontal: "center" })(
+        {} as React.MouseEvent
+      );
+    }
+  };
+
+  const handleClick =
+    (newState: SnackbarOrigin) => (event: React.MouseEvent) => {
+      setState({ ...newState, open: true });
+    };
+
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+  const [snowfallImages, setSnowfallImages] = useState<HTMLImageElement[]>([]);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      const image = new Image();
+      image.src = "/snowflake.png";
+      await image.decode();
+      setSnowfallImages([image]);
+    };
+
+    loadImage();
+  }, []);
   return (
     <Box
       sx={{
@@ -24,6 +116,14 @@ const SignIn = () => {
         display: "flex",
       }}
     >
+      <Snowfall
+        snowflakeCount={200}
+        speed={[0.5, 2.5]}
+        wind={[0, 3]}
+        radius={[1, 15]}
+        rotationSpeed={[-1, 1]}
+        images={snowfallImages}
+      />
       <Box
         sx={{
           width: { xs: "600px", md: "980px" },
@@ -53,11 +153,17 @@ const SignIn = () => {
                 sx={{
                   marginTop: { xs: 0, md: "32px" },
                   marginBottom: { xs: "6px", sm: "16px" },
-                  color: "#0766FF",
                   fontWeight: 700,
+                  "& a": {
+                    color: "#0766FF",
+                    textDecoration: "none",
+                    "&:hover": {
+                      color: "#0045b5",
+                    },
+                  },
                 }}
               >
-                Art Devs
+                <Link href="/">Art Devs</Link>
               </Typography>
               <Typography
                 variant="body1"
@@ -70,6 +176,8 @@ const SignIn = () => {
                 Giúp bạn kết nối và chia sẻ kiến thức, kinh nghiệm với mọi người
                 trong quá trình học tập và làm việc.
               </Typography>
+
+              {/* <BgUtils color="#e0e0e0" /> */}
             </Box>
           </Grid>
           <Grid xs={16} md={7} item sx={{ paddingX: "16px" }}>
@@ -95,8 +203,15 @@ const SignIn = () => {
               >
                 Đăng nhập
               </Box>
-              <form>
+              <Box
+                sx={{
+                  "& input:-internal-autofill-selected": {
+                    WebkitBoxShadow: "0 0 0 1000px #fff inset",
+                  },
+                }}
+              >
                 <TextField
+                  onChange={(e) => handleChangeEmail(e.target.value)}
                   variant="outlined"
                   margin="normal"
                   required
@@ -104,32 +219,58 @@ const SignIn = () => {
                   id="email"
                   label="Email hoặc số điện thoại"
                   name="email"
-                  autoComplete="email"
+                  autoComplete="new-email"
                   autoFocus
+                  error={isErrorEmail}
+                  helperText={messageErrorEmail}
                   sx={{ marginBottom: "0" }}
                 />
+
                 <TextField
+                  onChange={(e) => handleChangePassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSubmit();
+                    }
+                  }}
                   variant="outlined"
                   margin="normal"
                   required
                   fullWidth
                   name="password"
                   label="Mật khẩu"
-                  type="password"
+                  type={!showPassword ? "password" : "text"}
                   id="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  error={isErrorPassword}
+                  helperText={messageErrorPassword}
                   sx={{ mb: 3 }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                 />
+
                 <Button
-                  type="submit"
+                  type="button"
                   fullWidth
                   variant="contained"
                   color="primary"
                   sx={{ fontSize: "20px" }}
+                  onClick={handleSubmit}
                 >
                   Đăng nhập
                 </Button>
-              </form>
+              </Box>
               <Link
                 href="#"
                 sx={{
@@ -177,7 +318,7 @@ const SignIn = () => {
                 >
                   <Link
                     sx={{
-                      width: "300px",
+                      width: "305px",
                       backgroundColor: "#3A5793",
                       fontSize: "16px",
                       textDecoration: "none",
@@ -224,7 +365,7 @@ const SignIn = () => {
                 >
                   <Link
                     sx={{
-                      width: "300px",
+                      width: "305px",
                       backgroundColor: "#CC3E2F",
                       fontSize: "16px",
                       textDecoration: "none",
@@ -240,6 +381,7 @@ const SignIn = () => {
                         backgroundColor: "#702118",
                       },
                     }}
+                    onClick={() => signIn("google")}
                   >
                     <GoogleIcon sx={{ fontSize: "32px" }} />
                     <Box
@@ -266,7 +408,7 @@ const SignIn = () => {
                 >
                   <Link
                     sx={{
-                      width: "300px",
+                      width: "305px",
                       backgroundColor: "#59227F",
                       fontSize: "16px",
                       textDecoration: "none",
@@ -282,6 +424,7 @@ const SignIn = () => {
                         backgroundColor: "#301246",
                       },
                     }}
+                    onClick={() => signIn("github")}
                   >
                     <GitHubIcon
                       sx={{
@@ -301,6 +444,22 @@ const SignIn = () => {
                   </Link>
                 </Grid>
               </Grid>
+              <Snackbar
+                open={open}
+                autoHideDuration={6000}
+                onClose={handleClose}
+                anchorOrigin={{ vertical, horizontal }}
+                key={vertical + horizontal}
+              >
+                <Alert
+                  onClose={handleClose}
+                  severity="error"
+                  variant="filled"
+                  sx={{ width: "100%" }}
+                >
+                  Tài khoản hoặc mật khẩu không chính xác
+                </Alert>
+              </Snackbar>
             </Box>
           </Grid>
         </Grid>
