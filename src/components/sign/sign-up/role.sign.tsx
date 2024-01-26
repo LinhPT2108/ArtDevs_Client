@@ -1,21 +1,137 @@
-import { Box, Grid } from "@mui/material";
+import React from "react";
+import {
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  CardActions,
+  Button,
+  Grid,
+} from "@mui/material";
+interface IProps {
+  handleRole: (value: Role) => void;
+}
 
-const RoleSign = () => {
+const CustomRadioInput = (props: IProps) => {
+  const { handleRole } = props;
+  const [selectedValue, setSelectedValue] = React.useState("user");
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value: string = (event.target as HTMLInputElement).value;
+    setSelectedValue(value);
+    if (value === "user") {
+      handleRole({ id: 1, roleName: value });
+    } else {
+      handleRole({ id: 3, roleName: value });
+    }
+  };
+
   return (
-    <Box>
-      <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
+    <FormControl component="fieldset" sx={{ width: "100%" }}>
+      <FormLabel
+        component="div"
+        sx={{
+          fontWeight: 700,
+          fontSize: { xs: 18, sm: 24 },
+          marginBottom: "12px",
+        }}
+      >
         Hãy chọn vai trò của bạn
-      </Box>
-      <Grid columns={2} spacing={2} container>
-        <Grid item xs={2} md={1}>
-          Học viên
-        </Grid>
-        <Grid item xs={2} md={1}>
-          Giảng viên
-        </Grid>
-      </Grid>
-    </Box>
+      </FormLabel>
+      <RadioGroup
+        row
+        aria-label="role-sign"
+        name="role-sign"
+        value={selectedValue}
+        onChange={handleChange}
+        sx={{ width: "100%", justifyContent: "space-evenly" }}
+      >
+        <FormControlLabel
+          value="user"
+          control={<Radio />}
+          sx={{
+            position: "relative",
+            mx: 0,
+            "& .MuiRadio-root": {
+              position: "absolute",
+              top: 0,
+              right: 0,
+            },
+          }}
+          label={
+            <Card sx={{ maxWidth: 440 }}>
+              <CardMedia
+                sx={{ height: 280, width: 440 }}
+                image="/share-it.webp"
+                title="share-it.webp"
+              />
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Học viên
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Description for the first option. Description for the first
+                  option. Description for the first option. Description for the
+                  first option. Description for the first option. Description
+                  for the first option. Description for the first option.
+                  Description for the first option. Description for the first
+                  option. Description for the first option. Description for the
+                  first option.Description for the first option. Description for
+                  the first option.Description for the first option. Description
+                  for the first option.Description for the first option.
+                  Description for the first option.Description for the first
+                  option.
+                </Typography>
+              </CardContent>
+            </Card>
+          }
+        />
+        <FormControlLabel
+          value="mentor"
+          control={<Radio />}
+          sx={{
+            position: "relative",
+            "& .MuiRadio-root": {
+              position: "absolute",
+              top: 0,
+              right: 0,
+            },
+          }}
+          label={
+            <Card sx={{ maxWidth: 440 }}>
+              <CardMedia
+                sx={{ height: 280, width: 440 }}
+                image="/Capture-1.jpg"
+                title="green iguana"
+              />
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  Giảng viên
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Description for the second option. Description for the second
+                  option. Description for the second option. Description for the
+                  second option. Description for the second option. Description
+                  for the second option. Description for the second option.
+                  Description for the second option. Description for the second
+                  option. Description for the second option. Description for the
+                  second option. Description for the second option. Description
+                  for the second option. Description for the second option.
+                  Description for the second option. Description for the second
+                  option.
+                </Typography>
+              </CardContent>
+            </Card>
+          }
+        />
+      </RadioGroup>
+    </FormControl>
   );
 };
 
-export default RoleSign;
+export default CustomRadioInput;

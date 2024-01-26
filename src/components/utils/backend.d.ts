@@ -49,10 +49,33 @@ declare global {
     email: string;
     image: string;
   }
-  interface Skill {
-    language: string;
+  interface UserRegister {
+    userId: string;
+    city: string;
+    district: string;
+    ward: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    middleName: string;
+    isOnline: boolean;
+    password: string;
+    profilePicUrl?: string;
+    provider?: string;
+    username: string;
+    role: Role;
+    dateOfBirth: string;
+    gender: string;
+    demand?: Skill[] | null;
   }
-
+  interface Skill {
+    value: number;
+    languageProgram: string;
+  }
+  interface Role {
+    id: number;
+    roleName: string;
+  }
   interface UserLogin {
     userId: string;
     city: string;
@@ -67,12 +90,11 @@ declare global {
     profilePicUrl?: string;
     provider?: string;
     username: string;
-    role: {
-      id: number;
-      roleName: string;
-    };
-    listDemandOfUser?: Skill[];
-    listSkillOfUser?: Skill[];
+    role: Role;
+    dateOfBirth: string;
+    gender: string;
+    listDemandOfUser?: string[];
+    listSkillOfUser?: string[];
     listMethod?: any;
     userTransition1?: any;
     userTransition2?: any;

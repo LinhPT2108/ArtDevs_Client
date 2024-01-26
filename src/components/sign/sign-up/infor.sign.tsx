@@ -18,17 +18,38 @@ import {
 import { useState } from "react";
 
 interface IPros {
-  onInputChange: (data: string) => void;
+  handleLastName: (data: string) => void;
+  handleMiddleName: (data: string) => void;
+  handleFirstName: (data: string) => void;
+  handleEmail: (data: string) => void;
+  handlePassword: (data: string) => void;
+  handleDateOfBirth: (data: string) => void;
+  handleGender: (data: string) => void;
+  handleCity: (data: string) => void;
+  handleDistrict: (data: string) => void;
+  handleWard: (data: string) => void;
 }
-const InforSign = (onInputChange: IPros) => {
+const InforSign = (props: IPros) => {
+  const {
+    handleLastName,
+    handleMiddleName,
+    handleFirstName,
+    handleEmail,
+    handlePassword,
+    handleDateOfBirth,
+    handleGender,
+    handleCity,
+    handleDistrict,
+    handleWard,
+  } = props;
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-  const [age, setAge] = useState("");
+  const [city, setCity] = useState<string>("");
+  const [district, setDistrict] = useState<string>("");
+  const [ward, setWard] = useState<string>("");
+  const [gender, setGender] = useState<string>("male");
 
-  const handleChange = (value: string) => {
-    setAge(value);
-  };
   return (
     <Box>
       <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
@@ -51,7 +72,7 @@ const InforSign = (onInputChange: IPros) => {
           >
             <Grid item xs={24} md={8}>
               <TextField
-                // onChange={(e) => handleChangeEmail(e.target.value)}
+                onChange={(e) => handleFirstName(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -68,7 +89,7 @@ const InforSign = (onInputChange: IPros) => {
             </Grid>
             <Grid item xs={24} md={8}>
               <TextField
-                // onChange={(e) => handleChangeEmail(e.target.value)}
+                onChange={(e) => handleMiddleName(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 fullWidth
@@ -84,7 +105,7 @@ const InforSign = (onInputChange: IPros) => {
             </Grid>
             <Grid item xs={24} md={8}>
               <TextField
-                // onChange={(e) => handleChangeEmail(e.target.value)}
+                onChange={(e) => handleLastName(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -110,7 +131,7 @@ const InforSign = (onInputChange: IPros) => {
           >
             <Grid item xs={24}>
               <TextField
-                // onChange={(e) => handleChangeEmail(e.target.value)}
+                onChange={(e) => handleEmail(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -136,7 +157,7 @@ const InforSign = (onInputChange: IPros) => {
           >
             <Grid item xs={24} md={12}>
               <TextField
-                // onChange={(e) => handleChangePassword(e.target.value)}
+                onChange={(e) => handlePassword(e.target.value)}
                 // onKeyDown={(e) => {
                 //   if (e.key === "Enter") {
                 //     handleSubmit();
@@ -221,7 +242,7 @@ const InforSign = (onInputChange: IPros) => {
           >
             <Grid item xs={24} md={12} sx={{ paddingTop: "0 !important" }}>
               <TextField
-                // onChange={(e) => handleChangeEmail(e.target.value)}
+                onChange={(e) => handleDateOfBirth(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -254,14 +275,19 @@ const InforSign = (onInputChange: IPros) => {
                   row
                   aria-labelledby="demo-row-radio-buttons-group-label"
                   name="row-radio-buttons-group"
+                  value={gender}
+                  onChange={(e) => {
+                    setGender(e.target.value);
+                    handleGender(e.target.value);
+                  }}
                 >
                   <FormControlLabel
-                    value="female"
+                    value="male"
                     control={<Radio />}
                     label="Nam"
                   />
                   <FormControlLabel
-                    value="male"
+                    value="female"
                     control={<Radio />}
                     label="Nữ"
                   />
@@ -290,13 +316,16 @@ const InforSign = (onInputChange: IPros) => {
                 <Select
                   labelId="demo-simple-select-required-label"
                   id="demo-simple-select-required"
-                  value={age}
+                  value={city}
                   label="Tỉnh/Thành phố *"
-                  onChange={(e) => handleChange(e.target.value)}
+                  onChange={(e) => {
+                    setCity(e.target.value);
+                    handleCity(e.target.value);
+                  }}
                 >
-                  <MenuItem value={10}>Ten</MenuItem>
-                  <MenuItem value={20}>Twenty</MenuItem>
-                  <MenuItem value={30}>Thirty</MenuItem>
+                  <MenuItem value={65}>Cần Thơ</MenuItem>
+                  <MenuItem value={68}>Kiên Giang</MenuItem>
+                  <MenuItem value={50}>TP Hồ Chí Minh</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -308,13 +337,16 @@ const InforSign = (onInputChange: IPros) => {
                 <Select
                   labelId="demo-simple-select-required-label"
                   id="demo-simple-select-required"
-                  value={age}
+                  value={district}
                   label="Quận/Huyện *"
-                  onChange={(e) => handleChange(e.target.value)}
+                  onChange={(e) => {
+                    setDistrict(e.target.value);
+                    handleDistrict(e.target.value);
+                  }}
                 >
-                  <MenuItem value={10}>Ten</MenuItem>
-                  <MenuItem value={20}>Twenty</MenuItem>
-                  <MenuItem value={30}>Thirty</MenuItem>
+                  <MenuItem value={1}>Ninh Kiều</MenuItem>
+                  <MenuItem value={2}>Quận 1</MenuItem>
+                  <MenuItem value={3}>Hà Tiên</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -326,13 +358,16 @@ const InforSign = (onInputChange: IPros) => {
                 <Select
                   labelId="demo-simple-select-required-label"
                   id="demo-simple-select-required"
-                  value={age}
+                  value={ward}
                   label="Xã/Phường *"
-                  onChange={(e) => handleChange(e.target.value)}
+                  onChange={(e) => {
+                    setWard(e.target.value);
+                    handleWard(e.target.value);
+                  }}
                 >
-                  <MenuItem value={10}>Ten</MenuItem>
-                  <MenuItem value={20}>Twenty</MenuItem>
-                  <MenuItem value={30}>Thirty</MenuItem>
+                  <MenuItem value={1}>An Hòa</MenuItem>
+                  <MenuItem value={2}>Phường 1</MenuItem>
+                  <MenuItem value={3}>Phường 2</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
