@@ -15,7 +15,8 @@ const AppSignUp = () => {
         if (data) {
           console.log(">>> check data register: ", data);
           const response = await sendRequest<IBackendRes<UserLogin>>({
-            url: "https://artdevs-server.azurewebsites.net/api/register",
+            // url: "https://artdevs-server.azurewebsites.net/api/register",
+            url: "http://localhost:8080/api/register",
             method: "POST",
             body: { ...data },
           });

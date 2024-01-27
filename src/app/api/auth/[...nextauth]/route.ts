@@ -16,7 +16,8 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          url: "https://artdevs-server.azurewebsites.net/api/login",
+          // url: "https://artdevs-server.azurewebsites.net/api/login",
+          url: "http://localhost:8080/api/login",
           method: "POST",
           body: {
             email: credentials?.username,
@@ -48,7 +49,8 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account, profile, trigger }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          url: "https://artdevs-server.azurewebsites.net/api/user-social",
+          // url: "https://artdevs-server.azurewebsites.net/api/user-social",
+          url: "http://localhost:8080/api/user-social",
           method: "GET",
           queryParams: {
             email: `${profile?.email}`,

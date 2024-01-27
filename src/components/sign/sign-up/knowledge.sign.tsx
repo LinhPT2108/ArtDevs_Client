@@ -11,8 +11,8 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 interface IProps {
   role: Role;
-  handleListDemandOfUser: (value: MyLanguageProgram[] | undefined) => void;
-  handleListSkillOfUser: (value: MyLanguageProgram[] | undefined) => void;
+  handleListDemandOfUser: (value: MyLanguageProgram[]) => void;
+  handleListSkillOfUser: (value: MyLanguageProgram[]) => void;
 }
 
 const KnowledgeSign = (props: IProps) => {
@@ -23,9 +23,9 @@ const KnowledgeSign = (props: IProps) => {
     setSelectedTopics(value);
     if (role.roleName === "user") {
       handleListDemandOfUser(value);
-      handleListSkillOfUser(undefined);
+      handleListSkillOfUser([]);
     } else {
-      handleListDemandOfUser(undefined);
+      handleListDemandOfUser([]);
       handleListSkillOfUser(value);
     }
   };

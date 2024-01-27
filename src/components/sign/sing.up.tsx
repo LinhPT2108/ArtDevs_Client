@@ -10,7 +10,7 @@ import InforSign from "./sign-up/infor.sign";
 import RoleSign from "./sign-up/role.sign";
 import KnowlegdeSign from "./sign-up/knowledge.sign";
 import { v4 as uuidv4 } from "uuid";
-import { SHA256 } from "crypto-js";
+// import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
 
@@ -51,8 +51,8 @@ const SignUp = (props: MyData) => {
     userId: "",
     username: "",
     isOnline: false,
-    listDemandOfUser: undefined,
-    listSkillOfUser: undefined,
+    listDemandOfUser: [],
+    listSkillOfUser: [],
   });
   const handleUserName = (
     firstName: string,
@@ -136,10 +136,8 @@ const SignUp = (props: MyData) => {
       role: value,
     }));
   };
-  const handleListDemandOfUser = (
-    myLanguageProgram: MyLanguageProgram[] | undefined
-  ) => {
-    let arrayOfValues: string[] | undefined = undefined;
+  const handleListDemandOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
+    let arrayOfValues: string[] = [];
     if (myLanguageProgram) {
       arrayOfValues = Object.values(myLanguageProgram).map(
         (item) => item.value
@@ -152,10 +150,8 @@ const SignUp = (props: MyData) => {
       userId: generateUniqueId(),
     }));
   };
-  const handleListSkillOfUser = (
-    myLanguageProgram: MyLanguageProgram[] | undefined
-  ) => {
-    let arrayOfValues: string[] | undefined = undefined;
+  const handleListSkillOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
+    let arrayOfValues: string[] = [];
     if (myLanguageProgram) {
       arrayOfValues = Object.values(myLanguageProgram).map(
         (item) => item.value

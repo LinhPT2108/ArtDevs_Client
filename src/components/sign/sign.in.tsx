@@ -118,7 +118,7 @@ const SignIn = () => {
     >
       <Snowfall
         snowflakeCount={200}
-        speed={[0.5, 2.5]}
+        speed={[0, 0.5]}
         wind={[0, 3]}
         radius={[1, 15]}
         rotationSpeed={[-1, 1]}

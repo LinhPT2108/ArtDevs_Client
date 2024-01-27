@@ -15,6 +15,7 @@ export default async function Home() {
   //     provider: "githubee",
   //   },
   // });
+
   console.log(">>> check res data 123: ", session);
   if (session) {
     return <NextWrapper user={session} />;
