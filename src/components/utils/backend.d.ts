@@ -66,11 +66,12 @@ declare global {
     role: Role;
     dateOfBirth: string;
     gender: string;
-    demand?: Skill[] | null;
+    listDemandOfUser?: string[];
+    listSkillOfUser?: string[];
   }
-  interface Skill {
-    value: number;
+  interface MyLanguageProgram {
     languageProgram: string;
+    value: string;
   }
   interface Role {
     id: number;

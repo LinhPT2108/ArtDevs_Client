@@ -9,10 +9,29 @@ import CircularProgress from "@mui/material/CircularProgress";
 import InforSign from "./sign-up/infor.sign";
 import RoleSign from "./sign-up/role.sign";
 import KnowlegdeSign from "./sign-up/knowledge.sign";
+import { v4 as uuidv4 } from "uuid";
+import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
 
-const SignUp = () => {
+const generateUniqueId = (): string => {
+  const currentTime = new Date().getTime().toString();
+  const randomString = uuidv4().slice(0, 2);
+  const combinedString = currentTime + randomString;
+
+  //Mã hóa SHA256 cho ra chuỗi dài VD: "b88b7e817394d271578acdba5ce7e8f5532e1b5c58f2a2f965fabbacbe1930f8"
+  // const hashedString = SHA256(combinedString).toString();
+  // return hashedString;
+
+  //Dùng hàm băm cho ra chuỗi ngắn hơn VD: "MTcwNjMzMTM1MzQwOTM0"
+  const encodedString = btoa(combinedString);
+  return encodedString;
+};
+interface MyData {
+  setDataRegister: (value: UserRegister) => void;
+}
+const SignUp = (props: MyData) => {
+  const { setDataRegister } = props;
   const [activeStep, setActiveStep] = useState<number>(0);
   const [finish, setFinish] = useState<boolean>(false);
   const [skipped, setSkipped] = useState(new Set<number>());
@@ -28,13 +47,29 @@ const SignUp = () => {
     city: "",
     district: "",
     ward: "",
-    role: { id: 1, roleName: "user" },
-    demand: null,
+    role: { id: 2, roleName: "user" },
     userId: "",
     username: "",
     isOnline: false,
+    listDemandOfUser: undefined,
+    listSkillOfUser: undefined,
   });
-
+  const handleUserName = (
+    firstName: string,
+    middleName: string,
+    lastName: string
+  ) => {
+    let userName = "";
+    if (!middleName) {
+      userName = firstName + " " + lastName;
+    } else {
+      userName = firstName + " " + middleName + " " + lastName;
+    }
+    setData((prevData) => ({
+      ...prevData,
+      username: userName,
+    }));
+  };
   const handleLastName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
@@ -101,13 +136,38 @@ const SignUp = () => {
       role: value,
     }));
   };
-  const handleDemand = (value: Skill[]) => {
+  const handleListDemandOfUser = (
+    myLanguageProgram: MyLanguageProgram[] | undefined
+  ) => {
+    let arrayOfValues: string[] | undefined = undefined;
+    if (myLanguageProgram) {
+      arrayOfValues = Object.values(myLanguageProgram).map(
+        (item) => item.value
+      );
+    }
+    console.log(arrayOfValues);
     setData((prevData) => ({
       ...prevData,
-      demand: value,
+      listDemandOfUser: arrayOfValues,
+      userId: generateUniqueId(),
     }));
   };
-
+  const handleListSkillOfUser = (
+    myLanguageProgram: MyLanguageProgram[] | undefined
+  ) => {
+    let arrayOfValues: string[] | undefined = undefined;
+    if (myLanguageProgram) {
+      arrayOfValues = Object.values(myLanguageProgram).map(
+        (item) => item.value
+      );
+    }
+    console.log(arrayOfValues);
+    setData((prevData) => ({
+      ...prevData,
+      listSkillOfUser: arrayOfValues,
+      userId: generateUniqueId(),
+    }));
+  };
   const isStepOptional = (step: number) => {
     return step === 1;
   };
@@ -125,6 +185,7 @@ const SignUp = () => {
 
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
     setSkipped(newSkipped);
+    handleUserName(data.firstName, data.middleName, data.lastName);
   };
 
   const handleBack = () => {
@@ -132,7 +193,7 @@ const SignUp = () => {
   };
   const handleSignUp = () => {
     setFinish(true);
-    console.log("Send button clicked");
+    setDataRegister(data);
   };
 
   const handleClick = () => {
@@ -233,9 +294,16 @@ const SignUp = () => {
                   handleWard={handleWard}
                 />
               ) : activeStep === 1 ? (
-                <RoleSign handleRole={handleRole} />
+                <RoleSign
+                  handleRole={handleRole}
+                  roleName={data.role.roleName}
+                />
               ) : (
-                <KnowlegdeSign handleDemand={handleDemand} />
+                <KnowlegdeSign
+                  role={data.role}
+                  handleListDemandOfUser={handleListDemandOfUser}
+                  handleListSkillOfUser={handleListSkillOfUser}
+                />
               )}
             </Box>
 

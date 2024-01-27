@@ -14,12 +14,13 @@ import {
   Grid,
 } from "@mui/material";
 interface IProps {
+  roleName: string;
   handleRole: (value: Role) => void;
 }
 
 const CustomRadioInput = (props: IProps) => {
-  const { handleRole } = props;
-  const [selectedValue, setSelectedValue] = React.useState("user");
+  const { roleName, handleRole } = props;
+  const [selectedValue, setSelectedValue] = React.useState(roleName);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value: string = (event.target as HTMLInputElement).value;

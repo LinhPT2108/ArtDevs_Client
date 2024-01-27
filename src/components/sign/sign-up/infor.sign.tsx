@@ -323,9 +323,9 @@ const InforSign = (props: IPros) => {
                     handleCity(e.target.value);
                   }}
                 >
-                  <MenuItem value={65}>Cần Thơ</MenuItem>
-                  <MenuItem value={68}>Kiên Giang</MenuItem>
-                  <MenuItem value={50}>TP Hồ Chí Minh</MenuItem>
+                  <MenuItem value={"Cần Thơ"}>Cần Thơ</MenuItem>
+                  <MenuItem value={"Kiên Giang"}>Kiên Giang</MenuItem>
+                  <MenuItem value={"TP Hồ Chí Minh"}>TP Hồ Chí Minh</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -344,9 +344,9 @@ const InforSign = (props: IPros) => {
                     handleDistrict(e.target.value);
                   }}
                 >
-                  <MenuItem value={1}>Ninh Kiều</MenuItem>
-                  <MenuItem value={2}>Quận 1</MenuItem>
-                  <MenuItem value={3}>Hà Tiên</MenuItem>
+                  <MenuItem value={"Ninh Kieu"}>Ninh Kiều</MenuItem>
+                  <MenuItem value={"Quan 1"}>Quận 1</MenuItem>
+                  <MenuItem value={"Ha Tien"}>Hà Tiên</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -365,9 +365,9 @@ const InforSign = (props: IPros) => {
                     handleWard(e.target.value);
                   }}
                 >
-                  <MenuItem value={1}>An Hòa</MenuItem>
-                  <MenuItem value={2}>Phường 1</MenuItem>
-                  <MenuItem value={3}>Phường 2</MenuItem>
+                  <MenuItem value={"An Hoa"}>An Hòa</MenuItem>
+                  <MenuItem value={"Phương 1"}>Phường 1</MenuItem>
+                  <MenuItem value={"Phường 2"}>Phường 2</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
