@@ -60,6 +60,7 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
+    confirmPassword: string;
     profilePicUrl?: string;
     provider?: string;
     username: string;
@@ -69,9 +70,28 @@ declare global {
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
   }
+
+  interface Province {
+    province_id: number;
+    province_name: string;
+    province_type: string;
+  }
+  interface District {
+    district_id: number;
+    district_name: string;
+    district_type: string;
+  }
+  interface Ward {
+    ward_id: number;
+    ward_name: string;
+    ward_type: string;
+  }
+  interface Result<T> {
+    results: T;
+  }
   interface MyLanguageProgram {
-    languageProgram: string;
-    value: string;
+    languageName: string;
+    id: string;
   }
   interface Role {
     id: number;

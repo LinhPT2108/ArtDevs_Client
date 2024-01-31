@@ -10,14 +10,30 @@ const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 interface IProps {
+  programingLanguage: MyLanguageProgram[];
   role: Role;
   handleListDemandOfUser: (value: MyLanguageProgram[]) => void;
   handleListSkillOfUser: (value: MyLanguageProgram[]) => void;
+  data: UserRegister;
 }
 
 const KnowledgeSign = (props: IProps) => {
-  const { role, handleListDemandOfUser, handleListSkillOfUser } = props;
-  const [selectedTopics, setSelectedTopics] = useState<any>([]);
+  const {
+    programingLanguage,
+    role,
+    handleListDemandOfUser,
+    handleListSkillOfUser,
+    data,
+  } = props;
+  const [selectedTopics, setSelectedTopics] = useState<any>(
+    programingLanguage.filter((pl) =>
+      data?.listDemandOfUser?.includes(pl.languageName)
+    ) ||
+      programingLanguage.filter((pl) =>
+        data?.listSkillOfUser?.includes(pl.languageName)
+      ) ||
+      []
+  );
 
   const handleTopicChange = (event: any, value: any) => {
     setSelectedTopics(value);
@@ -29,7 +45,6 @@ const KnowledgeSign = (props: IProps) => {
       handleListSkillOfUser(value);
     }
   };
-  console.log(">>> check topics ", selectedTopics);
 
   return (
     <Box>
@@ -41,9 +56,9 @@ const KnowledgeSign = (props: IProps) => {
           <Autocomplete
             multiple
             id="checkboxes-tags-demo"
-            options={languagePrograms}
+            options={programingLanguage}
             disableCloseOnSelect
-            getOptionLabel={(option) => option.languageProgram}
+            getOptionLabel={(option) => option.languageName}
             value={selectedTopics}
             onChange={handleTopicChange}
             renderOption={(props, option, { selected }) => (
@@ -54,7 +69,7 @@ const KnowledgeSign = (props: IProps) => {
                   style={{ marginRight: 8 }}
                   checked={selected}
                 />
-                {option.languageProgram}
+                {option.languageName}
               </li>
             )}
             style={{ width: "100%" }}
@@ -70,30 +85,30 @@ const KnowledgeSign = (props: IProps) => {
 
 export default KnowledgeSign;
 
-const languagePrograms = [
-  { languageProgram: "Java", value: "Java" },
-  { languageProgram: "Java EE", value: "Java" },
-  { languageProgram: "Java Core", value: "Java" },
-  {
-    languageProgram: "Java (Spring MVC – Model View Controller)",
-    value: "Java",
-  },
-  { languageProgram: "Java (Struts)", value: "Java" },
-  { languageProgram: "Java (Hibernate)", value: "Java" },
-  { languageProgram: "Java (GWT – Google Web Toolkit)", value: "Java" },
-  { languageProgram: "Java (Vaadin)", value: "Java" },
-  { languageProgram: "Java (Wicket)", value: "Java" },
-  { languageProgram: "Java (Grails)", value: "Java" },
-  { languageProgram: "Java (Play!)", value: "Java" },
-  { languageProgram: "Java (Vert.X)", value: "Java" },
-  { languageProgram: "Java (JSF – JavaServer Faces)", value: "Java" },
-  { languageProgram: "PHP Basic", value: "Java" },
-  { languageProgram: "PHP (Lavarel)", value: "Java" },
-  { languageProgram: "PHP (CodeIgniter)", value: "Java" },
-  { languageProgram: "PHP (Symfony)", value: "Java" },
-  { languageProgram: "PHP (Zend)", value: "Java" },
-  { languageProgram: "PHP (Phalcon)", value: "Java" },
-  { languageProgram: "PHP (CakePHP)", value: "Java" },
-  { languageProgram: "PHP (Yii)", value: "Java" },
-  { languageProgram: "PHP (FuelPHP)", value: "Java" },
-];
+// const languagePrograms = [
+//   { languageProgram: "Java", value: "Java" },
+//   { languageProgram: "Java EE", value: "Java" },
+//   { languageProgram: "Java Core", value: "Java" },
+//   {
+//     languageProgram: "Java (Spring MVC – Model View Controller)",
+//     value: "Java",
+//   },
+//   { languageProgram: "Java (Struts)", value: "Java" },
+//   { languageProgram: "Java (Hibernate)", value: "Java" },
+//   { languageProgram: "Java (GWT – Google Web Toolkit)", value: "Java" },
+//   { languageProgram: "Java (Vaadin)", value: "Java" },
+//   { languageProgram: "Java (Wicket)", value: "Java" },
+//   { languageProgram: "Java (Grails)", value: "Java" },
+//   { languageProgram: "Java (Play!)", value: "Java" },
+//   { languageProgram: "Java (Vert.X)", value: "Java" },
+//   { languageProgram: "Java (JSF – JavaServer Faces)", value: "Java" },
+//   { languageProgram: "PHP Basic", value: "Java" },
+//   { languageProgram: "PHP (Lavarel)", value: "Java" },
+//   { languageProgram: "PHP (CodeIgniter)", value: "Java" },
+//   { languageProgram: "PHP (Symfony)", value: "Java" },
+//   { languageProgram: "PHP (Zend)", value: "Java" },
+//   { languageProgram: "PHP (Phalcon)", value: "Java" },
+//   { languageProgram: "PHP (CakePHP)", value: "Java" },
+//   { languageProgram: "PHP (Yii)", value: "Java" },
+//   { languageProgram: "PHP (FuelPHP)", value: "Java" },
+// ];

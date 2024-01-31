@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -9,41 +9,68 @@ import CircularProgress from "@mui/material/CircularProgress";
 import InforSign from "./sign-up/infor.sign";
 import RoleSign from "./sign-up/role.sign";
 import KnowlegdeSign from "./sign-up/knowledge.sign";
-import { v4 as uuidv4 } from "uuid";
+import Snowfall from "react-snowfall";
+import { arrayBuffer } from "stream/consumers";
+import { Alert, Snackbar, SnackbarOrigin } from "@mui/material";
 // import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
 
-const generateUniqueId = (): string => {
-  const currentTime = new Date().getTime().toString();
-  const randomString = uuidv4().slice(0, 2);
-  const combinedString = currentTime + randomString;
-
-  //Mã hóa SHA256 cho ra chuỗi dài VD: "b88b7e817394d271578acdba5ce7e8f5532e1b5c58f2a2f965fabbacbe1930f8"
-  // const hashedString = SHA256(combinedString).toString();
-  // return hashedString;
-
-  //Dùng hàm băm cho ra chuỗi ngắn hơn VD: "MTcwNjMzMTM1MzQwOTM0"
-  const encodedString = btoa(combinedString);
-  return encodedString;
-};
 interface MyData {
+  programingLanguage: MyLanguageProgram[];
   setDataRegister: (value: UserRegister) => void;
+  address: { provinces: Province[]; districts: District[]; wards: Ward[] };
+  setCitys: (value: Province) => void;
+  setDistricts: (value: District) => void;
+  errorRegister: string;
 }
+
+interface State extends SnackbarOrigin {
+  open: boolean;
+}
+
 const SignUp = (props: MyData) => {
-  const { setDataRegister } = props;
+  const {
+    address,
+    programingLanguage,
+    setDataRegister,
+    setCitys,
+    setDistricts,
+    errorRegister,
+  } = props;
+
   const [activeStep, setActiveStep] = useState<number>(0);
   const [finish, setFinish] = useState<boolean>(false);
   const [skipped, setSkipped] = useState(new Set<number>());
-
+  const [isErrorFirstName, setIsErrorFirstName] = useState<boolean>(false);
+  const [isErrorLastName, setIsErrorLastName] = useState<boolean>(false);
+  const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
+  const [isErrorPassword, setIsErrorPassword] = useState<boolean>(false);
+  const [isErrorConfirmPassword, setIsErrorConfirmPassword] =
+    useState<boolean>(false);
+  const [disableButton, setDisableButton] = useState<boolean>(true);
+  const [state, setState] = useState<State>({
+    open: false,
+    vertical: "top",
+    horizontal: "center",
+  });
+  const { vertical, horizontal, open } = state;
+  const handleClose = () => {
+    setState({ ...state, open: false });
+  };
+  const handleShowErrorMessage =
+    (newState: SnackbarOrigin) => (event: React.MouseEvent) => {
+      setState({ ...newState, open: true });
+    };
   const [data, setData] = useState<UserRegister>({
     lastName: "",
     middleName: "",
     firstName: "",
     email: "",
     password: "",
+    confirmPassword: "",
     dateOfBirth: "",
-    gender: "",
+    gender: "male",
     city: "",
     district: "",
     ward: "",
@@ -100,6 +127,12 @@ const SignUp = (props: MyData) => {
       password: value,
     }));
   };
+  const handleConfirmPassword = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      confirmPassword: value,
+    }));
+  };
   const handleDateOfBirth = (value: string) => {
     setData((prevData) => ({
       ...prevData,
@@ -112,23 +145,47 @@ const SignUp = (props: MyData) => {
       gender: value,
     }));
   };
-  const handleCity = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      city: value,
-    }));
+  const handleCity = (value: Province) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        city: value?.province_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        city: "",
+        district: "",
+        ward: "",
+      }));
+    }
   };
-  const handleDistrict = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      district: value,
-    }));
+  const handleDistrict = (value: District) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        district: value?.district_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        district: "",
+        ward: "",
+      }));
+    }
   };
-  const handleWard = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      ward: value,
-    }));
+  const handleWard = (value: Ward) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        ward: value?.ward_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        ward: "",
+      }));
+    }
   };
   const handleRole = (value: Role) => {
     setData((prevData) => ({
@@ -140,28 +197,24 @@ const SignUp = (props: MyData) => {
     let arrayOfValues: string[] = [];
     if (myLanguageProgram) {
       arrayOfValues = Object.values(myLanguageProgram).map(
-        (item) => item.value
+        (item) => item.languageName
       );
     }
-    console.log(arrayOfValues);
     setData((prevData) => ({
       ...prevData,
       listDemandOfUser: arrayOfValues,
-      userId: generateUniqueId(),
     }));
   };
   const handleListSkillOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
     let arrayOfValues: string[] = [];
     if (myLanguageProgram) {
       arrayOfValues = Object.values(myLanguageProgram).map(
-        (item) => item.value
+        (item) => item.languageName
       );
     }
-    console.log(arrayOfValues);
     setData((prevData) => ({
       ...prevData,
       listSkillOfUser: arrayOfValues,
-      userId: generateUniqueId(),
     }));
   };
   const isStepOptional = (step: number) => {
@@ -179,14 +232,15 @@ const SignUp = (props: MyData) => {
       newSkipped.delete(activeStep);
     }
 
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
     setSkipped(newSkipped);
     handleUserName(data.firstName, data.middleName, data.lastName);
   };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+    setActiveStep((prevActiveStep: number) => prevActiveStep - 1);
   };
+
   const handleSignUp = () => {
     setFinish(true);
     setDataRegister(data);
@@ -196,15 +250,96 @@ const SignUp = (props: MyData) => {
     activeStep >= steps.length - 1 ? handleSignUp() : handleNext();
   };
 
+  const [snowfallImages, setSnowfallImages] = useState<HTMLImageElement[]>([]);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      const image = new Image();
+      image.src = "/snowflake.png";
+      await image.decode();
+      setSnowfallImages([image]);
+    };
+
+    loadImage();
+  }, []);
+
+  const handleRequest = (event: React.KeyboardEvent | React.MouseEvent) => {
+    setActiveStep((prevActiveStep: number) => prevActiveStep - 1);
+  };
+
+  useEffect(() => {
+    const handleFailRegister = async () => {
+      if (errorRegister) {
+        if (activeStep !== 0) {
+          setFinish(false);
+          handleRequest({} as React.MouseEvent);
+          // handleRequest({} as React.MouseEvent);
+          handleShowErrorMessage({ vertical: "top", horizontal: "center" })(
+            {} as React.MouseEvent
+          );
+        }
+      }
+    };
+    handleFailRegister();
+  }, [errorRegister]);
+
   console.log(">>> check data: ", data);
+
+  useEffect(() => {
+    const handleButtonContinue = () => {
+      if (!data.firstName) {
+        setDisableButton(true);
+        return;
+      }
+      if (!data.lastName) {
+        setDisableButton(true);
+        return;
+      }
+      if (!data.email) {
+        setDisableButton(true);
+        return;
+      }
+      if (!data.password) {
+        setDisableButton(true);
+        return;
+      }
+      if (data.confirmPassword !== data.password || !data.confirmPassword) {
+        setDisableButton(true);
+        return;
+      }
+      const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!passwordRegex.test(data.password) || !emailRegex.test(data.email)) {
+        console.log(
+          ">>> co vo khong",
+          passwordRegex.test(data.password) || emailRegex.test(data.email)
+        );
+
+        setDisableButton(true);
+        return;
+      }
+      setDisableButton(false);
+    };
+    handleButtonContinue();
+  }, [data]);
   return (
     <Box
       sx={{
         display: "flex",
-        height: "100%",
+        height: { xs: "auto", md: "100%" },
         width: "100%",
+        padding: "24px 0",
       }}
     >
+      <Snowfall
+        snowflakeCount={200}
+        speed={[0, 0.5]}
+        wind={[0, 3]}
+        radius={[1, 15]}
+        rotationSpeed={[-1, 1]}
+        images={snowfallImages}
+      />
       <Box
         sx={{
           backgroundColor: "#ffffff",
@@ -212,7 +347,7 @@ const SignUp = (props: MyData) => {
             "0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)",
           borderRadius: "8px",
           margin: "auto",
-          height: "854px",
+          // minHeight: "720px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -272,7 +407,7 @@ const SignUp = (props: MyData) => {
               display: "flex",
               flexDirection: "column",
               boxShadow: "0px -3px 3px 0px rgba(0,0,0,0.35) inset",
-              height: "83%",
+              minHeight: "620px",
             }}
           >
             <Box sx={{ mt: 2, mb: 1, mx: 2, flex: "1" }}>
@@ -283,11 +418,27 @@ const SignUp = (props: MyData) => {
                   handleFirstName={handleFirstName}
                   handleEmail={handleEmail}
                   handlePassword={handlePassword}
+                  handleConfirmPassword={handleConfirmPassword}
                   handleDateOfBirth={handleDateOfBirth}
                   handleGender={handleGender}
                   handleCity={handleCity}
                   handleDistrict={handleDistrict}
                   handleWard={handleWard}
+                  address={address}
+                  setCitys={setCitys}
+                  setDistricts={setDistricts}
+                  data={data}
+                  isErrorFirstName={isErrorFirstName}
+                  isErrorLastName={isErrorLastName}
+                  isErrorEmail={isErrorEmail}
+                  isErrorPassword={isErrorPassword}
+                  isErrorConfirmPassword={isErrorConfirmPassword}
+                  setIsErrorFirstName={setIsErrorFirstName}
+                  setIsErrorLastName={setIsErrorLastName}
+                  setIsErrorEmail={setIsErrorEmail}
+                  setIsErrorPassword={setIsErrorPassword}
+                  setIsErrorConfirmPassword={setIsErrorConfirmPassword}
+                  errorRegister={errorRegister}
                 />
               ) : activeStep === 1 ? (
                 <RoleSign
@@ -296,9 +447,11 @@ const SignUp = (props: MyData) => {
                 />
               ) : (
                 <KnowlegdeSign
+                  programingLanguage={programingLanguage}
                   role={data.role}
                   handleListDemandOfUser={handleListDemandOfUser}
                   handleListSkillOfUser={handleListSkillOfUser}
+                  data={data}
                 />
               )}
             </Box>
@@ -336,6 +489,7 @@ const SignUp = (props: MyData) => {
 
                 <Button
                   onClick={handleClick}
+                  disabled={disableButton}
                   variant="contained"
                   color="primary"
                   sx={{ fontSize: "16px", width: "160px", paddingY: "11px" }}
@@ -373,6 +527,22 @@ const SignUp = (props: MyData) => {
           </Stepper>
         </Box>
       </Box>
+      <Snackbar
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical, horizontal }}
+        key={vertical + horizontal}
+      >
+        <Alert
+          onClose={handleClose}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          Đăng ký thất bại !
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

@@ -1,5 +1,7 @@
+import { sendRequest } from "@/components/utils/api";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import {
+  Autocomplete,
   Box,
   FormControl,
   FormControlLabel,
@@ -15,7 +17,8 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { useState } from "react";
+import { log } from "console";
+import { useEffect, useState } from "react";
 
 interface IPros {
   handleLastName: (data: string) => void;
@@ -23,11 +26,27 @@ interface IPros {
   handleFirstName: (data: string) => void;
   handleEmail: (data: string) => void;
   handlePassword: (data: string) => void;
+  handleConfirmPassword: (data: string) => void;
   handleDateOfBirth: (data: string) => void;
   handleGender: (data: string) => void;
-  handleCity: (data: string) => void;
-  handleDistrict: (data: string) => void;
-  handleWard: (data: string) => void;
+  handleCity: (data: Province) => void;
+  handleDistrict: (data: District) => void;
+  handleWard: (data: Ward) => void;
+  address: { provinces: Province[]; districts: District[]; wards: Ward[] };
+  setCitys: (value: Province) => void;
+  setDistricts: (value: District) => void;
+  data: UserRegister;
+  isErrorFirstName: boolean;
+  isErrorLastName: boolean;
+  isErrorEmail: boolean;
+  isErrorPassword: boolean;
+  isErrorConfirmPassword: boolean;
+  setIsErrorFirstName: (value: boolean) => void;
+  setIsErrorLastName: (value: boolean) => void;
+  setIsErrorEmail: (value: boolean) => void;
+  setIsErrorPassword: (value: boolean) => void;
+  setIsErrorConfirmPassword: (value: boolean) => void;
+  errorRegister: string;
 }
 const InforSign = (props: IPros) => {
   const {
@@ -36,20 +55,136 @@ const InforSign = (props: IPros) => {
     handleFirstName,
     handleEmail,
     handlePassword,
+    handleConfirmPassword,
     handleDateOfBirth,
     handleGender,
     handleCity,
     handleDistrict,
     handleWard,
+    address,
+    setCitys,
+    setDistricts,
+    data,
+    isErrorFirstName,
+    isErrorLastName,
+    isErrorEmail,
+    isErrorPassword,
+    isErrorConfirmPassword,
+    setIsErrorFirstName,
+    setIsErrorLastName,
+    setIsErrorEmail,
+    setIsErrorPassword,
+    setIsErrorConfirmPassword,
+    errorRegister,
   } = props;
+  const { provinces, districts, wards } = address;
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-  const [city, setCity] = useState<string>("");
-  const [district, setDistrict] = useState<string>("");
-  const [ward, setWard] = useState<string>("");
-  const [gender, setGender] = useState<string>("male");
+  const [gender, setGender] = useState<string>(data?.gender);
 
+  const [messageFirstName, setMessageFirstName] = useState<string>("");
+  const [messageLastName, setMessageLastName] = useState<string>("");
+  const [messageEmail, setMessageEmail] = useState<string>("");
+  const [messagePassword, setMessagePassword] = useState<string>("");
+  const [messageConfirmPassword, setMessageConfirmPassword] =
+    useState<string>("");
+
+  const handleChangeLastName = (value: string) => {
+    if (value) {
+      setIsErrorLastName(false);
+      setMessageLastName("");
+    } else {
+      setIsErrorLastName(true);
+      setMessageLastName("Vui lòng nhập họ của bạn !");
+    }
+    handleLastName(value);
+  };
+
+  const handleChangeFirstName = (value: string) => {
+    if (value) {
+      setIsErrorFirstName(false);
+      setMessageFirstName("");
+    } else {
+      setIsErrorFirstName(true);
+      setMessageFirstName("Vui lòng nhập tên của bạn !");
+    }
+    handleFirstName(value);
+  };
+  const handleChangeEmail = (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (value) {
+      if (emailRegex.test(value)) {
+        setIsErrorEmail(false);
+        setMessageEmail("");
+      } else {
+        setIsErrorEmail(true);
+        setMessageEmail("Email không hợp lệ !");
+      }
+    } else {
+      setIsErrorEmail(true);
+      setMessageEmail("Vui lòng nhập email !");
+    }
+    handleEmail(value);
+  };
+  const handleChangePassword = (value: string) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
+    if (value) {
+      if (passwordRegex.test(value)) {
+        if (data.confirmPassword) {
+          if (data.confirmPassword !== value) {
+            setIsErrorConfirmPassword(true);
+            setMessageConfirmPassword("Mật khẩu chưa khớp !");
+          } else {
+            setIsErrorConfirmPassword(false);
+            setMessageConfirmPassword("");
+          }
+        }
+        setIsErrorPassword(false);
+        setMessagePassword("");
+      } else {
+        setIsErrorPassword(true);
+        setMessagePassword(
+          "Mật khẩu ít nhất 6 ký tự (hoa, thường, đặc biệt) !"
+        );
+      }
+    } else {
+      setIsErrorPassword(true);
+      setMessagePassword("Mật khẩu không được để trống !");
+    }
+    handlePassword(value);
+  };
+  const handleChangeConfirmPassword = (value: string) => {
+    if (value) {
+      if (data.password === value) {
+        setIsErrorConfirmPassword(false);
+        setMessageConfirmPassword("");
+      } else {
+        setIsErrorConfirmPassword(true);
+        setMessageConfirmPassword("Mật khẩu chưa khớp !");
+      }
+    } else {
+      setIsErrorConfirmPassword(true);
+      setMessageConfirmPassword("Xác nhận mật khẩu không hợp lệ !");
+    }
+    handleConfirmPassword(value);
+  };
+  const handleChangeDateOfBirth = (value: string) => {
+    if (value) {
+      setIsErrorConfirmPassword(false);
+    } else {
+      setIsErrorConfirmPassword(true);
+      setMessageConfirmPassword("Chưa chọn ngày sinh !");
+    }
+    handleDateOfBirth(value);
+  };
+  const handleFailRegister = () => {
+    setMessageEmail(errorRegister);
+    setIsErrorEmail(true);
+  };
+  errorRegister && handleFailRegister();
   return (
     <Box>
       <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
@@ -60,7 +195,13 @@ const InforSign = (props: IPros) => {
           container
           columns={24}
           spacing={2}
-          sx={{ margin: "auto", paddingLeft: "0 !important" }}
+          sx={{
+            margin: "auto",
+            paddingLeft: "0 !important",
+            "@media (min-width: 280px)": {
+              width: "100%",
+            },
+          }}
         >
           <Grid
             item
@@ -68,11 +209,20 @@ const InforSign = (props: IPros) => {
             columns={24}
             container
             spacing={2}
-            sx={{ paddingLeft: "0 !important" }}
+            sx={{
+              paddingLeft: "0 !important",
+            }}
           >
-            <Grid item xs={24} md={8}>
+            <Grid
+              item
+              xs={24}
+              md={8}
+              sx={{
+                paddingTop: { xs: "0 !important", md: "16px !important" },
+              }}
+            >
               <TextField
-                onChange={(e) => handleFirstName(e.target.value)}
+                onChange={(e) => handleChangeFirstName(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -82,12 +232,22 @@ const InforSign = (props: IPros) => {
                 name="first-name"
                 autoComplete="new-first-name"
                 autoFocus
-                // error={isErrorEmail}
-                // helperText={messageErrorEmail}
-                sx={{ marginBottom: "0" }}
+                value={data?.firstName}
+                error={isErrorFirstName}
+                helperText={messageFirstName}
+                sx={{
+                  marginBottom: "0",
+                }}
               />
             </Grid>
-            <Grid item xs={24} md={8}>
+            <Grid
+              item
+              xs={24}
+              md={8}
+              sx={{
+                paddingTop: { xs: "0 !important", md: "16px !important" },
+              }}
+            >
               <TextField
                 onChange={(e) => handleMiddleName(e.target.value)}
                 variant="outlined"
@@ -98,14 +258,20 @@ const InforSign = (props: IPros) => {
                 name="middle-name"
                 autoComplete="new-middle-name"
                 autoFocus
-                // error={isErrorEmail}
-                // helperText={messageErrorEmail}
+                value={data?.middleName}
                 sx={{ marginBottom: "0" }}
               />
             </Grid>
-            <Grid item xs={24} md={8}>
+            <Grid
+              item
+              xs={24}
+              md={8}
+              sx={{
+                paddingTop: { xs: "0 !important", md: "16px !important" },
+              }}
+            >
               <TextField
-                onChange={(e) => handleLastName(e.target.value)}
+                onChange={(e) => handleChangeLastName(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -115,8 +281,9 @@ const InforSign = (props: IPros) => {
                 name="last-name"
                 autoComplete="new-last-name"
                 autoFocus
-                // error={isErrorEmail}
-                // helperText={messageErrorEmail}
+                value={data?.lastName}
+                error={isErrorLastName}
+                helperText={messageLastName}
                 sx={{ marginBottom: "0" }}
               />
             </Grid>
@@ -131,7 +298,7 @@ const InforSign = (props: IPros) => {
           >
             <Grid item xs={24}>
               <TextField
-                onChange={(e) => handleEmail(e.target.value)}
+                onChange={(e) => handleChangeEmail(e.target.value)}
                 variant="outlined"
                 margin="normal"
                 required
@@ -141,8 +308,9 @@ const InforSign = (props: IPros) => {
                 name="email"
                 autoComplete="new-email"
                 autoFocus
-                // error={isErrorEmail}
-                // helperText={messageErrorEmail}
+                value={data?.email}
+                error={isErrorEmail}
+                helperText={messageEmail}
                 sx={{ marginBottom: "0" }}
               />
             </Grid>
@@ -157,7 +325,7 @@ const InforSign = (props: IPros) => {
           >
             <Grid item xs={24} md={12}>
               <TextField
-                onChange={(e) => handlePassword(e.target.value)}
+                onChange={(e) => handleChangePassword(e.target.value)}
                 // onKeyDown={(e) => {
                 //   if (e.key === "Enter") {
                 //     handleSubmit();
@@ -172,9 +340,10 @@ const InforSign = (props: IPros) => {
                 type={!showPassword ? "password" : "text"}
                 id="password"
                 autoComplete="new-password"
-                // error={isErrorPassword}
-                // helperText={messageErrorPassword}
-                sx={{ mb: 3 }}
+                value={data?.password}
+                error={isErrorPassword}
+                helperText={messagePassword}
+                sx={{ mb: { xs: 0, md: 3 } }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -190,9 +359,14 @@ const InforSign = (props: IPros) => {
                 }}
               />
             </Grid>
-            <Grid item xs={24} md={12}>
+            <Grid
+              item
+              xs={24}
+              md={12}
+              sx={{ paddingTop: { xs: "0 !important", md: "16px !important" } }}
+            >
               <TextField
-                // onChange={(e) => handleChangePassword(e.target.value)}
+                onChange={(e) => handleChangeConfirmPassword(e.target.value)}
                 // onKeyDown={(e) => {
                 //   if (e.key === "Enter") {
                 //     handleSubmit();
@@ -207,9 +381,10 @@ const InforSign = (props: IPros) => {
                 type={!showConfirmPassword ? "password" : "text"}
                 id="confirm-password"
                 autoComplete="new-confirm-password"
-                // error={isErrorPassword}
-                // helperText={messageErrorPassword}
-                sx={{ mb: 3 }}
+                value={data?.confirmPassword}
+                error={isErrorConfirmPassword}
+                helperText={messageConfirmPassword}
+                sx={{ mb: { xs: 0, md: 3 } }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -240,12 +415,16 @@ const InforSign = (props: IPros) => {
             spacing={2}
             sx={{ paddingLeft: "0 !important", paddingTop: "0 !important" }}
           >
-            <Grid item xs={24} md={12} sx={{ paddingTop: "0 !important" }}>
+            <Grid
+              item
+              xs={24}
+              md={12}
+              sx={{ paddingTop: { xs: "16px !important", md: "0 !important" } }}
+            >
               <TextField
                 onChange={(e) => handleDateOfBirth(e.target.value)}
                 variant="outlined"
                 margin="normal"
-                required
                 fullWidth
                 type="date"
                 id="date-of-birth"
@@ -253,12 +432,12 @@ const InforSign = (props: IPros) => {
                 name="date-of-birth"
                 autoComplete="new-date-of-birth"
                 autoFocus
-                // error={isErrorEmail}
-                // helperText={messageErrorEmail}
+                value={data?.dateOfBirth}
+                // error={}
                 sx={{
                   marginBottom: "0",
                   "& input": {
-                    paddingLeft: "100px",
+                    paddingLeft: `${data?.dateOfBirth ? "14px" : "100px"}`,
                     "&:focus": {
                       paddingLeft: "14px",
                     },
@@ -309,67 +488,102 @@ const InforSign = (props: IPros) => {
             sx={{ paddingLeft: "0 !important" }}
           >
             <Grid item xs={24} md={8}>
-              <FormControl required sx={{ m: 1, width: "100%", margin: 0 }}>
-                <InputLabel id="demo-simple-select-required-label">
-                  Tỉnh/Thành phố
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-required-label"
-                  id="demo-simple-select-required"
-                  value={city}
-                  label="Tỉnh/Thành phố *"
-                  onChange={(e) => {
-                    setCity(e.target.value);
-                    handleCity(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"Cần Thơ"}>Cần Thơ</MenuItem>
-                  <MenuItem value={"Kiên Giang"}>Kiên Giang</MenuItem>
-                  <MenuItem value={"TP Hồ Chí Minh"}>TP Hồ Chí Minh</MenuItem>
-                </Select>
-              </FormControl>
+              <Autocomplete
+                id="country-select-demo"
+                sx={{ width: 300 }}
+                options={provinces || []}
+                autoHighlight
+                getOptionLabel={(province) => province?.province_name}
+                value={provinces.find(
+                  (province) => province?.province_name === data?.city
+                )}
+                onChange={(event, newValue) => {
+                  handleCity(newValue!);
+                  setCitys(newValue!);
+                }}
+                renderOption={(props, province) => (
+                  <Box component="li" {...props}>
+                    {province?.province_name}
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn tỉnh/TP"
+                    inputProps={{
+                      ...params.inputProps,
+                      autoComplete: "new-password",
+                    }}
+                  />
+                )}
+              />
             </Grid>
             <Grid item xs={24} md={8}>
-              <FormControl required sx={{ m: 1, width: "100%", margin: 0 }}>
-                <InputLabel id="demo-simple-select-required-label">
-                  Quận/Huyện
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-required-label"
-                  id="demo-simple-select-required"
-                  value={district}
-                  label="Quận/Huyện *"
-                  onChange={(e) => {
-                    setDistrict(e.target.value);
-                    handleDistrict(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"Ninh Kieu"}>Ninh Kiều</MenuItem>
-                  <MenuItem value={"Quan 1"}>Quận 1</MenuItem>
-                  <MenuItem value={"Ha Tien"}>Hà Tiên</MenuItem>
-                </Select>
-              </FormControl>
+              <Autocomplete
+                id="district-select-demo"
+                sx={{ width: 300 }}
+                options={districts || []}
+                autoHighlight
+                getOptionLabel={(district) => district.district_name}
+                value={
+                  districts.length > 0
+                    ? districts?.find(
+                        (district) => district.district_name === data?.district
+                      )
+                    : null
+                }
+                onChange={(event, newValue) => {
+                  handleDistrict(newValue!);
+                  setDistricts(newValue!);
+                }}
+                renderOption={(props, district) => (
+                  <Box component="li" {...props}>
+                    {district.district_name}
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn Quận/Huyện"
+                    inputProps={{
+                      ...params.inputProps,
+                      autoComplete: "new-password",
+                    }}
+                  />
+                )}
+              />
             </Grid>
             <Grid item xs={24} md={8}>
-              <FormControl required sx={{ m: 1, width: "100%", margin: 0 }}>
-                <InputLabel id="demo-simple-select-required-label">
-                  Xã/Phường
-                </InputLabel>
-                <Select
-                  labelId="demo-simple-select-required-label"
-                  id="demo-simple-select-required"
-                  value={ward}
-                  label="Xã/Phường *"
-                  onChange={(e) => {
-                    setWard(e.target.value);
-                    handleWard(e.target.value);
-                  }}
-                >
-                  <MenuItem value={"An Hoa"}>An Hòa</MenuItem>
-                  <MenuItem value={"Phương 1"}>Phường 1</MenuItem>
-                  <MenuItem value={"Phường 2"}>Phường 2</MenuItem>
-                </Select>
-              </FormControl>
+              <Autocomplete
+                id="district-select-demo"
+                sx={{ width: 300 }}
+                options={wards || []}
+                autoHighlight
+                getOptionLabel={(ward) => ward.ward_name}
+                value={
+                  wards.length > 0
+                    ? wards.find((ward) => ward.ward_name === data?.ward)
+                    : null
+                }
+                onChange={(event, newValue) => {
+                  handleWard(newValue!);
+                }}
+                renderOption={(props, ward) => (
+                  <Box component="li" {...props}>
+                    {ward.ward_name}
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Chọn Xã/Phường/TT"
+                    inputProps={{
+                      ...params.inputProps,
+                      autoComplete: "new-password",
+                    }}
+                  />
+                )}
+              />
             </Grid>
           </Grid>
           <Grid
