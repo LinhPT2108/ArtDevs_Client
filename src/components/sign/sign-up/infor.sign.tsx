@@ -47,6 +47,10 @@ interface IPros {
   setIsErrorPassword: (value: boolean) => void;
   setIsErrorConfirmPassword: (value: boolean) => void;
   errorRegister: string;
+  isErrorEmailExist: boolean;
+  setIsErrorEmailExist: (value: boolean) => void;
+  emailExist: string;
+  setEmailExist: (value: string) => void;
 }
 const InforSign = (props: IPros) => {
   const {
@@ -76,6 +80,10 @@ const InforSign = (props: IPros) => {
     setIsErrorPassword,
     setIsErrorConfirmPassword,
     errorRegister,
+    isErrorEmailExist,
+    setIsErrorEmailExist,
+    emailExist,
+    setEmailExist,
   } = props;
   const { provinces, districts, wards } = address;
 
@@ -114,6 +122,8 @@ const InforSign = (props: IPros) => {
   };
   const handleChangeEmail = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setIsErrorEmailExist(false);
+    setEmailExist("");
     if (value) {
       if (emailRegex.test(value)) {
         setIsErrorEmail(false);
@@ -184,7 +194,11 @@ const InforSign = (props: IPros) => {
     setMessageEmail(errorRegister);
     setIsErrorEmail(true);
   };
-  errorRegister && handleFailRegister();
+  useEffect(() => {
+    if (errorRegister) {
+      handleFailRegister();
+    }
+  }, [errorRegister]);
   return (
     <Box>
       <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
@@ -309,8 +323,8 @@ const InforSign = (props: IPros) => {
                 autoComplete="new-email"
                 autoFocus
                 value={data?.email}
-                error={isErrorEmail}
-                helperText={messageEmail}
+                error={isErrorEmail || isErrorEmailExist}
+                helperText={messageEmail || emailExist}
                 sx={{ marginBottom: "0" }}
               />
             </Grid>

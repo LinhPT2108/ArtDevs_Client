@@ -11,7 +11,10 @@ import RoleSign from "./sign-up/role.sign";
 import KnowlegdeSign from "./sign-up/knowledge.sign";
 import Snowfall from "react-snowfall";
 import { arrayBuffer } from "stream/consumers";
-import { Alert, Snackbar, SnackbarOrigin } from "@mui/material";
+import { Alert, CardMedia, Snackbar, SnackbarOrigin } from "@mui/material";
+import Link from "next/link";
+import { sendRequest } from "../utils/api";
+import { preconnect } from "react-dom";
 // import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
@@ -45,6 +48,8 @@ const SignUp = (props: MyData) => {
   const [isErrorFirstName, setIsErrorFirstName] = useState<boolean>(false);
   const [isErrorLastName, setIsErrorLastName] = useState<boolean>(false);
   const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
+  const [isErrorEmailExist, setIsErrorEmailExist] = useState<boolean>(false);
+  const [emailExist, setEmailExist] = useState<string>("");
   const [isErrorPassword, setIsErrorPassword] = useState<boolean>(false);
   const [isErrorConfirmPassword, setIsErrorConfirmPassword] =
     useState<boolean>(false);
@@ -224,6 +229,40 @@ const SignUp = (props: MyData) => {
   const isStepSkipped = (step: number) => {
     return skipped.has(step);
   };
+  const [count, setCount] = useState<number>(0);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  useEffect(() => {
+    const fetchDataDemand = async () => {
+      try {
+        if (data?.email && emailRegex.test(data?.email)) {
+          const response = await sendRequest<IBackendRes<UserRegister>[]>({
+            // url: "https://artdevs-server.azurewebsites.net/api/user-by-email",
+            // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
+            url: "http://localhost:8080/api/user-by-email",
+            method: "GET",
+            queryParams: {
+              email: `${data?.email}`,
+            },
+          });
+          console.log(">>> check usser exist: ", response);
+          //@ts-ignore
+          if (response?.errorCode === 200) {
+            setIsErrorEmailExist(false);
+            setEmailExist("");
+            setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
+          } else {
+            setIsErrorEmailExist(true);
+            //@ts-ignore
+            setEmailExist(response?.message);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchDataDemand();
+  }, [count]);
 
   const handleNext = () => {
     let newSkipped = skipped;
@@ -232,7 +271,10 @@ const SignUp = (props: MyData) => {
       newSkipped.delete(activeStep);
     }
 
-    setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
+    activeStep == 0
+      ? setCount((preCount) => preCount + 1)
+      : setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
+
     setSkipped(newSkipped);
     handleUserName(data.firstName, data.middleName, data.lastName);
   };
@@ -264,7 +306,7 @@ const SignUp = (props: MyData) => {
   }, []);
 
   const handleRequest = (event: React.KeyboardEvent | React.MouseEvent) => {
-    setActiveStep((prevActiveStep: number) => prevActiveStep - 1);
+    setActiveStep((prevActiveStep: number) => prevActiveStep - 2);
   };
 
   useEffect(() => {
@@ -273,7 +315,6 @@ const SignUp = (props: MyData) => {
         if (activeStep !== 0) {
           setFinish(false);
           handleRequest({} as React.MouseEvent);
-          // handleRequest({} as React.MouseEvent);
           handleShowErrorMessage({ vertical: "top", horizontal: "center" })(
             {} as React.MouseEvent
           );
@@ -311,11 +352,6 @@ const SignUp = (props: MyData) => {
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!passwordRegex.test(data.password) || !emailRegex.test(data.email)) {
-        console.log(
-          ">>> co vo khong",
-          passwordRegex.test(data.password) || emailRegex.test(data.email)
-        );
-
         setDisableButton(true);
         return;
       }
@@ -388,20 +424,37 @@ const SignUp = (props: MyData) => {
         >
           <Box
             sx={{
-              textAlign: "center",
-              padding: "12px 0",
-              fontSize: { xs: "24px", sm: "36px" },
-              fontWeight: "700",
-              wordSpacing: 2,
-              letterSpacing: 1.5,
-              color: "#1976d2",
+              padding: "12px 24px",
               backgroundColor: "#cfd2d4",
               borderTopLeftRadius: "8px",
               borderTopRightRadius: "8px",
+              display: "flex",
+              alignItems: "center",
             }}
           >
-            Đăng Ký Thành Viên
+            <Link href="/">
+              <CardMedia
+                sx={{ width: { xs: "60px", sm: "100px" } }}
+                component="img"
+                image="/Art_Devs_y-removebg-preview.png"
+                alt="logo"
+              />
+            </Link>
+            <Box
+              sx={{
+                fontSize: { xs: "24px", sm: "36px" },
+                fontWeight: "700",
+                wordSpacing: 2,
+                letterSpacing: 1.5,
+                color: "#1976d2",
+                marginX: "24px",
+                "& a": { color: "#3c2cb7", textDecoration: "none" },
+              }}
+            >
+              Chào mừng bạn đến với <Link href="/">ART DEVS</Link>
+            </Box>
           </Box>
+
           <Box
             sx={{
               display: "flex",
@@ -438,6 +491,10 @@ const SignUp = (props: MyData) => {
                   setIsErrorEmail={setIsErrorEmail}
                   setIsErrorPassword={setIsErrorPassword}
                   setIsErrorConfirmPassword={setIsErrorConfirmPassword}
+                  isErrorEmailExist={isErrorEmailExist}
+                  setIsErrorEmailExist={setIsErrorEmailExist}
+                  emailExist={emailExist}
+                  setEmailExist={setEmailExist}
                   errorRegister={errorRegister}
                 />
               ) : activeStep === 1 ? (

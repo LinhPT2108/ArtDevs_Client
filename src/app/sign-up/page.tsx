@@ -120,20 +120,17 @@ const AppSignUp = () => {
             method: "POST",
             body: { ...restData },
           });
-          //@ts-ignore
+
           if (response?.statusCode != 400) {
             const res = await signIn("credentials", {
               username: data?.email,
               password: data?.password,
               redirect: false,
             });
-            console.log(">>> co vo hay k 1");
             if (!res?.error) {
               router.push("/");
             }
           } else {
-            console.log(">>> co vo hay k");
-
             setErrorRegister(response?.message);
           }
           console.log(">>> check res register: ", response);
