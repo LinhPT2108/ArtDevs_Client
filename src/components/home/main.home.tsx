@@ -1,14 +1,16 @@
 import NextAuthWrapper from "@/lib/next.auth.provider";
-import { Grid } from "@mui/material";
+import { Box, Grid, GridSize } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AppMenu from "../left-menu/app.menu";
 import Post from "../posts/post.main";
 import RightPost from "../left-menu/app.right.menu";
 const drawerWidth = 200;
 const Main = styled("main", {
+  //@ts-ignore
   shouldForwardProp: (prop) => prop !== "open",
 })<{
   open?: boolean;
+  //@ts-ignore
 }>(({ theme, open }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
@@ -29,11 +31,12 @@ const Main = styled("main", {
 
 interface IPros {
   openContact: boolean;
-  messages: MessageExample[];
+  post: Post[];
+  user: User;
 }
 
 const MainHome = (pros: IPros) => {
-  const { openContact, messages } = pros;
+  const { user, openContact, post } = pros;
   return (
     <Main
       open={openContact}
@@ -44,7 +47,8 @@ const MainHome = (pros: IPros) => {
       }}
     >
       <Grid container spacing={0} columns={16}>
-        <Grid
+        <Box
+          component={Grid}
           item
           xs={12}
           sm={6}
@@ -56,9 +60,10 @@ const MainHome = (pros: IPros) => {
           }}
         >
           <AppMenu />
-        </Grid>
+        </Box>
 
-        <Grid
+        <Box
+          component={Grid}
           item
           xs={16}
           sm={10}
@@ -69,10 +74,11 @@ const MainHome = (pros: IPros) => {
             padding: { xs: "0 24px", md: "0 0 0 24px" },
           }}
         >
-          <Post messages={messages} />
-        </Grid>
+          <Post user={user} post={post} />
+        </Box>
 
-        <Grid
+        <Box
+          component={Grid}
           item
           xs={12}
           sm={6}
@@ -85,7 +91,7 @@ const MainHome = (pros: IPros) => {
           }}
         >
           <RightPost />
-        </Grid>
+        </Box>
       </Grid>
     </Main>
   );

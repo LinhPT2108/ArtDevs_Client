@@ -15,6 +15,7 @@ import { Alert, CardMedia, Snackbar, SnackbarOrigin } from "@mui/material";
 import Link from "next/link";
 import { sendRequest } from "../utils/api";
 import { preconnect } from "react-dom";
+import "../../style/loading.css";
 // import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
@@ -31,6 +32,17 @@ interface MyData {
 interface State extends SnackbarOrigin {
   open: boolean;
 }
+
+interface CubeSpanProps {
+  index: number;
+}
+const CubeSpan: React.FC<CubeSpanProps> = ({ index }) => {
+  const spanStyle: React.CSSProperties = {
+    ["--i" as any]: index,
+  };
+
+  return <span style={spanStyle} className="cube-span"></span>;
+};
 
 const SignUp = (props: MyData) => {
   const {
@@ -54,6 +66,7 @@ const SignUp = (props: MyData) => {
   const [isErrorConfirmPassword, setIsErrorConfirmPassword] =
     useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [state, setState] = useState<State>({
     open: false,
     vertical: "top",
@@ -236,9 +249,9 @@ const SignUp = (props: MyData) => {
       try {
         if (data?.email && emailRegex.test(data?.email)) {
           const response = await sendRequest<IBackendRes<UserRegister>[]>({
-            // url: "https://artdevs-server.azurewebsites.net/api/user-by-email",
+            url: "https://artdevs-server.azurewebsites.net/api/user-by-email",
             // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-            url: "http://localhost:8080/api/user-by-email",
+            // url: "http://localhost:8080/api/user-by-email",
             method: "GET",
             queryParams: {
               email: `${data?.email}`,
@@ -286,6 +299,7 @@ const SignUp = (props: MyData) => {
   const handleSignUp = () => {
     setFinish(true);
     setDataRegister(data);
+    setLoading(true);
   };
 
   const handleClick = () => {
@@ -306,6 +320,7 @@ const SignUp = (props: MyData) => {
   }, []);
 
   const handleRequest = (event: React.KeyboardEvent | React.MouseEvent) => {
+    setLoading(false);
     setActiveStep((prevActiveStep: number) => prevActiveStep - 2);
   };
 
@@ -359,6 +374,7 @@ const SignUp = (props: MyData) => {
     };
     handleButtonContinue();
   }, [data]);
+
   return (
     <Box
       sx={{
@@ -368,6 +384,31 @@ const SignUp = (props: MyData) => {
         padding: "24px 0",
       }}
     >
+      {loading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            zIndex: 2,
+            backgroundColor: "rgba(232,232,232,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div className="cube-loader">
+            <div className="cube-top"></div>
+            <div className="cube-wrapper">
+              {[0, 1, 2, 3].map((index) => (
+                <CubeSpan key={index} index={index} />
+              ))}
+            </div>
+          </div>
+        </Box>
+      )}
       <Snowfall
         snowflakeCount={200}
         speed={[0, 0.5]}

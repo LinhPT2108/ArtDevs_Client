@@ -21,10 +21,22 @@ import { useRouter } from "next/navigation";
 import BgUtils from "../utils/bg.utils";
 import Snackbar, { SnackbarOrigin } from "@mui/material/Snackbar";
 import Snowfall from "react-snowfall";
+import "../../style/loading.css";
 
 interface State extends SnackbarOrigin {
   open: boolean;
 }
+interface CubeSpanProps {
+  index: number;
+}
+
+const CubeSpan: React.FC<CubeSpanProps> = ({ index }) => {
+  const spanStyle: React.CSSProperties = {
+    ["--i" as any]: index,
+  };
+
+  return <span style={spanStyle} className="cube-span"></span>;
+};
 
 const SignIn = () => {
   const router = useRouter();
@@ -37,7 +49,7 @@ const SignIn = () => {
 
   const [messageErrorEmail, setMessageErrorEmail] = useState<string>("");
   const [messageErrorPassword, setMessageErrorPassword] = useState<string>("");
-
+  const [loading, setLoading] = useState<boolean>(false);
   const [state, setState] = React.useState<State>({
     open: false,
     vertical: "top",
@@ -71,19 +83,27 @@ const SignIn = () => {
       setMessageErrorPassword("Mật khẩu không được để trống !");
       return;
     }
-    const res = await signIn("credentials", {
-      username: email,
-      password: password,
-      redirect: false,
-    });
-    if (!res?.error) {
-      router.push("/");
-    } else {
-      setIsErrorEmail(true);
-      setIsErrorPassword(true);
-      handleClick({ vertical: "top", horizontal: "center" })(
-        {} as React.MouseEvent
-      );
+
+    try {
+      setLoading(true);
+      const res = await signIn("credentials", {
+        username: email,
+        password: password,
+        redirect: false,
+      });
+
+      if (!res?.error) {
+        router.push("/");
+      } else {
+        setIsErrorEmail(true);
+        setIsErrorPassword(true);
+        handleClick({ vertical: "top", horizontal: "center" })(
+          {} as React.MouseEvent
+        );
+      }
+    } catch {
+    } finally {
+      // setLoading(false);
     }
   };
 
@@ -107,6 +127,15 @@ const SignIn = () => {
 
     loadImage();
   }, []);
+  const handleLoginWithSocialMedia = (provider: string) => {
+    try {
+      setLoading(true);
+      signIn(provider);
+    } catch {
+    } finally {
+      // setLoading(false);
+    }
+  };
   return (
     <Box
       sx={{
@@ -114,8 +143,34 @@ const SignIn = () => {
         height: "100%",
         backgroundColor: "#EFF2F5",
         display: "flex",
+        position: "relative",
       }}
     >
+      {loading && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            zIndex: 2,
+            backgroundColor: "rgba(232,232,232,0.3)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div className="cube-loader">
+            <div className="cube-top"></div>
+            <div className="cube-wrapper">
+              {[0, 1, 2, 3].map((index) => (
+                <CubeSpan key={index} index={index} />
+              ))}
+            </div>
+          </div>
+        </Box>
+      )}
       <Snowfall
         snowflakeCount={200}
         speed={[0, 0.5]}
@@ -124,6 +179,7 @@ const SignIn = () => {
         rotationSpeed={[-1, 1]}
         images={snowfallImages}
       />
+
       <Box
         sx={{
           width: { xs: "600px", md: "980px" },
@@ -133,7 +189,7 @@ const SignIn = () => {
         }}
       >
         <Grid container spacing={0} sx={{ margin: "0 auto" }} columns={16}>
-          <Grid xs={16} md={9} item sx={{ display: "flex" }}>
+          <Box component={Grid} xs={16} md={9} item sx={{ display: "flex" }}>
             <Box
               sx={{
                 padding: {
@@ -179,8 +235,8 @@ const SignIn = () => {
 
               {/* <BgUtils color="#e0e0e0" /> */}
             </Box>
-          </Grid>
-          <Grid xs={16} md={7} item sx={{ paddingX: "16px" }}>
+          </Box>
+          <Box component={Grid} xs={16} md={7} item sx={{ paddingX: "16px" }}>
             <Box
               sx={{
                 padding: { xs: "0 12px", sm: "0 18px", md: "0 16px" },
@@ -306,7 +362,8 @@ const SignIn = () => {
                 }}
                 columns={8}
               >
-                <Grid
+                <Box
+                  component={Grid}
                   item
                   xs={8}
                   sx={{
@@ -352,8 +409,9 @@ const SignIn = () => {
                       ĐĂNG NHẬP VỚI FACEBOOK
                     </Box>
                   </Link>
-                </Grid>
-                <Grid
+                </Box>
+                <Box
+                  component={Grid}
                   item
                   xs={8}
                   sx={{
@@ -381,7 +439,7 @@ const SignIn = () => {
                         backgroundColor: "#702118",
                       },
                     }}
-                    onClick={() => signIn("google")}
+                    onClick={() => handleLoginWithSocialMedia("google")}
                   >
                     <GoogleIcon sx={{ fontSize: "32px" }} />
                     <Box
@@ -394,8 +452,9 @@ const SignIn = () => {
                       ĐĂNG NHẬP VỚI GOOGLE
                     </Box>
                   </Link>
-                </Grid>
-                <Grid
+                </Box>
+                <Box
+                  component={Grid}
                   item
                   xs={8}
                   sx={{
@@ -424,7 +483,7 @@ const SignIn = () => {
                         backgroundColor: "#301246",
                       },
                     }}
-                    onClick={() => signIn("github")}
+                    onClick={() => handleLoginWithSocialMedia("github")}
                   >
                     <GitHubIcon
                       sx={{
@@ -442,7 +501,7 @@ const SignIn = () => {
                       ĐĂNG NHẬP VỚI GITHUB
                     </Box>
                   </Link>
-                </Grid>
+                </Box>
               </Grid>
               <Snackbar
                 open={open}
@@ -461,7 +520,7 @@ const SignIn = () => {
                 </Alert>
               </Snackbar>
             </Box>
-          </Grid>
+          </Box>
         </Grid>
       </Box>
     </Box>

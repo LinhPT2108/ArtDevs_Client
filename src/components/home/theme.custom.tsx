@@ -31,4 +31,4 @@ const theme: CustomTheme = {
   // ... other properties
 };
 
-export default CustomTheme;
+export default theme;

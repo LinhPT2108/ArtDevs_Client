@@ -16,7 +16,6 @@ import {
   CardMedia,
   CssBaseline,
   Drawer,
-  Link,
   ToggleButton,
 } from "@mui/material";
 import IconTabs from "./header.nav";
@@ -28,6 +27,7 @@ import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import OptionChat from "../chat/option/chat.option";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 const drawerWidth = 210;
 type Anchor = "top" | "left" | "bottom" | "right";
@@ -252,11 +252,8 @@ export default function AppHeader(pros: IPros) {
               padding: "6px 0",
               margin: "0 6px",
               fontWeight: "bolder",
-            }}
-          >
-            <Link
-              href="/"
-              sx={{
+              "& a": {
+                color: "#0766FF",
                 textDecoration: "none",
                 "@media (min-width: 0px)": {
                   fontSize: "14px",
@@ -267,10 +264,10 @@ export default function AppHeader(pros: IPros) {
                 "@media (min-width: 400px)": {
                   fontSize: "20px",
                 },
-              }}
-            >
-              Art Devs
-            </Link>
+              },
+            }}
+          >
+            <Link href="/">Art Devs</Link>
           </Typography>
           <SearchComponent />
           <IconTabs

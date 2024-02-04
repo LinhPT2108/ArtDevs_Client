@@ -24,15 +24,15 @@ declare global {
     name: string;
     manualFriend: string;
   }
-  interface Post {
-    avatar: SvgIconProps;
-    name: string;
-    timeCreate: Date;
-    content: string;
-    image: string[];
-    totalLike: number;
-    totalComment: number;
-  }
+  // interface Post {
+  //   avatar: SvgIconProps;
+  //   name: string;
+  //   timeCreate: Date;
+  //   content: string;
+  //   image: string[];
+  //   totalLike: number;
+  //   totalComment: number;
+  // }
   interface MessageContent {
     content: String;
     image?: any;
@@ -45,9 +45,9 @@ declare global {
   }
 
   interface User {
-    name: string;
-    email: string;
-    image: string;
+    access_token: string;
+    refresh_token: string;
+    user: UserLogin;
   }
   interface UserRegister {
     userId: string;
@@ -163,5 +163,42 @@ declare global {
       total: number;
     };
     result: T[];
+  }
+  interface Post {
+    postId: string;
+    content: string;
+    time: string;
+    timelineUserId: string;
+    userPost: UserPost;
+    listHashtag: Hashtag[];
+    listImageofPost: ImageofPost[];
+    privacyPostDetails: PostDetails[];
+    totalComment: number;
+    totalLike: number;
+    totalShare: number;
+  }
+  interface UserPost {
+    userId: string;
+    username: string;
+    profilePicUrl?: string;
+  }
+  interface Hashtag {
+    hashtagDetailName: string;
+    id: number;
+    postIdByHashTag: string;
+  }
+  interface ImageofPost {
+    id: number;
+    cloudinaryPublicId: string;
+    imageUrl: string;
+    postID: string;
+    time: string;
+  }
+  interface PostDetails {
+    createDate: string;
+    id: number;
+    postId: string;
+    privacyPostId: number;
+    status: boolean;
   }
 }

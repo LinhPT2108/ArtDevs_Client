@@ -86,6 +86,7 @@ const InforSign = (props: IPros) => {
     setEmailExist,
   } = props;
   const { provinces, districts, wards } = address;
+  console.log(">>>> check address: ,", address);
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =

@@ -5,6 +5,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
+import generateUniqueId from "@/components/utils/generate.id";
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -53,13 +54,27 @@ export const authOptions: AuthOptions = {
           url: "https://artdevs-server.azurewebsites.net/api/user-social",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
           // url: "http://localhost:8080/api/user-social",
-          method: "GET",
-          queryParams: {
-            email: `${profile?.email}`,
+          method: "POST",
+          body: {
+            lastName: "",
+            middleName: "",
+            firstName: `${token.name}`,
+            email: `${token.email}`,
+            password: "",
+            dateOfBirth: "",
             provider: `${account?.provider}`,
+            profilePicUrl: `${token.picture}`,
+            city: "",
+            district: "",
+            ward: "",
+            role: { id: 2, roleName: "user" },
+            userId: generateUniqueId(),
+            username: `${token.name}`,
+            isOnline: false,
+            listDemandOfUser: [],
+            listSkillOfUser: [],
           },
         });
-
         if (res.userdto) {
           if (token.picture) {
             res.userdto.profilePicUrl = token.picture;
