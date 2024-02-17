@@ -201,4 +201,15 @@ declare global {
     privacyPostId: number;
     status: boolean;
   }
+
+  interface AddPost {
+    postId: string;
+    content: string;
+    time: Date;
+    timelineUserId: Date;
+    userId: string;
+    listImageofPost: string[] | null;
+    privacyPostDetails: number;
+    listHashtag: number[] | null;
+  }
 }

@@ -9,10 +9,12 @@ export default async function Home() {
   const session: User | null = await getServerSession(authOptions);
   const fetchPost = await sendRequest<Post[]>({
     // url: "https://artdevs-server.azurewebsites.net/api/post/page",
-    url: "http://localhost:8080/api/post/page",
+    // url: "http://localhost:8080/api/post/page",
+    url: "http://localhost:8080/api/post",
     method: "GET",
+    headers: { authorization: `Bearer ${session?.access_token}` },
     queryParams: {
-      page: 1,
+      page: 0,
     },
     // headers: {
     //   Authorization: `Bearer ${session?.access_token}`,
@@ -20,6 +22,7 @@ export default async function Home() {
   });
 
   // const [post, setPost] = useState();
+  console.log(">>> check fetch post: ", fetchPost);
 
   if (session) {
     return <NextWrapper user={session} fetchPost={fetchPost} />;

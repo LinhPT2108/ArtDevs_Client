@@ -14,7 +14,6 @@ interface IPros {
 export default function AppHome(pros: IPros) {
   const { user, fetchPost } = pros;
   const [post, setPost] = useState<Post[]>([]);
-  console.log(">>> check post: ", post);
   const [value, setValue] = useState<number>(0);
   const [openContact, setOpenContact] = useState<boolean>(true);
   const [pageUrl, setPageUrl] = useState<string>("home");

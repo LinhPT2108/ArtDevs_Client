@@ -25,35 +25,15 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import { red } from "@mui/material/colors";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import ClearIcon from "@mui/icons-material/Clear";
+import { sendRequest } from "../utils/api";
+import { generateUniqueId, isImage } from "../utils/utils";
+import Slider from "react-slick";
+import CustomPaging from "./media.post";
 
-const isImage = (url: string) => {
-  try {
-    const extension = url.split(".").pop()?.toLowerCase();
-    if (
-      extension === "jpg" ||
-      extension === "jpeg" ||
-      extension === "png" ||
-      extension === "gif"
-    ) {
-      return "image";
-    } else if (
-      extension === "mp4" ||
-      extension === "webm" ||
-      extension === "avi"
-    ) {
-      return "video";
-    } else {
-      return "file";
-    }
-  } catch (error) {
-    console.error("Error checking content type:", error);
-    return "unknown";
-  }
-};
 const formatDateString = (input: string | null): string => {
   if (input) {
     const dateObject = parseISO(input);
@@ -71,7 +51,8 @@ const style = {
   transform: "translate(-50%, -50%)",
   width: 400,
   bgcolor: "background.paper",
-  border: "2px solid #000",
+  borderRadius: "12px",
+  // border: "2px solid #000",
   // p: 4,
 };
 
@@ -82,13 +63,12 @@ interface IPros {
 
 const Post = (pros: IPros) => {
   const { post, user } = pros;
-  console.log(">>> check post: ", post);
-
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [openPost, setOpenPost] = React.useState(false);
   const handleOpenPost = () => setOpenPost(true);
   const handleClosePost = () => setOpenPost(false);
+
   // Số lượng phần tử muốn thêm khi cuộn tới phần tử cuối cùng
 
   // Thực hiện khi cuộn tới phần tử cuối cùng
@@ -101,11 +81,46 @@ const Post = (pros: IPros) => {
   //     setVisibleItems((prev) => prev + itemsToAdd);
   //   }
   // };
+
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const [postData, setPostData] = useState<AddPost>({
+    postId: "",
+    content: "",
+    time: new Date(),
+    timelineUserId: new Date(),
+    userId: user.user.userId,
+    listImageofPost: null,
+    privacyPostDetails: 1,
+    listHashtag: null,
+  });
+
+  const handleContentPost = (value: string) => {
+    setPostData((prevData) => ({
+      ...prevData,
+      content: value,
+    }));
+  };
+  const handlePost = async () => {
+    setPostData((prevData) => ({
+      ...prevData,
+      postId: generateUniqueId(),
+    }));
+    console.log(">>> check post data: ", postData.postId);
+    const response = await sendRequest({
+      // url: "https://artdevs-server.azurewebsites.net/api/register",
+      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
+      url: "http://localhost:8080/api/post",
+      method: "POST",
+      headers: { authorization: `Bearer ${user.access_token}` },
+      body: { ...postData },
+    });
+    console.log(">>> check post data: ", response);
   };
 
   if (post?.length == 0) {
@@ -123,7 +138,13 @@ const Post = (pros: IPros) => {
       </Box>
     );
   }
-  console.log(">>> chekc post: ", post);
+  var settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+  };
 
   return (
     <Box sx={{ overflowY: "auto", height: "100%" }}>
@@ -326,10 +347,9 @@ const Post = (pros: IPros) => {
                 </Link>
               ))}
             </Box>
-            <Box
-              sx={{ display: "flex", width: "100%", justifyContent: "center" }}
-            >
-              {p?.listImageofPost?.map((item) => (
+            {/* <Box sx={{ width: "100%" }} className="slider-container"> */}
+            {p?.listImageofPost?.map((item) => (
+              <Slider {...settings}>
                 <CardMedia
                   key={item.id}
                   component={
@@ -346,11 +366,12 @@ const Post = (pros: IPros) => {
                   sx={{
                     objectFit: "cover",
                     maxWidth: "100%",
-                    width: `${p?.listImageofPost?.length > 1 ? "50%" : "100%"}`,
+                    width: ` 100%`,
                   }}
                 />
-              ))}
-            </Box>
+              </Slider>
+            ))}
+            {/* </Box> */}
 
             <CardActions disableSpacing>
               <IconButton aria-label="add to favorites">
@@ -473,6 +494,7 @@ const Post = (pros: IPros) => {
                 className="123"
               >
                 <TextField
+                  onChange={(e) => handleContentPost(e.target.value)}
                   multiline
                   rows={4}
                   label={`${user.user.username} ơi, bạn đang nghĩ gì thế?`}
@@ -494,7 +516,12 @@ const Post = (pros: IPros) => {
               </CardContent>
             </Card>
             <Box sx={{ width: "100%", padding: " 6px 16px" }}>
-              <Button variant="contained" fullWidth sx={{}}>
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{}}
+                onClick={() => handlePost()}
+              >
                 Đăng
               </Button>
             </Box>

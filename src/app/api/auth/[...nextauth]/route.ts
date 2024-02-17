@@ -5,7 +5,7 @@ import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
-import generateUniqueId from "@/components/utils/generate.id";
+import { generateUniqueId } from "@/components/utils/utils";
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -17,9 +17,9 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          url: "https://artdevs-server.azurewebsites.net/api/login",
+          // url: "https://artdevs-server.azurewebsites.net/api/login",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          // url: "http://localhost:8080/api/login",
+          url: "http://localhost:8080/api/login",
           method: "POST",
           body: {
             email: credentials?.username,
@@ -51,9 +51,9 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account, profile, trigger }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          url: "https://artdevs-server.azurewebsites.net/api/user-social",
+          // url: "https://artdevs-server.azurewebsites.net/api/user-social",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          // url: "http://localhost:8080/api/user-social",
+          url: "http://localhost:8080/api/user-social",
           method: "POST",
           body: {
             lastName: "",
