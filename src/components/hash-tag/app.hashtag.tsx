@@ -12,12 +12,12 @@ interface IPros {
   user: User | null;
 }
 
-export default function AppHomeMentor(pros: IPros) {
+export default function AppHomeHashtag(pros: IPros) {
   const { user } = pros;
   const [value, setValue] = useState<number>(0);
   const [openContact, setOpenContact] = useState<boolean>(true);
   const [pageUrl, setPageUrl] = useState<string>("home");
-  const url = "mentor";
+  const url = "hash-tag";
   const handleDrawerOpen = (openContact: boolean) => {
     setOpenContact(openContact);
   };

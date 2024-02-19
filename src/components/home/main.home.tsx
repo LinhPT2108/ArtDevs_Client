@@ -5,6 +5,7 @@ import AppMenu from "../left-menu/app.menu";
 import Post from "../posts/post.main";
 import RightPost from "../left-menu/app.right.menu";
 import HomeMentor from "../mentor/home.mentor";
+import HomeHashtag from "../hash-tag/home.hashtag";
 const drawerWidth = 200;
 const Main = styled("main", {
   //@ts-ignore
@@ -108,7 +109,11 @@ const MainHome = (pros: IPros) => {
               justifyContent: "flex-start",
             }}
           >
-            <HomeMentor user={user} />
+            {url === "mentor" ? (
+              <HomeMentor user={user} />
+            ) : (
+              <HomeHashtag user={user} />
+            )}
           </Box>
         )}
       </Grid>
