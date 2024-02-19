@@ -57,8 +57,8 @@ const style = {
 };
 
 interface IPros {
-  post: Post[];
-  user: User;
+  post?: Post[];
+  user: User | null;
 }
 
 const Post = (pros: IPros) => {
@@ -94,7 +94,7 @@ const Post = (pros: IPros) => {
     content: "",
     time: new Date(),
     timelineUserId: new Date(),
-    userId: user.user.userId,
+    userId: user ? user?.user.userId : "",
     listImageofPost: null,
     privacyPostDetails: 1,
     listHashtag: null,
@@ -117,7 +117,7 @@ const Post = (pros: IPros) => {
       // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
       url: "http://localhost:8080/api/post",
       method: "POST",
-      headers: { authorization: `Bearer ${user.access_token}` },
+      headers: { authorization: `Bearer ${user?.access_token}` },
       body: { ...postData },
     });
     console.log(">>> check post data: ", response);
@@ -178,7 +178,7 @@ const Post = (pros: IPros) => {
               }}
               aria-label="recipe"
               alt="Profile Picture"
-              src={user.user.profilePicUrl}
+              src={user?.user?.profilePicUrl}
             ></Avatar>
           }
           title={
@@ -240,7 +240,7 @@ const Post = (pros: IPros) => {
                 },
               }}
             >
-              {user.user.username}
+              {user?.user?.username}
             </Button>
           }
         />
@@ -347,11 +347,11 @@ const Post = (pros: IPros) => {
                 </Link>
               ))}
             </Box>
-            {/* <Box sx={{ width: "100%" }} className="slider-container"> */}
-            {p?.listImageofPost?.map((item) => (
-              <Slider {...settings}>
+            <Box sx={{ width: "100%" }} className="slider-container">
+              {/* <Slider {...settings}> */}
+              {p?.listImageofPost?.map((item) => (
+                // <div key={item.id}>
                 <CardMedia
-                  key={item.id}
                   component={
                     isImage(item.imageUrl) === "image"
                       ? "img"
@@ -369,9 +369,10 @@ const Post = (pros: IPros) => {
                     width: ` 100%`,
                   }}
                 />
-              </Slider>
-            ))}
-            {/* </Box> */}
+                // </div>
+              ))}
+              {/* </Slider> */}
+            </Box>
 
             <CardActions disableSpacing>
               <IconButton aria-label="add to favorites">
@@ -497,7 +498,7 @@ const Post = (pros: IPros) => {
                   onChange={(e) => handleContentPost(e.target.value)}
                   multiline
                   rows={4}
-                  label={`${user.user.username} ơi, bạn đang nghĩ gì thế?`}
+                  label={`${user?.user?.username} ơi, bạn đang nghĩ gì thế?`}
                   variant="outlined"
                   fullWidth
                   sx={{ outline: "none", border: "none", borderWidth: 0 }}

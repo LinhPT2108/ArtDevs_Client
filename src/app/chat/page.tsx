@@ -6,11 +6,14 @@ import RightPost from "@/components/left-menu/app.right.menu";
 import ContactMenu from "@/components/left-menu/app.contact";
 import Post from "@/components/posts/post.main";
 import { Box, CssBaseline, Drawer, Grid } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import OptionChat from "@/components/chat/option/chat.option";
 import ChatMessagesForm from "@/components/chat/chat.form";
 import ChatNone from "@/components/chat/chat.none";
+import { formatTimeDifference } from "@/components/utils/utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
 const drawerWidth = 280;
 
@@ -40,6 +43,14 @@ export default function Message() {
   const [pageUrl, setPageUrl] = React.useState<string>("chat");
   const [openContact, setOpenContact] = React.useState<boolean>(true);
   const [user, setUser] = React.useState<IUser>();
+  const [userLogin, setUserLogin] = useState<User | null>(null);
+  useEffect(() => {
+    const getUserLogin = async () => {
+      const session: User | null = await getServerSession(authOptions);
+      session ? setUserLogin(session) : setUserLogin(null);
+    };
+    getUserLogin;
+  }, []);
   const getUser = (user: IUser) => {
     setUser(user);
   };
@@ -52,29 +63,13 @@ export default function Message() {
   const handleChange = (newValue: number) => {
     setValue(newValue);
   };
-  function formatTimeDifference(startTime: Date, endTime: Date): string {
-    const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 
-    const seconds = Math.floor(differenceInMilliseconds / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-
-    if (days > 0) {
-      return `${days} ngày trước`;
-    } else if (hours > 0) {
-      return `${hours} giờ trước`;
-    } else if (minutes > 0) {
-      return `${minutes} phút trước`;
-    } else {
-      return `${seconds} giây trước`;
-    }
-  }
   const ref = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
     // handlePost(messageExamples);
   }, [value]);
+
   return (
     <>
       <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
@@ -86,6 +81,7 @@ export default function Message() {
               handleChangeTab={handleChange}
               openContact={openContact}
               pageUrl={pageUrl}
+              user={userLogin}
             />
           </Grid>
         </Grid>

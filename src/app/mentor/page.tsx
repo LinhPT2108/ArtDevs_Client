@@ -1,10 +1,13 @@
-import { Button } from "@mui/material";
-
-const AppTest = () => {
+import NextAuthWrapper from "@/lib/next.auth.provider";
+import NextWrapperMentor from "@/lib/next.mentor";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
+const AppMentor = async () => {
+  const session: User | null = await getServerSession(authOptions);
   return (
-    <>
-      <Button>hello 123</Button>
-    </>
+    <NextAuthWrapper>
+      <NextWrapperMentor user={session} />
+    </NextAuthWrapper>
   );
 };
-export default AppTest;
+export default AppMentor;

@@ -4,6 +4,7 @@ import { styled } from "@mui/material/styles";
 import AppMenu from "../left-menu/app.menu";
 import Post from "../posts/post.main";
 import RightPost from "../left-menu/app.right.menu";
+import HomeMentor from "../mentor/home.mentor";
 const drawerWidth = 200;
 const Main = styled("main", {
   //@ts-ignore
@@ -31,12 +32,13 @@ const Main = styled("main", {
 
 interface IPros {
   openContact: boolean;
-  post: Post[];
-  user: User;
+  user: User | null;
+  post?: Post[];
+  url: string;
 }
 
 const MainHome = (pros: IPros) => {
-  const { user, openContact, post } = pros;
+  const { user, openContact, url, post } = pros;
   return (
     <Main
       open={openContact}
@@ -61,37 +63,54 @@ const MainHome = (pros: IPros) => {
         >
           <AppMenu />
         </Box>
-
-        <Box
-          component={Grid}
-          item
-          xs={16}
-          sm={10}
-          md={8}
-          lg={8}
-          sx={{
-            marginTop: "12px",
-            padding: { xs: "0 24px", md: "0 0 0 24px" },
-          }}
-        >
-          <Post user={user} post={post} />
-        </Box>
-
-        <Box
-          component={Grid}
-          item
-          xs={12}
-          sm={6}
-          md={4}
-          lg={4}
-          sx={{
-            display: { xs: "none", md: "flex" },
-            padding: "0px 12px 0px 12px",
-            justifyContent: "flex-start",
-          }}
-        >
-          <RightPost />
-        </Box>
+        {url === "home" ? (
+          <>
+            <Box
+              component={Grid}
+              item
+              xs={16}
+              sm={10}
+              md={8}
+              lg={8}
+              sx={{
+                marginTop: "12px",
+                padding: { xs: "0 24px", md: "0 0 0 24px" },
+              }}
+            >
+              <Post user={user} post={post} />
+            </Box>
+            <Box
+              component={Grid}
+              item
+              xs={12}
+              sm={6}
+              md={4}
+              lg={4}
+              sx={{
+                display: { xs: "none", md: "flex" },
+                padding: "0px 12px 0px 12px",
+                justifyContent: "flex-start",
+              }}
+            >
+              <RightPost />
+            </Box>
+          </>
+        ) : (
+          <Box
+            component={Grid}
+            item
+            xs={16}
+            sm={10}
+            md={12}
+            sx={{
+              display: { xs: "none", md: "flex" },
+              padding: "0px 12px 0px 12px",
+              justifyContent: "flex-start",
+            }}
+          >
+            <HomeMentor user={user} />
+          </Box>
+        )}
       </Grid>
     </Main>
   );

@@ -57,7 +57,7 @@ interface IPros {
   handleChangeTab: (newValue: number) => void;
   openContact: boolean;
   pageUrl: string;
-  user: User;
+  user: User | null;
 }
 export default function AppHeader(pros: IPros) {
   const { data: session, status } = useSession();

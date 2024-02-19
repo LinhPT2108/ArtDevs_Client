@@ -10,7 +10,7 @@ export default async function Home() {
   const fetchPost = await sendRequest<Post[]>({
     // url: "https://artdevs-server.azurewebsites.net/api/post/page",
     // url: "http://localhost:8080/api/post/page",
-    url: "http://localhost:8080/api/post",
+    url: "http://localhost:8080/api/post-by-user-logged",
     method: "GET",
     headers: { authorization: `Bearer ${session?.access_token}` },
     queryParams: {

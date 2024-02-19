@@ -229,7 +229,12 @@ export default function AppHome(pros: IPros) {
         }}
       >
         <CssBaseline />
-        <MainHome openContact={openContact} post={post} user={user} />
+        <MainHome
+          openContact={openContact}
+          post={post}
+          user={user}
+          url={pageUrl}
+        />
         <Drawer
           sx={{
             width: drawerWidth,
