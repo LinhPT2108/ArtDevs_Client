@@ -56,7 +56,7 @@ const KnowledgeSign = (props: IProps) => {
           <Autocomplete
             multiple
             id="checkboxes-tags-demo"
-            options={programingLanguage}
+            options={programingLanguage ? programingLanguage : []}
             disableCloseOnSelect
             getOptionLabel={(option) => option.languageName}
             value={selectedTopics}

@@ -37,7 +37,7 @@ const HomeHashtag = (pros: IPros) => {
       <Grid container columns={16} spacing={2}>
         {listHashtag &&
           listHashtag?.map((item, index) => (
-            <Grid item xs={16} md={8} key={index}>
+            <Grid item xs={12} md={8} key={index}>
               <Card sx={{ borderRadius: "32px" }}>
                 <CardMedia
                   component="img"

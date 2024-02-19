@@ -81,9 +81,9 @@ const AppSignUp = () => {
     const fetchDataDemand = async () => {
       try {
         const response = await sendRequest<MyLanguageProgram[]>({
-          url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
+          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-          // url: "http://localhost:8080/api/programingLanguage",
+          url: "http://localhost:8080/api/programingLanguage",
           method: "GET",
         });
         response && setProgramingLanguage(response);
@@ -104,9 +104,9 @@ const AppSignUp = () => {
           const { gender, confirmPassword, ...restData } = data;
           console.log(">>> check data register: ", data);
           const response = await sendRequest<IBackendRes<UserLogin>>({
-            url: "https://artdevs-server.azurewebsites.net/api/register",
+            // url: "https://artdevs-server.azurewebsites.net/api/register",
             // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-            // url: "http://localhost:8080/api/register",
+            url: "http://localhost:8080/api/register",
             method: "POST",
             body: { ...restData },
           });
