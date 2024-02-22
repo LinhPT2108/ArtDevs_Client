@@ -1,21 +1,14 @@
 "use client";
-import AppHeader from "@/components/header/app.header";
-import BottomNavbar from "@/components/header/header.bottom";
-import AppMenu from "@/components/left-menu/app.menu";
-import RightPost from "@/components/left-menu/app.right.menu";
-import ContactMenu from "@/components/left-menu/app.contact";
-import Post from "@/components/posts/post.main";
-import { Box, CssBaseline, Drawer, Grid } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { styled } from "@mui/material/styles";
-import OptionChat from "@/components/chat/option/chat.option";
 import ChatMessagesForm from "@/components/chat/chat.form";
 import ChatNone from "@/components/chat/chat.none";
+import OptionChat from "@/components/chat/option/chat.option";
+import ContactMenu from "@/components/left-menu/app.contact";
 import { formatTimeDifference } from "@/components/utils/utils";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
-
-const drawerWidth = 280;
+import { DRAWER_WIDTH } from "@/components/utils/veriable.global";
+import { useDrawer } from "@/lib/custom.content";
+import { Box, CssBaseline, Drawer } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import React from "react";
 
 const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
   open?: boolean;
@@ -26,7 +19,7 @@ const Main = styled("main", { shouldForwardProp: (prop) => prop !== "open" })<{
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginRight: -drawerWidth,
+  marginRight: -(DRAWER_WIDTH + 80),
   ...(open && {
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.easeOut,
@@ -43,22 +36,12 @@ export default function Message() {
   const [pageUrl, setPageUrl] = React.useState<string>("chat");
   const [openContact, setOpenContact] = React.useState<boolean>(true);
   const [user, setUser] = React.useState<IUser>();
-  const [userLogin, setUserLogin] = useState<User | null>(null);
-  useEffect(() => {
-    const getUserLogin = async () => {
-      const session: User | null = await getServerSession(authOptions);
-      session ? setUserLogin(session) : setUserLogin(null);
-    };
-    getUserLogin;
-  }, []);
+  const { drawerOpen, setDrawerOpen } = useDrawer();
   const getUser = (user: IUser) => {
     setUser(user);
   };
   const handlePost = (message: MessageExample[]) => {
     setPost(message);
-  };
-  const handleDrawerOpen = (openContact: boolean) => {
-    setOpenContact(openContact);
   };
   const handleChange = (newValue: number) => {
     setValue(newValue);
@@ -71,112 +54,70 @@ export default function Message() {
   }, [value]);
 
   return (
-    <>
-      <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
-        <Grid container spacing={0} columns={16}>
-          <Grid item xs={16}>
-            <AppHeader
-              handleDrawerOpen={handleDrawerOpen}
-              tabValue={value}
-              handleChangeTab={handleChange}
-              openContact={openContact}
-              pageUrl={pageUrl}
-              user={userLogin}
-            />
-          </Grid>
-        </Grid>
-      </Box>
+    <Box
+      ref={ref}
+      sx={{
+        display: "flex",
+        flexGrow: 1,
+        marginTop: "0px",
+        backgroundColor: "#ffffff",
+        paddingTop: "85px",
+      }}
+    >
+      <CssBaseline />
       <Box
-        ref={ref}
         sx={{
-          display: "flex",
-          flexGrow: 1,
-          marginTop: "0px",
-          backgroundColor: "#ffffff",
-          paddingTop: "85px",
+          display: { xs: "none", sm: "block" },
+          padding: "0px 12px 0px 12px",
+          position: "relative",
         }}
       >
-        <CssBaseline />
+        <ContactMenu
+          openContact={openContact}
+          pageUrl={pageUrl}
+          getUser={getUser}
+        />
+      </Box>
+      <Main
+        open={openContact}
+        sx={{
+          paddingTop: "0",
+          paddingX: { xs: 0, sm: "24px", md: "48px", lg: "64px" },
+          marginLeft: { xs: "0", sm: "228px" },
+        }}
+      >
         <Box
           sx={{
-            display: { xs: "none", sm: "block" },
-            padding: "0px 12px 0px 12px",
-            position: "relative",
+            marginTop: "12px",
           }}
         >
-          <ContactMenu
-            openContact={openContact}
-            pageUrl={pageUrl}
-            getUser={getUser}
-          />
-        </Box>
-        <Main
-          open={openContact}
-          sx={{
-            paddingTop: "0",
-            paddingX: { xs: 0, sm: "24px", md: "48px", lg: "64px" },
-            marginLeft: { xs: "0", sm: "228px" },
-          }}
-        >
-          <Box
-            sx={{
-              marginTop: "12px",
-            }}
-          >
-            {user ? (
-              <ChatMessagesForm
-                formatTimeDifference={formatTimeDifference}
-                data={user}
-                pageUrl="chat"
-              />
-            ) : (
-              <ChatNone />
-            )}
-          </Box>
-        </Main>
-        <Drawer
-          sx={{
-            width: drawerWidth,
-            flexShrink: 0,
-            "& .MuiDrawer-paper": {
-              width: drawerWidth,
-              backgroundColor: "#ffffff",
-            },
-            zIndex: `${openContact ? "1201" : "999"}`,
-          }}
-          variant="persistent"
-          anchor="right"
-          open={openContact}
-        >
-          {pageUrl == "home" ? (
-            <ContactMenu
-              openContact={openContact}
-              pageUrl={pageUrl}
-              getUser={getUser}
+          {user ? (
+            <ChatMessagesForm
+              formatTimeDifference={formatTimeDifference}
+              data={user}
+              pageUrl="chat"
             />
           ) : (
-            <OptionChat />
+            <ChatNone />
           )}
-        </Drawer>
-      </Box>
-      <Box sx={{ flexGrow: 1, marginTop: "0px" }}>
-        <Grid container spacing={0} columns={16}>
-          <Grid
-            item
-            xs={16}
-            sx={{
-              display: { xs: "block", md: "none" },
-            }}
-          >
-            <BottomNavbar
-              pros={handlePost}
-              tabValue={value}
-              handleChangeTab={handleChange}
-              sx={{ zIndex: 1 }}
-            />
-          </Grid>
-        </Grid>
-      </Box>
-    </>
+        </Box>
+      </Main>
+      <Drawer
+        sx={{
+          width: DRAWER_WIDTH + 80,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: DRAWER_WIDTH + 80,
+            backgroundColor: "#ffffff",
+          },
+          zIndex: `${drawerOpen ? "1201" : "999"}`,
+        }}
+        variant="persistent"
+        anchor="right"
+        open={drawerOpen}
+      >
+        <OptionChat />
+      </Drawer>
+    </Box>
   );
 }

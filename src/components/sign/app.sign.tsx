@@ -9,8 +9,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { generateUniqueId } from "../utils/utils";
+import { useUser } from "@/lib/custom.content";
 
 const AppSignUp = () => {
+  const { setUser } = useUser();
   const [errorRegister, setErrorRegister] = useState<string>("");
   const [data, setData] = useState<UserRegister>();
   const [programingLanguage, setProgramingLanguage] = useState<
@@ -110,7 +112,6 @@ const AppSignUp = () => {
             method: "POST",
             body: { ...restData },
           });
-
           if (response?.statusCode != 400) {
             const res = await signIn("credentials", {
               username: data?.email,
@@ -119,6 +120,8 @@ const AppSignUp = () => {
             });
             if (!res?.error) {
               router.push("/");
+              //@ts-ignore
+              setUser(res);
             }
           } else {
             setErrorRegister(response?.message);

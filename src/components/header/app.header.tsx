@@ -28,8 +28,15 @@ import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import OptionChat from "../chat/option/chat.option";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import {
+  DRAWER_WIDTH,
+  getDrawerOpen,
+  getGlobalUser,
+} from "../utils/veriable.global";
+import { useUser, useWidthScreen } from "@/lib/custom.content";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-const drawerWidth = 210;
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
@@ -42,12 +49,12 @@ const AppBar = styled(MuiAppBar, {
     duration: theme.transitions.duration.leavingScreen,
   }),
   ...(open && {
-    width: `calc(100% - ${drawerWidth}px)`,
+    width: `calc(100% - ${DRAWER_WIDTH + 10}px)`,
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginRight: drawerWidth,
+    marginRight: DRAWER_WIDTH + 10,
   }),
 }));
 
@@ -57,15 +64,11 @@ interface IPros {
   handleChangeTab: (newValue: number) => void;
   openContact: boolean;
   pageUrl: string;
-  user: User | null;
+  // user: User | null;
 }
 export default function AppHeader(pros: IPros) {
-  const { data: session, status } = useSession();
-  console.log(">>> check user: ", session);
-
+  const { widthScreen, setWidthScreen } = useWidthScreen();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] =
-    React.useState<null | HTMLElement>(null);
 
   const isMenuOpen = Boolean(anchorEl);
 
@@ -73,13 +76,8 @@ export default function AppHeader(pros: IPros) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
-    handleMobileMenuClose();
   };
 
   const menuId = "primary-search-account-menu";
@@ -105,7 +103,7 @@ export default function AppHeader(pros: IPros) {
   );
 
   const [selectedContact, setSelectedContact] = React.useState(false);
-  const [openContact, setOpenContact] = React.useState(false);
+  const [openContact, setOpenContact] = React.useState(!pros.openContact);
   const [selectedMenu, setSelectedMenu] = React.useState(false);
   const [state, setState] = React.useState({
     top: false,
@@ -140,6 +138,7 @@ export default function AppHeader(pros: IPros) {
     const handleResize = () => {
       const isLargeScreen = window.innerWidth > 600;
       setWindowSize(window.innerWidth);
+      setWidthScreen(window.innerWidth);
       if (isLargeScreen && selectedMenu) {
         toggleDrawer("left", !selectedMenu)({} as React.MouseEvent);
       }
@@ -151,8 +150,10 @@ export default function AppHeader(pros: IPros) {
       ) {
         setSelectedContact(true);
         pros.handleDrawerOpen(selectedContact);
+        toggleDrawer("right", openContact)({} as React.MouseEvent);
       }
       if (window.innerWidth >= 900 && openContact) {
+        console.log(">>> check function");
         toggleDrawer("right", !openContact)({} as React.MouseEvent);
       }
     };
@@ -204,8 +205,13 @@ export default function AppHeader(pros: IPros) {
     </Box>
   );
 
+  const { user } = useUser();
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+      }}
+    >
       <CssBaseline />
       <AppBar
         position="fixed"
@@ -415,11 +421,11 @@ export default function AppHeader(pros: IPros) {
                 padding: { xs: "8px", sm: "12px" },
               }}
             >
-              {session?.user ? (
-                session?.user?.profilePicUrl ? (
+              {user?.user ? (
+                user?.user?.profilePicUrl ? (
                   <Avatar
-                    alt={session?.user?.firstName || ""}
-                    src={session?.user?.profilePicUrl}
+                    alt={user?.user?.firstName || ""}
+                    src={user?.user?.profilePicUrl}
                   />
                 ) : (
                   <AccountCircle

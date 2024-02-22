@@ -6,6 +6,10 @@ import GoogleProvider from "next-auth/providers/google";
 import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { generateUniqueId } from "@/components/utils/utils";
+import {
+  getGlobalUser,
+  setGlobalUser,
+} from "@/components/utils/veriable.global";
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -27,6 +31,9 @@ export const authOptions: AuthOptions = {
           },
         });
         if (res?.userdto) {
+          //@ts-ignore
+          setGlobalUser(res);
+
           return res as any;
         } else {
           //@ts-ignore
@@ -82,6 +89,8 @@ export const authOptions: AuthOptions = {
           token.access_token = res.token;
           token.refresh_token = res.refeshToken;
           token.user = res.userdto;
+          //@ts-ignore
+          setGlobalUser(res);
         }
       }
       if (trigger === "signIn" && account?.provider === "credentials") {
@@ -91,6 +100,8 @@ export const authOptions: AuthOptions = {
         token.refresh_token = user.refeshToken;
         //@ts-ignore
         token.user = user.userdto;
+        //@ts-ignore
+        setGlobalUser(user);
       }
       return token;
     },

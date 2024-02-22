@@ -12,7 +12,6 @@ import SliderAbout from "./about.slide";
 import ShareAbout from "./about.share";
 import LanguageAbout from "./about.language";
 import FooterAbout from "./about.footer";
-import { signIn } from "next-auth/react";
 
 const About = () => {
   return (

@@ -1,13 +1,5 @@
-import NextAuthWrapper from "@/lib/next.auth.provider";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
-import NextWrapperHashtag from "@/lib/next.hashtag";
-const AppMentor = async () => {
-  const session: User | null = await getServerSession(authOptions);
-  return (
-    <NextAuthWrapper>
-      <NextWrapperHashtag user={session} />
-    </NextAuthWrapper>
-  );
+import HomeHashtag from "@/components/hash-tag/home.hashtag";
+const AppMentor = () => {
+  return <HomeHashtag />;
 };
 export default AppMentor;

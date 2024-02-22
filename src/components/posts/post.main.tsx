@@ -1,3 +1,4 @@
+"use client";
 import {
   Autocomplete,
   Avatar,
@@ -25,14 +26,18 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import { red } from "@mui/material/colors";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import ClearIcon from "@mui/icons-material/Clear";
 import { sendRequest } from "../utils/api";
 import { generateUniqueId, isImage } from "../utils/utils";
+import "../../style/post-loading.css";
 import Slider from "react-slick";
 import CustomPaging from "./media.post";
+import { useUser } from "@/lib/custom.content";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import useSWR, { SWRResponse } from "swr";
 
 const formatDateString = (input: string | null): string => {
   if (input) {
@@ -57,30 +62,56 @@ const style = {
 };
 
 interface IPros {
+  user: User;
   post?: Post[];
-  user: User | null;
 }
 
-const Post = (pros: IPros) => {
-  const { post, user } = pros;
+const Post = ({ user, post }: IPros) => {
+  // const { user, setUser } = useUser();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [openPost, setOpenPost] = React.useState(false);
   const handleOpenPost = () => setOpenPost(true);
   const handleClosePost = () => setOpenPost(false);
+  const [dataLoading, setDataLoading] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [endPost, setEndPost] = useState<boolean>(false);
+  const [endTextPost, setEndTextPost] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
 
-  // Số lượng phần tử muốn thêm khi cuộn tới phần tử cuối cùng
-
-  // Thực hiện khi cuộn tới phần tử cuối cùng
-  // const handleScroll = (event: React.UIEvent<HTMLElement>) => {
-  //   const element = event.target as HTMLElement;
-
-  //   // Kiểm tra xem đã cuộn tới phần tử cuối cùng chưa
-  //   if (element.scrollHeight - element.scrollTop === element.clientHeight) {
-  //     // Tăng số lượng phần tử hiển thị lên
-  //     setVisibleItems((prev) => prev + itemsToAdd);
-  //   }
-  // };
+  useEffect(() => {
+    const handleScroll = () => {
+      const element = document.documentElement;
+      const isAtBottom =
+        element.scrollTop + element.clientHeight >= element.scrollHeight;
+      if (isAtBottom && !loading) {
+        const fetchData = async () => {
+          !endPost ? setLoading(true) : setEndTextPost("Bạn đã xem hết !");
+          const newData = await sendRequest<Post[]>({
+            url: GLOBAL_URL + "/api/post/page",
+            method: "GET",
+            headers: { authorization: `Bearer ${user?.access_token}` },
+            queryParams: {
+              page: `${page}`,
+            },
+          });
+          //@ts-ignore
+          if (newData?.statusCode == 403 || newData.length == 0) {
+            setEndPost(true);
+          } else {
+            setDataLoading((prevData) => [...prevData, ...newData]);
+            setPage((prevPage) => prevPage + 1);
+            setLoading(false);
+          }
+        };
+        fetchData();
+      }
+    };
+    !endPost && window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [loading]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -94,7 +125,7 @@ const Post = (pros: IPros) => {
     content: "",
     time: new Date(),
     timelineUserId: new Date(),
-    userId: user ? user?.user.userId : "",
+    userId: user ? user?.user?.userId : "",
     listImageofPost: null,
     privacyPostDetails: 1,
     listHashtag: null,
@@ -123,7 +154,25 @@ const Post = (pros: IPros) => {
     console.log(">>> check post data: ", response);
   };
 
-  if (post?.length == 0) {
+  const fetchData = async (url: string) => {
+    return await sendRequest<Post[]>({
+      url: url,
+      method: "GET",
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      queryParams: {
+        page: 0,
+      },
+    });
+  };
+  const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
+    "http://localhost:8080/api/post/page",
+    fetchData,
+    {
+      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
+      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+    }
+  );
+  if (isLoading) {
     return (
       <Box
         sx={{
@@ -132,22 +181,16 @@ const Post = (pros: IPros) => {
           // minHeight: "100px",
           height: "86vh",
           alignItems: "center",
+          // width: "100%",
         }}
       >
         <CircularProgress />
       </Box>
     );
   }
-  var settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-  };
 
   return (
-    <Box sx={{ overflowY: "auto", height: "100%" }}>
+    <Box sx={{ height: "100%" }}>
       <Card
         sx={{
           borderRadius: "12px",
@@ -257,8 +300,183 @@ const Post = (pros: IPros) => {
           </IconButton>
         </CardActions>
       </Card>
-      {post &&
-        post?.map((p, index) => (
+      {data &&
+        data?.map((p, index) => (
+          <Card
+            sx={{
+              borderRadius: "12px",
+              backgroundColor: "#bdc0c7",
+              margin: `0 0 24px 0`,
+              boxShadow:
+                "rgba(0, 0, 0, 0.16) 0px 2px 4px, rgba(0, 0, 0, 0.23) 0px 2px 4px",
+              color: "white",
+              "& p": {
+                color: "white",
+              },
+            }}
+            key={index + p.userPost.userId}
+          >
+            <CardHeader
+              sx={{
+                color: "#000000",
+              }}
+              avatar={
+                <Avatar
+                  sx={{ bgcolor: red[500] }}
+                  aria-label="recipe"
+                  alt="Profile Picture"
+                  src={p?.userPost?.profilePicUrl}
+                ></Avatar>
+              }
+              action={
+                <IconButton
+                  onClick={handleClick}
+                  size="small"
+                  sx={{ ml: 2 }}
+                  aria-controls={open ? "account-menu" : undefined}
+                  aria-haspopup="true"
+                  aria-expanded={open ? "true" : undefined}
+                >
+                  <Avatar sx={{ width: 32, height: 32 }}>
+                    <MoreVertIcon />
+                  </Avatar>
+                </IconButton>
+              }
+              title={p?.userPost?.username}
+              subheader={formatDateString(p?.time)}
+            />
+
+            <CardContent
+              sx={{
+                pt: 0,
+                "& p": {
+                  color: "black",
+                },
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "black" }}>
+                {p.content}
+              </Typography>
+            </CardContent>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-start",
+                paddingX: "16px",
+                paddingBottom: "16px",
+                "& a": {
+                  backgroundColor: "#d6e8fa",
+                  color: "#0c3b6a",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  // fontWeight: "400",
+                  padding: "4.8px 6px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease-in-out",
+                  margin: "0 2px 2px 0",
+                  border: "1px solid #BDC0C7",
+                  textDecoration: "none",
+                  gridArea: "auto",
+                  "&:hover": {
+                    transform: "translateY(-1px) translateX(0)",
+                    boxShadow: "0 1px 0 0 #BDC0C7",
+                  },
+                },
+              }}
+            >
+              {p?.listHashtag?.map((item) => (
+                <Link key={item.id} href="/">
+                  {item.hashtagDetailName}
+                </Link>
+              ))}
+            </Box>
+            <Box sx={{ width: "100%" }} className="slider-container">
+              {/* <Slider {...settings}> */}
+              {p?.listImageofPost?.map((item, index) => (
+                // <div key={item.id}>
+                <CardMedia
+                  key={index + item.id}
+                  component={
+                    isImage(item.imageUrl) === "image"
+                      ? "img"
+                      : isImage(item.imageUrl) === "video"
+                      ? "video"
+                      : "div"
+                  }
+                  // autoPlay={isImage(item.imageUrl) === "video"}
+                  controls={isImage(item.imageUrl) === "video"}
+                  image={item?.imageUrl}
+                  alt={item?.postID}
+                  sx={{
+                    objectFit: "cover",
+                    maxWidth: "100%",
+                    width: ` 100%`,
+                  }}
+                />
+                // </div>
+              ))}
+              {/* </Slider> */}
+            </Box>
+
+            <CardActions disableSpacing>
+              <IconButton aria-label="add to favorites">
+                <FavoriteIcon />
+              </IconButton>
+              <IconButton aria-label="share">
+                <CommentIcon />
+              </IconButton>
+              <IconButton aria-label="share">
+                <ShareIcon />
+              </IconButton>
+            </CardActions>
+            <Menu
+              anchorEl={anchorEl}
+              id="account-menu"
+              open={open}
+              onClose={handleClose}
+              onClick={handleClose}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  overflow: "visible",
+                  // filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                  mt: 1.5,
+                  "& .MuiAvatar-root": {
+                    width: 32,
+                    height: 32,
+                    ml: -0.5,
+                    mr: 1,
+                  },
+                  "&::before": {
+                    content: '""',
+                    display: "block",
+                    position: "absolute",
+                    top: 0,
+                    right: 14,
+                    width: 10,
+                    height: 10,
+                    bgcolor: "background.paper",
+                    transform: "translateY(-50%) rotate(45deg)",
+                    zIndex: 0,
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            >
+              <MenuItem onClick={handleClose}>
+                <ReportGmailerrorredOutlinedIcon sx={{ marginRight: "6px" }} />
+                Báo cáo bài viết
+              </MenuItem>
+              <MenuItem onClick={handleClose}>
+                <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
+                Báo cáo vi phạm
+              </MenuItem>
+            </Menu>
+          </Card>
+        ))}
+      {dataLoading &&
+        dataLoading?.map((p, index) => (
           <Card
             sx={{
               borderRadius: "12px",
@@ -352,6 +570,7 @@ const Post = (pros: IPros) => {
               {p?.listImageofPost?.map((item) => (
                 // <div key={item.id}>
                 <CardMedia
+                  key={item.id}
                   component={
                     isImage(item.imageUrl) === "image"
                       ? "img"
@@ -431,6 +650,9 @@ const Post = (pros: IPros) => {
             </Menu>
           </Card>
         ))}
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        {loading ? <div className="loader"></div> : <div>{endTextPost}</div>}
+      </Box>
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"

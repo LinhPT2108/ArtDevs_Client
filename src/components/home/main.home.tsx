@@ -1,11 +1,6 @@
-import NextAuthWrapper from "@/lib/next.auth.provider";
-import { Box, Grid, GridSize } from "@mui/material";
+import { Grid } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AppMenu from "../left-menu/app.menu";
-import Post from "../posts/post.main";
-import RightPost from "../left-menu/app.right.menu";
-import HomeMentor from "../mentor/home.mentor";
-import HomeHashtag from "../hash-tag/home.hashtag";
 const drawerWidth = 200;
 const Main = styled("main", {
   //@ts-ignore
@@ -33,90 +28,35 @@ const Main = styled("main", {
 
 interface IPros {
   openContact: boolean;
-  user: User | null;
-  post?: Post[];
-  url: string;
+  children: React.ReactNode;
 }
 
-const MainHome = (pros: IPros) => {
-  const { user, openContact, url, post } = pros;
+const MainHome = ({ children, openContact }: IPros) => {
   return (
     <Main
       open={openContact}
       sx={{
         paddingTop: "0",
-        paddingLeft: { xs: 0, sm: "24px", md: "48px", lg: "24px" },
-        paddingRight: { xs: 0, sm: "24px", md: "12px", lg: "24px" },
+        paddingLeft: { xs: 0, sm: "24px" },
+        paddingRight: { xs: 0, sm: "24px" },
       }}
     >
-      <Grid container spacing={0} columns={16}>
-        <Box
-          component={Grid}
-          item
-          xs={12}
-          sm={6}
-          md={4}
-          sx={{
-            display: { xs: "none", sm: "block" },
-            padding: "0px 12px 0px 12px",
-            position: "relative",
-          }}
-        >
-          <AppMenu />
-        </Box>
-        {url === "home" ? (
-          <>
-            <Box
-              component={Grid}
-              item
-              xs={16}
-              sm={10}
-              md={8}
-              lg={8}
-              sx={{
-                marginTop: "12px",
-                padding: { xs: "0 24px", md: "0 0 0 24px" },
-              }}
-            >
-              <Post user={user} post={post} />
-            </Box>
-            <Box
-              component={Grid}
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={4}
-              sx={{
-                display: { xs: "none", md: "flex" },
-                padding: "0px 12px 0px 12px",
-                justifyContent: "flex-start",
-              }}
-            >
-              <RightPost />
-            </Box>
-          </>
-        ) : (
-          <Box
-            component={Grid}
-            item
-            xs={16}
-            sm={10}
-            md={12}
-            sx={{
-              display: { xs: "none", md: "flex" },
-              padding: "0px 12px 0px 12px",
-              justifyContent: "flex-start",
-            }}
-          >
-            {url === "mentor" ? (
-              <HomeMentor user={user} />
-            ) : (
-              <HomeHashtag user={user} />
-            )}
-          </Box>
-        )}
+      {/* <Grid container spacing={0} columns={16} className="123123"> */}
+      <Grid
+        item
+        xs={12}
+        sm={6}
+        md={4}
+        sx={{
+          display: { xs: "none", sm: "block" },
+          padding: "0px 12px 0px 12px",
+          position: "relative",
+        }}
+      >
+        <AppMenu />
       </Grid>
+      {children}
+      {/* </Grid> */}
     </Main>
   );
 };
