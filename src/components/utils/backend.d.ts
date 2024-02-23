@@ -176,11 +176,14 @@ declare global {
     totalComment: number;
     totalLike: number;
     totalShare: number;
+    likeByUserLogged: boolean;
+    typePost: string;
   }
   interface UserPost {
     userId: string;
     username: string;
     profilePicUrl?: string;
+    fullname: string;
   }
   interface Hashtag {
     hashtagDetailName: string;

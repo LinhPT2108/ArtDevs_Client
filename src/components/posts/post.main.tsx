@@ -25,7 +25,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import { red } from "@mui/material/colors";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -68,7 +68,12 @@ const Post = (pros: IPros) => {
   const [openPost, setOpenPost] = React.useState(false);
   const handleOpenPost = () => setOpenPost(true);
   const handleClosePost = () => setOpenPost(false);
-
+  const [posts, setPosts] = useState<Post[]>(pros.post || []);
+  useEffect(() => {
+    if (post && Array.isArray(post) && post.length > 0) {
+      setPosts(post);
+    }
+  }, [post]);
   // Số lượng phần tử muốn thêm khi cuộn tới phần tử cuối cùng
 
   // Thực hiện khi cuộn tới phần tử cuối cùng
@@ -144,6 +149,56 @@ const Post = (pros: IPros) => {
     speed: 500,
     slidesToShow: 1,
     slidesToScroll: 1,
+  };
+
+  const handleLike = async (postId: string) => {
+    console.log("like: " + postId);
+    const response = await sendRequest({
+      // url: "https://artdevs-server.azurewebsites.net/api/register",
+      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
+      url: "http://localhost:8080/api/like/" + postId,
+      method: "POST",
+      headers: { authorization: `Bearer ${user?.access_token}` },
+    });
+    console.log(response);
+    if (response) {
+      console.log(123);
+      setPosts(
+        posts.map((post) =>
+          post.postId === postId
+            ? { ...post, likeByUserLogged: true, totalLike: post.totalLike + 1 }
+            : post
+        )
+      );
+      console.log(posts);
+    } else {
+      console.log("something wrong");
+    }
+  };
+
+  const handleUnlike = async (postId: string) => {
+    console.log("unlike: " + postId);
+    const response = await sendRequest({
+      // url: "https://artdevs-server.azurewebsites.net/api/register",
+      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
+      url: "http://localhost:8080/api/unlike/" + postId,
+      method: "POST",
+      headers: { authorization: `Bearer ${user?.access_token}` },
+    });
+    console.log(response);
+    if (response) {
+      console.log(123);
+      setPosts(
+        posts.map((post) =>
+          post.postId === postId
+            ? { ...post, likeByUserLogged: false, totalLike: post.totalLike - 1 }
+            : post
+        )
+      );
+      console.log(posts);
+    } else {
+      console.log("something wrong");
+    }
   };
 
   return (
@@ -249,16 +304,19 @@ const Post = (pros: IPros) => {
           <IconButton aria-label="add to favorites">
             <FavoriteIcon />
           </IconButton>
+
           <IconButton aria-label="share">
             <CommentIcon />
           </IconButton>
+
           <IconButton aria-label="share">
             <ShareIcon />
           </IconButton>
         </CardActions>
       </Card>
-      {post &&
-        post?.map((p, index) => (
+
+      {posts &&
+        posts?.map((p, index) => (
           <Card
             sx={{
               borderRadius: "12px",
@@ -299,7 +357,7 @@ const Post = (pros: IPros) => {
                   </Avatar>
                 </IconButton>
               }
-              title={p?.userPost?.username}
+              title={p?.userPost?.fullname}
               subheader={formatDateString(p?.time)}
             />
 
@@ -351,6 +409,7 @@ const Post = (pros: IPros) => {
               {/* <Slider {...settings}> */}
               {p?.listImageofPost?.map((item) => (
                 // <div key={item.id}>
+                // eslint-disable-next-line react/jsx-key
                 <CardMedia
                   component={
                     isImage(item.imageUrl) === "image"
@@ -374,17 +433,74 @@ const Post = (pros: IPros) => {
               {/* </Slider> */}
             </Box>
 
-            <CardActions disableSpacing>
-              <IconButton aria-label="add to favorites">
+            <CardActions
+              disableSpacing
+              sx={{
+                marginX: "2rem",
+                display: "flex",
+                justifyContent: "space-evenly",
+                borderTop: "1px solid gray",
+              }}
+            >
+              <IconButton
+                aria-label="add to favorites"
+                sx={{
+                  borderRadius: "10px",
+                  color: p.likeByUserLogged ? "#ff0000" :  "#57585b",
+                }}
+                onClick={() =>
+                  p.likeByUserLogged
+                    ? handleUnlike(p?.postId)
+                    : handleLike(p?.postId)
+                }
+              >
+                <Box
+                  sx={{
+                    color: "#57585b",
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalLike} { p.likeByUserLogged?"true":"false"}
+                </Box>
                 <FavoriteIcon />
               </IconButton>
-              <IconButton aria-label="share">
+
+              <IconButton
+                aria-label="comment"
+                sx={{
+                  borderRadius: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalComment}
+                </Box>
                 <CommentIcon />
               </IconButton>
-              <IconButton aria-label="share">
+
+              <IconButton
+                aria-label="share"
+                sx={{
+                  borderRadius: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalShare}
+                </Box>
                 <ShareIcon />
               </IconButton>
             </CardActions>
+
             <Menu
               anchorEl={anchorEl}
               id="account-menu"
@@ -431,6 +547,7 @@ const Post = (pros: IPros) => {
             </Menu>
           </Card>
         ))}
+
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
@@ -485,7 +602,7 @@ const Post = (pros: IPros) => {
                     </Avatar>
                   </IconButton>
                 }
-                title={user?.user?.username}
+                title={`${user?.user?.firstName} ${user?.user?.middleName} ${user?.user?.lastName}`}
               />
 
               <CardContent
@@ -498,7 +615,7 @@ const Post = (pros: IPros) => {
                   onChange={(e) => handleContentPost(e.target.value)}
                   multiline
                   rows={4}
-                  label={`${user?.user?.username} ơi, bạn đang nghĩ gì thế?`}
+                  label={`${user?.user?.lastName} ơi, bạn đang nghĩ gì thế?`}
                   variant="outlined"
                   fullWidth
                   sx={{ outline: "none", border: "none", borderWidth: 0 }}
