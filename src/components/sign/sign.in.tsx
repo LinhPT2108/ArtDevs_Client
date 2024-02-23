@@ -1,44 +1,35 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import {
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Box,
-  Grid,
-  Divider,
-  InputAdornment,
-  IconButton,
-  Alert,
-} from "@mui/material";
-import GoogleIcon from "@mui/icons-material/Google";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
-import { signIn } from "next-auth/react";
+import { useUser } from "@/lib/custom.content";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useRouter } from "next/navigation";
-import BgUtils from "../utils/bg.utils";
+import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import GoogleIcon from "@mui/icons-material/Google";
+import {
+  Alert,
+  Box,
+  Button,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
+  Link,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Snackbar, { SnackbarOrigin } from "@mui/material/Snackbar";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import Snowfall from "react-snowfall";
 import "../../style/loading.css";
+import { CubeSpan } from "../utils/component.global";
 
 interface State extends SnackbarOrigin {
   open: boolean;
 }
-interface CubeSpanProps {
-  index: number;
-}
-
-const CubeSpan: React.FC<CubeSpanProps> = ({ index }) => {
-  const spanStyle: React.CSSProperties = {
-    ["--i" as any]: index,
-  };
-
-  return <span style={spanStyle} className="cube-span"></span>;
-};
 
 const SignIn = () => {
+  const { setUser } = useUser();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
@@ -91,10 +82,12 @@ const SignIn = () => {
         password: password,
         redirect: false,
       });
-
       if (!res?.error) {
+        //@ts-ignore
+        setUser(res);
         router.push("/");
       } else {
+        setLoading(false);
         setIsErrorEmail(true);
         setIsErrorPassword(true);
         handleClick({ vertical: "top", horizontal: "center" })(
@@ -127,15 +120,17 @@ const SignIn = () => {
 
     loadImage();
   }, []);
-  const handleLoginWithSocialMedia = (provider: string) => {
+  const handleLoginWithSocialMedia = async (provider: string) => {
     try {
       setLoading(true);
       signIn(provider);
     } catch {
+      setLoading(false);
     } finally {
       // setLoading(false);
     }
   };
+
   return (
     <Box
       sx={{

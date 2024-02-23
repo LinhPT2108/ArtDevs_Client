@@ -41,6 +41,7 @@ export const closeDrawer = () => {
 
 const ContactMenu = (pros: IPros) => {
   const { openContact, pageUrl, getUser } = pros;
+
   const rightMenu = [];
   const info: IUser[] = [
     {

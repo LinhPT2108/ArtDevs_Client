@@ -1,20 +1,45 @@
 import {
   Box,
+  Button,
+  CardMedia,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
+  Modal,
+  Stack,
+  Typography,
 } from "@mui/material";
-import React from "react";
+import React, { MouseEventHandler } from "react";
 import FeedIcon from "@mui/icons-material/Feed";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SmsIcon from "@mui/icons-material/Sms";
 import Link from "next/link";
-
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession, signOut } from "next-auth/react";
+import { sendRequest } from "../utils/api";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+const style = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 400,
+  bgcolor: "background.paper",
+  // border: "2px solid #000",
+  // boxShadow: 24,
+  borderRadius: "12px",
+  p: 4,
+};
 const AppMenu = () => {
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   const leftMenu = [];
   const info: ListItem[] = [
     {
@@ -22,7 +47,7 @@ const AppMenu = () => {
       content: "Bảng tin",
       icon: <FeedIcon />,
       bgColor: "#9b2828",
-      url: "/bang-tin",
+      url: "/",
     },
     {
       index: 1,
@@ -43,7 +68,7 @@ const AppMenu = () => {
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
       bgColor: "#263797",
-      url: "/trang-ca-nhan",
+      url: "/profile",
     },
   ];
   const recent: ListItem[] = [
@@ -82,28 +107,29 @@ const AppMenu = () => {
       content: "Cài đặt",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/cai-dat",
+      url: "/setting",
     },
     {
       index: 9,
       content: "Thống kê",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/thong-ke",
+      url: "/statistical",
     },
     {
       index: 10,
       content: "Quyền riêng tư",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/quyen-rieng-tu",
+      url: "/secure",
     },
     {
       index: 11,
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/api/auth/signout",
+      url: "/",
+      // url: "/api/auth/signout",
     },
   ];
   leftMenu.push(info);
@@ -116,7 +142,27 @@ const AppMenu = () => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
+    if (index == 11) {
+      handleOpen();
+    }
     setSelectedIndex(index);
+  };
+
+  const handler = async () => {
+    try {
+      const session = await getSession();
+      console.log(">>> session: ", session);
+      session &&
+        (await sendRequest({
+          url: GLOBAL_URL + "/api/logout",
+          method: "PUT",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        }));
+
+      await signOut({ callbackUrl: "/" });
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   return (
@@ -212,6 +258,58 @@ const AppMenu = () => {
           );
         })}
       </Box>
+      <div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={style}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CardMedia
+                sx={{ width: { xs: "60px", sm: "100px" } }}
+                component="img"
+                image="/Art_Devs_y-removebg-preview.png"
+                alt="logo"
+              />
+              <Typography
+                id="modal-modal-title"
+                variant="h6"
+                component="h2"
+                sx={{ marginX: "8px", color: "#3c2cb7", fontWeight: "bold" }}
+              >
+                Đăng Xuất
+              </Typography>
+            </Box>
+
+            <Typography
+              id="modal-modal-description"
+              sx={{ mt: 2, fontSize: "18px", textAlign: "center" }}
+            >
+              Bạn có chắc là muốn đăng xuất ?
+            </Typography>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ justifyContent: "center", marginTop: "18px" }}
+            >
+              <Button variant="contained" onClick={handleClose}>
+                Hủy
+              </Button>
+              <Button variant="contained" color="error" onClick={handler}>
+                Đăng xuất
+              </Button>
+            </Stack>
+          </Box>
+        </Modal>
+      </div>
     </Box>
   );
 };

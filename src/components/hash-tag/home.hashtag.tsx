@@ -1,29 +1,25 @@
 "use client";
 import { Grid } from "@mui/material";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import { CubeSpan } from "../utils/component.global";
-import { useEffect, useState } from "react";
-import { sendRequest } from "../utils/api";
+import Link from "next/link";
 import useSWR, { SWRResponse } from "swr";
-interface IPros {
-  user: User;
-}
-const HomeMentor = ({ user }: IPros) => {
+import { sendRequest } from "../utils/api";
+import { CubeSpan } from "../utils/component.global";
+
+const HomeHashtag = () => {
   const fetchData = async (url: string) => {
-    return await sendRequest<MentorInfor[]>({
+    return await sendRequest<HashtagInfor[]>({
       url: url,
       method: "GET",
-      headers: { authorization: `Bearer ${user?.access_token}` },
     });
   };
-  const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor",
+  const { data, error, isLoading }: SWRResponse<HashtagInfor[], any> = useSWR(
+    "http://localhost:8080/api/detailhashtag",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -70,6 +66,7 @@ const HomeMentor = ({ user }: IPros) => {
       </Box>
     );
   }
+
   return (
     <Box sx={{ flexGrow: 1, marginTop: "24px" }}>
       <Grid
@@ -78,33 +75,30 @@ const HomeMentor = ({ user }: IPros) => {
         spacing={2}
         sx={{
           "& .MuiGrid-item": {
-            padding: { xs: "0 0 16px 16px", md: "0 0 0 16px" },
+            padding: { xs: "0 0 16px 16px" },
           },
         }}
       >
         {data &&
           data?.map((item, index) => (
-            <Grid item xs={16} md={8} key={index}>
-              <Card>
+            <Grid item xs={12} md={8} key={index}>
+              <Card sx={{ borderRadius: "32px" }}>
                 <CardMedia
                   component="img"
                   alt="green iguana"
                   height="140"
-                  image="/logo.png"
+                  image={`/hashtag/${item.hashtagText}.png`}
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
-                    Lizard
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Lizards are a widespread group of squamate reptiles, with
-                    over 6,000 species, ranging across all continents except
-                    Antarctica
+                    {item.hashtagText}
                   </Typography>
                 </CardContent>
-                <CardActions>
-                  <Button size="small">Share</Button>
-                  <Button size="small">Learn More</Button>
+                <CardActions sx={{ padding: "16px" }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {`${item.countHashtagOfDetail} Bài đăng`}
+                  </Typography>
+                  <Link href="/">Xem thêm</Link>
                 </CardActions>
               </Card>
             </Grid>
@@ -113,4 +107,4 @@ const HomeMentor = ({ user }: IPros) => {
     </Box>
   );
 };
-export default HomeMentor;
+export default HomeHashtag;

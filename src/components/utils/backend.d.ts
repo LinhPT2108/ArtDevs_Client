@@ -215,4 +215,20 @@ declare global {
     privacyPostDetails: number;
     listHashtag: number[] | null;
   }
+
+  interface MentorInfor {
+    userID: string;
+    content: string;
+    listSkill: ListSkill[];
+  }
+
+  interface ListSkill {
+    id: number;
+    skill: string;
+  }
+  interface HashtagInfor {
+    id: number;
+    hashtagText: string;
+    countHashtagOfDetail: number;
+  }
 }

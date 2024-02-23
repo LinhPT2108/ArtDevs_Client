@@ -72,7 +72,7 @@
   /* u can choose any size */
     width: 75px;
     height: 75px;
-    background: hsl(176.61, 42.28%, 40.7%) 19.6%;
+    background: hsl(176.61, 42.28%, 40.7%) 19.6% ;
     transform: translateZ(-90px);
     filter: blur(10px);
     box-shadow: 0 0 10px #323232,

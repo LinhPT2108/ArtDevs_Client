@@ -9,8 +9,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { generateUniqueId } from "../utils/utils";
+import { useUser } from "@/lib/custom.content";
 
 const AppSignUp = () => {
+  const { setUser } = useUser();
   const [errorRegister, setErrorRegister] = useState<string>("");
   const [data, setData] = useState<UserRegister>();
   const [programingLanguage, setProgramingLanguage] = useState<
@@ -81,9 +83,9 @@ const AppSignUp = () => {
     const fetchDataDemand = async () => {
       try {
         const response = await sendRequest<MyLanguageProgram[]>({
-          url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
+          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-          // url: "http://localhost:8080/api/programingLanguage",
+          url: "http://localhost:8080/api/programingLanguage",
           method: "GET",
         });
         response && setProgramingLanguage(response);
@@ -104,13 +106,12 @@ const AppSignUp = () => {
           const { gender, confirmPassword, ...restData } = data;
           console.log(">>> check data register: ", data);
           const response = await sendRequest<IBackendRes<UserLogin>>({
-            url: "https://artdevs-server.azurewebsites.net/api/register",
+            // url: "https://artdevs-server.azurewebsites.net/api/register",
             // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-            // url: "http://localhost:8080/api/register",
+            url: "http://localhost:8080/api/register",
             method: "POST",
             body: { ...restData },
           });
-
           if (response?.statusCode != 400) {
             const res = await signIn("credentials", {
               username: data?.email,
@@ -119,6 +120,8 @@ const AppSignUp = () => {
             });
             if (!res?.error) {
               router.push("/");
+              //@ts-ignore
+              setUser(res);
             }
           } else {
             setErrorRegister(response?.message);
