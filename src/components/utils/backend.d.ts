@@ -214,15 +214,22 @@ declare global {
   }
 
   interface MentorInfor {
-    userID: string;
+    userId: string;
     content: string;
-    listSkill: ListSkill[];
+    listSkillOfMentor: string[];
+    gender: integer;
+    isOnline: boolean;
+    isReady: boolean;
+    firstName: string;
+    middleName: string;
+    lastName: string;
+    priceMatch: number;
+    role: Role;
+    BackgroundImageUrl: string;
+    profilePicUrl: string;
   }
 
-  interface ListSkill {
-    id: number;
-    skill: string;
-  }
+
   interface HashtagInfor {
     id: number;
     hashtagText: string;

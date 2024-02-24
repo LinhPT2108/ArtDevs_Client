@@ -59,3 +59,12 @@ export const formatTimeDifference = (
     return `${seconds} giây trước`;
   }
 };
+export const formatVND = (value: number): string => {
+  // Use toLocaleString to format the number with commas
+  const formattedValue = value.toLocaleString('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  });
+
+  return formattedValue;
+};
