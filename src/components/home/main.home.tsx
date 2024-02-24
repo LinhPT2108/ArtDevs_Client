@@ -36,9 +36,9 @@ const MainHome = ({ children, openContact }: IPros) => {
     <Main
       open={openContact}
       sx={{
-        paddingTop: "0",
-        paddingLeft: { xs: 0, sm: "24px" },
-        paddingRight: { xs: 0, sm: "24px" },
+        padding: { xs: 0, sm: "16px 24px 0 24px" },
+        // paddingLeft: { xs: 0, sm: "24px" },
+        // paddingRight: { xs: 0, sm: "24px" },
       }}
     >
       {/* <Grid container spacing={0} columns={16} className="123123"> */}

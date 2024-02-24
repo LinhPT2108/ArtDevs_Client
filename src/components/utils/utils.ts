@@ -1,3 +1,4 @@
+import { format, parseISO } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 
 export const generateUniqueId = (): string => {
@@ -59,6 +60,7 @@ export const formatTimeDifference = (
     return `${seconds} giây trước`;
   }
 };
+
 export const formatVND = (value: number): string => {
   // Use toLocaleString to format the number with commas
   const formattedValue = value.toLocaleString('vi-VN', {
@@ -68,3 +70,23 @@ export const formatVND = (value: number): string => {
 
   return formattedValue;
 };
+
+
+export const formatDateString = (input: string | null): string => {
+  if (input) {
+    const dateObject = parseISO(input);
+    const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
+    return formattedDate;
+  } else {
+    return "";
+  }
+};
+
+export function deleteSpace(value: string): string {
+  const char: string[] = value.split(" ");
+
+  const result: string = char.join(" ");
+
+  return result;
+}
+
