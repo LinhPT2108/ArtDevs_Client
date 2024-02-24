@@ -16,14 +16,14 @@ const BodyWrapper = ({ children }: IPros) => {
   return (
     <Box
       sx={{
-        paddingLeft: { xs: "0", sm: "230px" },
+        paddingLeft: { xs: "0", sm: "200px" },
         display: "flex",
         flexGrow: 1,
         marginTop: "0px",
-        backgroundColor: "#9b9da0",
-        paddingTop: "85px",
+        backgroundColor: "#f0f2f5",
+        paddingTop: { xs: "50px", sm: "85px" },
         minHeight: "100vh",
-        paddingX: { xs: "12px" },
+        paddingX: { xs: "0" },
       }}
     >
       <MainHome openContact={drawerOpen}>{children}</MainHome>
@@ -35,7 +35,7 @@ const BodyWrapper = ({ children }: IPros) => {
             width: DRAWER_WIDTH,
             backgroundColor: "#293145",
           },
-          zIndex: `${drawerOpen ? "1201" : "999"}`,
+          zIndex: `${drawerOpen ? "1201" : "initial"}`,
         }}
         variant="persistent"
         anchor="right"

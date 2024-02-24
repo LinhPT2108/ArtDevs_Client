@@ -1,4 +1,11 @@
 "use client";
+import ClearIcon from "@mui/icons-material/Clear";
+import CommentIcon from "@mui/icons-material/Comment";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
+import ShareIcon from "@mui/icons-material/Share";
 import {
   Autocomplete,
   Avatar,
@@ -19,35 +26,14 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
-import CommentIcon from "@mui/icons-material/Comment";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import { red } from "@mui/material/colors";
-import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { format, parseISO } from "date-fns";
-import ClearIcon from "@mui/icons-material/Clear";
-import { sendRequest } from "../utils/api";
-import { generateUniqueId, isImage } from "../utils/utils";
-import "../../style/post-loading.css";
-import Slider from "react-slick";
-import CustomPaging from "./media.post";
-import { useUser } from "@/lib/custom.content";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import React, { useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
-
-const formatDateString = (input: string | null): string => {
-  if (input) {
-    const dateObject = parseISO(input);
-    const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
-    return formattedDate;
-  } else {
-    return "";
-  }
-};
+import "../../style/post-loading.css";
+import { sendRequest } from "../utils/api";
+import { formatDateString, generateUniqueId, isImage } from "../utils/utils";
+import { GLOBAL_URL } from "../utils/veriable.global";
 
 const style = {
   position: "absolute" as "absolute",
