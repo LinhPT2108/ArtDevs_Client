@@ -1,4 +1,4 @@
-import { Grid, Typography } from "@mui/material";
+import { Grid, IconButton, Tooltip, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import LockIcon from "@mui/icons-material/Lock";
@@ -11,6 +11,15 @@ import useSWR, { SWRResponse } from "swr";
 import { CubeSpan } from "../utils/component.global";
 import { formatDateString } from "../utils/utils";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import React, { useState } from "react";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemText from "@mui/material/ListItemText";
+
+const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
+
 const PostProfile = ({
   session,
   fullname,
@@ -18,6 +27,44 @@ const PostProfile = ({
   session: User;
   fullname: string;
 }) => {
+  const [anchorElReport, setAnchorElReport] = useState<null | HTMLElement>(
+    null
+  );
+  const openReport = Boolean(anchorElReport);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElReport(event.currentTarget);
+  };
+  const handleCloseReport = () => {
+    setAnchorElReport(null);
+  };
+
+  const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
+    Array(options.length).fill(null)
+  );
+  const [selectedIndexes, setSelectedIndexes] = React.useState<Array<number>>(
+    Array(options.length).fill(1)
+  );
+
+  const handleClickListItem =
+    (index: number) => (event: React.MouseEvent<HTMLElement>) => {
+      const newAnchorEls = [...anchorEls];
+      newAnchorEls[index] = event.currentTarget;
+      setAnchorEls(newAnchorEls);
+    };
+
+  const handleMenuItemClick = (index: number, optionIndex: number) => () => {
+    const newSelectedIndexes = [...selectedIndexes];
+    newSelectedIndexes[index] = optionIndex;
+    setSelectedIndexes(newSelectedIndexes);
+    setAnchorEls(Array(options.length).fill(null)); // Close all menus
+  };
+
+  const handleClose = (index: number) => () => {
+    const newAnchorEls = [...anchorEls];
+    newAnchorEls[index] = null;
+    setAnchorEls(newAnchorEls);
+  };
+
   const fetchData = async (url: string) => {
     return await sendRequest<Post[]>({
       url: url,
@@ -144,7 +191,48 @@ const PostProfile = ({
                 <Box
                   sx={{ color: "#3339", display: "flex", alignItems: "center" }}
                 >
-                  <LockIcon sx={{ fontSize: "18px" }} />
+                  <List
+                    component="nav"
+                    aria-label="Device settings"
+                    sx={{ bgcolor: "background.paper", padding: 0 }}
+                  >
+                    <ListItemButton
+                      id={`lock-button-${index}`}
+                      aria-haspopup="listbox"
+                      aria-controls={`lock-menu-${index}`}
+                      aria-label="when device is locked"
+                      aria-expanded={
+                        Boolean(anchorEls[index]) ? "true" : undefined
+                      }
+                      onClick={handleClickListItem(index)}
+                      sx={{ padding: 0 }}
+                    >
+                      <LockIcon sx={{ fontSize: "18px" }} />
+                      {options[selectedIndexes[index]] ||
+                        options[selectedIndexes[1]]}
+                    </ListItemButton>
+                  </List>
+                  <Menu
+                    id={`lock-menu-${index}`}
+                    anchorEl={anchorEls[index]}
+                    open={Boolean(anchorEls[index])}
+                    onClose={handleClose(index)}
+                    MenuListProps={{
+                      "aria-labelledby": `lock-button-${index}`,
+                      role: "listbox",
+                    }}
+                  >
+                    {options.map((option, optionIndex) => (
+                      <MenuItem
+                        key={option}
+                        selected={optionIndex === selectedIndexes[index]}
+                        onClick={handleMenuItemClick(index, optionIndex)}
+                      >
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+
                   <Typography
                     component={"span"}
                     sx={{ textDecoration: "none", marginLeft: "6px" }}
@@ -152,32 +240,73 @@ const PostProfile = ({
                     {formatDateString(item?.time)}
                   </Typography>
                 </Box>
-
-                <Typography
-                  component={"p"}
+                <Box
                   sx={{
                     position: "absolute",
                     top: "40%",
                     transform: "translateY(-50%) rotate(90deg)",
                     right: "10px",
-                    width: "35px",
-                    height: "35px",
-                    borderRadius: "10px",
-                    backgroundColor: "#fff",
-                    fontSize: "14px",
-                    color: "#333",
-                    padding: "5px",
-                    boxSizing: "border-box",
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    transition: "all 0.2s linear",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
                   }}
                 >
-                  <MoreVertIcon />
-                </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      textAlign: "center",
+                    }}
+                  >
+                    <IconButton
+                      onClick={handleClick}
+                      size="small"
+                      sx={{ ml: 2 }}
+                      aria-controls={openReport ? "account-menu" : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={openReport ? "true" : undefined}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </Box>
+                  <Menu
+                    anchorEl={anchorElReport}
+                    id="account-menu"
+                    open={openReport}
+                    onClose={handleCloseReport}
+                    onClick={handleCloseReport}
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: "visible",
+                        filter: "drop-shadow(0px  1px 1px rgba(0,0,0,0.1))",
+                        mt: 1.5,
+                        "& .MuiAvatar-root": {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
+                        "&::before": {
+                          content: '""',
+                          display: "block",
+                          position: "absolute",
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          bgcolor: "background.paper",
+                          transform: "translateY(-50%) rotate(45deg)",
+                          zIndex: 0,
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    <MenuItem onClick={handleCloseReport}>
+                      Báo cáo bài viết
+                    </MenuItem>
+                    <MenuItem onClick={handleCloseReport}>Ẩn bài viết</MenuItem>
+                  </Menu>
+                </Box>
               </Box>
             </Box>
 
@@ -221,9 +350,8 @@ const PostProfile = ({
                   </Box>
                 ))
               ) : item?.listImageofPost.length == 3 ? (
-                <>
+                <React.Fragment key={index}>
                   <Box
-                    key={index}
                     sx={{
                       "& img": {
                         width: "100%",
@@ -237,10 +365,9 @@ const PostProfile = ({
                   </Box>
                   <Box>
                     {item?.listImageofPost?.map((item, index) => (
-                      <>
+                      <React.Fragment key={index}>
                         {index > 0 ? (
                           <Box
-                            key={index}
                             sx={{
                               width: "100%",
                               height: "50%",
@@ -260,12 +387,12 @@ const PostProfile = ({
                             <img src={item?.imageUrl} alt="photo" />
                           </Box>
                         ) : (
-                          <></>
+                          <React.Fragment key={index}></React.Fragment>
                         )}
-                      </>
+                      </React.Fragment>
                     ))}
                   </Box>
-                </>
+                </React.Fragment>
               ) : item?.listImageofPost.length == 4 ? (
                 item?.listImageofPost?.map((item, index) => (
                   <Box
@@ -284,10 +411,9 @@ const PostProfile = ({
                 ))
               ) : (
                 item?.listImageofPost?.map((i, index) => (
-                  <>
+                  <React.Fragment key={index}>
                     {index < 3 ? (
                       <Box
-                        key={index}
                         sx={{
                           "& img": {
                             width: "100%",
@@ -300,10 +426,9 @@ const PostProfile = ({
                         <img src={i.imageUrl} alt="photo" />
                       </Box>
                     ) : (
-                      <>
+                      <React.Fragment key={index}>
                         {index == 4 ? (
                           <Box
-                            key={index}
                             sx={{
                               position: "relative",
                               "& img": {
@@ -337,11 +462,11 @@ const PostProfile = ({
                             </Box>
                           </Box>
                         ) : (
-                          ""
+                          <React.Fragment key={index}></React.Fragment>
                         )}
-                      </>
+                      </React.Fragment>
                     )}
-                  </>
+                  </React.Fragment>
                 ))
               )}
             </Box>

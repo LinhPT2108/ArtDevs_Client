@@ -181,6 +181,7 @@ const HomeProfile = ({ session }: { session: User }) => {
           sx={{
             display: "flex",
             justifyContent: "flex-start",
+            maxwidth: "1000px",
             borderColor: "divider",
             margin: "auto",
             width: {
@@ -683,159 +684,182 @@ const HomeProfile = ({ session }: { session: User }) => {
                   </Box>
                 </Box>
               </Box>
-
-              <Box>
+              <Box
+                sx={{
+                  maxHeight: { xs: "auto", sm: "700px" },
+                  overflow: "hidden",
+                }}
+              >
                 <Box
                   sx={{
-                    borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    padding: "10px",
-                    marginBottom: "15px",
+                    maxHeight: { xs: "auto", sm: "700px" },
+                    overflowY: "scroll",
+                    "::-webkit-scrollbar": {
+                      width: "2px",
+                    },
+                    "::-webkit-scrollbar-track": {
+                      background: "#f1f1f1",
+                    },
+                    "::-webkit-scrollbar-thumb": {
+                      background: "#888",
+                      borderRadius: "10px",
+                    },
                   }}
                 >
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 7fr",
-                      borderBottom: "1px solid #3333",
-                      paddingBottom: "10px",
-                    }}
-                  >
+                  <Box>
                     <Box
                       sx={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        "& img": {
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "50%",
-                          cursor: "pointer",
-                        },
+                        borderRadius: "5px",
+                        boxShadow: "0px 1px 2px #3335",
+                        backgroundColor: "#fff",
+                        padding: "10px",
+                        marginBottom: "15px",
                       }}
                     >
-                      <a href="#">
-                        <img
-                          src={`${
-                            session?.user?.profilePicUrl
-                              ? session?.user?.profilePicUrl
-                              : "/profile/user.jpg"
-                          }`}
-                        />
-                      </a>
-                    </Box>
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: "100%",
-                        padding: "7px 10px",
-                        boxSizing: "border-box",
-                        borderRadius: "25px",
-                        backgroundColor: "#E4E6EB",
-                        cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "#D8DADF",
-                        },
-                      }}
-                    >
-                      <Typography
-                        component={"span"}
+                      <Box
                         sx={{
-                          position: "absolute",
-                          left: "15px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                          fontSize: "15px",
-                          color: "#333",
+                          display: "grid",
+                          gridTemplateColumns: "1fr 7fr",
+                          borderBottom: "1px solid #3333",
+                          paddingBottom: "10px",
                         }}
                       >
-                        What's on your mind?
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      padding: "10px 0px 0px 0px",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: "50%",
-                        maxWidth: "160px",
-                        padding: "5px",
-                        boxSizing: "border-box",
-                        backgroundColor: "#fff",
-                        borderRadius: "20px",
-                        cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "#E4E6EB",
-                        },
-                      }}
-                    >
-                      <Typography
-                        component={"p"}
+                        <Box
+                          sx={{
+                            width: "36px",
+                            height: "36px",
+                            borderRadius: "50%",
+                            "& img": {
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              borderRadius: "50%",
+                              cursor: "pointer",
+                            },
+                          }}
+                        >
+                          <a href="#">
+                            <img
+                              src={`${
+                                session?.user?.profilePicUrl
+                                  ? session?.user?.profilePicUrl
+                                  : "/profile/user.jpg"
+                              }`}
+                            />
+                          </a>
+                        </Box>
+                        <Box
+                          sx={{
+                            position: "relative",
+                            width: "100%",
+                            padding: "7px 10px",
+                            boxSizing: "border-box",
+                            borderRadius: "25px",
+                            backgroundColor: "#E4E6EB",
+                            cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "#D8DADF",
+                            },
+                          }}
+                        >
+                          <Typography
+                            component={"span"}
+                            sx={{
+                              position: "absolute",
+                              left: "15px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "15px",
+                              color: "#333",
+                            }}
+                          >
+                            What&apos;s on your mind?
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box
                         sx={{
-                          padding: "5px 0px",
-                          textAlign: "center",
-                          fontSize: "14px",
-                          color: "#333",
                           display: "flex",
                           justifyContent: "center",
-                          alignItems: "center",
+                          padding: "10px 0px 0px 0px",
                         }}
                       >
-                        <VideoFileIcon sx={{ color: "#E42645" }} />
-                        <Typography
-                          component={"span"}
-                          sx={{ marginLeft: "6px" }}
+                        <Box
+                          sx={{
+                            width: "50%",
+                            maxWidth: "160px",
+                            padding: "5px",
+                            boxSizing: "border-box",
+                            backgroundColor: "#fff",
+                            borderRadius: "20px",
+                            cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "#E4E6EB",
+                            },
+                          }}
                         >
-                          Video
-                        </Typography>
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        width: "50%",
-                        padding: "5px",
-                        maxWidth: "160px",
-                        boxSizing: "border-box",
-                        backgroundColor: "#fff",
-                        borderRadius: "20px",
-                        cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "#E4E6EB",
-                        },
-                      }}
-                    >
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          padding: "5px 0px",
-                          textAlign: "center",
-                          fontSize: "14px",
-                          color: "#333",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <AddAPhotoIcon sx={{ color: "#41B35D" }} />
-                        <Typography
-                          component={"span"}
-                          sx={{ marginLeft: "6px" }}
+                          <Typography
+                            component={"p"}
+                            sx={{
+                              padding: "5px 0px",
+                              textAlign: "center",
+                              fontSize: "14px",
+                              color: "#333",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <VideoFileIcon sx={{ color: "#E42645" }} />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "6px" }}
+                            >
+                              Video
+                            </Typography>
+                          </Typography>
+                        </Box>
+                        <Box
+                          sx={{
+                            width: "50%",
+                            padding: "5px",
+                            maxWidth: "160px",
+                            boxSizing: "border-box",
+                            backgroundColor: "#fff",
+                            borderRadius: "20px",
+                            cursor: "pointer",
+                            "&:hover": {
+                              backgroundColor: "#E4E6EB",
+                            },
+                          }}
                         >
-                          Photo
-                        </Typography>
-                      </Typography>
+                          <Typography
+                            component={"p"}
+                            sx={{
+                              padding: "5px 0px",
+                              textAlign: "center",
+                              fontSize: "14px",
+                              color: "#333",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <AddAPhotoIcon sx={{ color: "#41B35D" }} />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "6px" }}
+                            >
+                              Photo
+                            </Typography>
+                          </Typography>
+                        </Box>
+                      </Box>
                     </Box>
+
+                    <PostProfile session={session} fullname={fullname} />
                   </Box>
                 </Box>
-
-                <PostProfile session={session} fullname={fullname} />
               </Box>
             </Box>
           </Box>
