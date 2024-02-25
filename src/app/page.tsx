@@ -19,42 +19,27 @@ export default async function Home() {
   // });
   if (session) {
     return (
-      <Grid
-        container
-        spacing={0}
-        columns={12}
-        sx={{ flexGrow: 1, justifyContent: "flex-end" }}
-      >
-        <Grid
-          item
-          xs={12}
-          sm={12}
-          md={7}
-          lg={8}
-          xl={9}
+      <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end" }}>
+        <Box
           sx={{
             marginTop: "12px",
             padding: { xs: "0 24px", md: "0 0 0 0" },
           }}
         >
           <Post user={session} />
-        </Grid>
-        <Grid
-          item
-          xs={12}
-          sm={12}
-          md={5}
-          lg={4}
-          xl={3}
+        </Box>
+        <Box
           sx={{
             display: { xs: "none", md: "flex" },
-            padding: "0px 12px 0px 12px",
+            padding: "0 0 0 12px",
             justifyContent: "flex-start",
+            maxWidth: "250px",
+            minWidth: "210px",
           }}
         >
           <RightPost />
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     );
   }
   return <About />;

@@ -34,7 +34,7 @@ const MenuMentor = () => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 250,
+        // maxWidth: 250,
       }}
     >
       <List
