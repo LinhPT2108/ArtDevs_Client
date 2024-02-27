@@ -108,7 +108,7 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
-    profilePicUrl?: string;
+    profileImageUrl?: string;
     provider?: string;
     username: string;
     role: Role;
@@ -165,6 +165,7 @@ declare global {
     result: T[];
   }
   interface Post {
+    isProcessingLike: boolean | undefined;
     postId: string;
     content: string;
     time: string;
@@ -231,4 +232,29 @@ declare global {
     hashtagText: string;
     countHashtagOfDetail: number;
   }
+
+  interface CommentOfPostToPost{
+    content: string, 
+    listImageofComment: File[]|null,
+    userID: string
+  }
+  interface CommentOfPost{
+    id: number,
+    content: string, 
+    timeComment: string,
+    listImageofComment: string[]|null,
+    listReplyComment: ListReplyComment[]|null,
+    userID: UserPost
+  }
+
+  interface ListReplyComment{
+    id: number,
+    content: string, 
+    timeComment: string,
+    listPictureOfComment: any[]|null,
+    commentId: number,
+    userID: UserPost
+  }
+
+
 }
