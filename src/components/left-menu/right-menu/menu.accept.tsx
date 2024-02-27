@@ -128,23 +128,24 @@ const MenuAccept = () => {
                   color="success"
                   sx={{
                     borderRadius: "30px",
-                    "@media (min-width: 900px)": {
-                      "&": {
-                        fontSize: "10px",
-                        paddingX: "4px",
-                      },
-                    },
-                    "@media (min-width: 1023px)": {
-                      "&": {
-                        paddingX: "12px",
-                      },
-                    },
-                    "@media (min-width: 1200px)": {
-                      "&": {
-                        fontSize: "14px",
-                        paddingX: "16px",
-                      },
-                    },
+
+                    // "@media (min-width: 900px)": {
+                    //   "&": {
+                    //     fontSize: "10px",
+                    //     paddingX: "4px",
+                    //   },
+                    // },
+                    // "@media (min-width: 1023px)": {
+                    //   "&": {
+                    //     paddingX: "12px",
+                    //   },
+                    // },
+                    // "@media (min-width: 1200px)": {
+                    //   "&": {
+                    //     fontSize: "14px",
+                    //     paddingX: "16px",
+                    //   },
+                    // },
                   }}
                 >
                   Đồng ý
@@ -156,25 +157,26 @@ const MenuAccept = () => {
                     backgroundColor: "#eeeeee",
                     color: "#4d3869",
                     border: "none",
+                    marginLeft: "4px",
                     "&:hover": {
-                      backgroundColor: "#ffffff",
+                      backgroundColor: "#c7c7c7",
                       outline: "none",
                       border: "none",
                     },
-                    "@media (min-width: 900px)": {
-                      "&": {
-                        fontSize: "10px",
-                        marginLeft: "4px",
-                        paddingX: "10px",
-                      },
-                    },
-                    "@media (min-width: 1200px)": {
-                      "&": {
-                        fontSize: "14px",
-                        marginLeft: "8px",
-                        paddingX: "16px",
-                      },
-                    },
+                    // "@media (min-width: 900px)": {
+                    //   "&": {
+                    //     fontSize: "10px",
+                    //     marginLeft: "4px",
+                    //     paddingX: "10px",
+                    //   },
+                    // },
+                    // "@media (min-width: 1200px)": {
+                    //   "&": {
+                    //     fontSize: "14px",
+                    //     marginLeft: "8px",
+                    //     paddingX: "16px",
+                    //   },
+                    // },
                   }}
                 >
                   Từ chối

@@ -8,7 +8,7 @@ const RightPost = () => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: 250,
+        maxWidth: 220,
       }}
     >
       <MenuAccept />
