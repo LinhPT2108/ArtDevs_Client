@@ -1,5 +1,15 @@
 "use client";
-import { Grid, Rating, Snackbar } from "@mui/material";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  Rating,
+  Slide,
+  Snackbar,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
@@ -8,19 +18,30 @@ import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import { CubeSpan } from "../utils/component.global";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { sendRequest } from "../utils/api";
 import useSWR, { SWRResponse } from "swr";
 import { formatVND } from "../utils/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import { TransitionProps } from "@mui/material/transitions";
+import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
 
 interface IPros {
   user: User;
 }
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement<any, any>;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 const HomeMentor = ({ user }: IPros) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
+  const [open, setOpen] = React.useState(false);
   var path = usePathname();
   const mentorCode = Array.isArray(path)
     ? path[0].split("/")[2]
@@ -64,14 +85,20 @@ const HomeMentor = ({ user }: IPros) => {
     }
   };
 
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
   const handleSendmatch = async (mentorId: string, isReady: boolean) => {
     if (isReady === true) {
       try {
         // Gọi hàm thực hiện cuộc gọi API
         const apiResult = await sendMatchRequest(mentorId);
-        const confirmResult = window.confirm(
-          "Bạn có muốn thực hiện match không?"
-        );
+        handleClickOpen();
 
         console.log("test Result" + apiResult);
         // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -337,6 +364,7 @@ const HomeMentor = ({ user }: IPros) => {
             </Grid>
           ))}
       </Grid>
+      <MentorAccept session={user} />
       <Snackbar
         open={snackbarOpen}
         message="Match request has been sent. Please wait for a response."
@@ -357,6 +385,26 @@ const HomeMentor = ({ user }: IPros) => {
           backgroundColor: "##e60839",
         }}
       />
+      <Dialog
+        open={open}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClose}
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-slide-description">
+            Đồng hành với Mentor IT, học viên không chỉ chinh phục thách thức kỹ
+            thuật, mà còn khám phá sự phát triển chuyên sâu và mối quan hệ
+            chuyên nghiệp bền vững.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Disagree</Button>
+          <Button onClick={handleClose}>Agree</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

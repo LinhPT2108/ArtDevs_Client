@@ -11,6 +11,7 @@ import useSWR, { SWRResponse } from "swr";
 import { CubeSpan } from "../utils/component.global";
 import { formatDateString } from "../utils/utils";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
 const PostMentorProfile = ({
   data,
   fullname,
@@ -527,6 +528,9 @@ const PostMentorProfile = ({
         // )
       }
       {ListPost?.length == 0 ? <Box>"Chưa có bài viết!"</Box> : ""}
+      <Box>
+      
+      </Box>
     </>
   );
 };

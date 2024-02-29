@@ -17,6 +17,7 @@ export default async function Home() {
   //     page: 0,
   //   },
   // });
+  console.log("check session", session);
   if (session) {
     return (
       <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end" }}>
@@ -37,7 +38,7 @@ export default async function Home() {
             minWidth: "210px",
           }}
         >
-          <RightPost />
+          <RightPost session={session} />
         </Box>
       </Box>
     );

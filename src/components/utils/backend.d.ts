@@ -235,4 +235,18 @@ declare global {
     hashtagText: string;
     countHashtagOfDetail: number;
   }
+
+  interface Relation {
+    id: string;
+    userAction: UserAction;
+    userID2: string;
+    userID1: string;
+    timeRelation: string;
+  }
+  interface UserAction{
+    userId : string;
+    username: string;
+    profilePicUrl: string;
+    fullname: string;
+  }
 }

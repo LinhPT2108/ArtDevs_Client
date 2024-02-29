@@ -27,7 +27,7 @@ interface IPros {
   session: User;
 }
 
-const UserAccept = ({ session }: IPros) => {
+const MentorMenuAccept = ({ session }: IPros) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
   var router = useRouter();
@@ -162,19 +162,19 @@ const UserAccept = ({ session }: IPros) => {
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
   };
-  console.log("check data>>", data);
+
+ 
   return (
     <Box
       sx={{
         width: "100%",
         maxWidth: 250,
-        bgcolor: "#293145",
       }}
     >
       <List
         sx={{
           width: "100%",
-        
+          bgcolor: "#293145",
           color: "white",
           marginTop: "12px",
           "& p": {
@@ -212,8 +212,7 @@ const UserAccept = ({ session }: IPros) => {
         }
       >
         {data &&
-          data.length > 3 &&
-          data.slice(0, 3).map((item, index) => {
+          data?.map((item, index) => {
             return (
               <Box
                 key={index}
@@ -298,9 +297,7 @@ const UserAccept = ({ session }: IPros) => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() =>
-                      handlerefusedAddfriend(item?.userAction?.userId)
-                    }
+                    onClick={() => refusedAddfriend(item?.userAction?.userId)}
                     sx={{
                       borderRadius: "30px",
                       backgroundColor: "#eeeeee",
@@ -331,29 +328,11 @@ const UserAccept = ({ session }: IPros) => {
                     Từ chối
                   </Button>
                 </Stack>
+        
               </Box>
             );
           })}
       </List>
-      <CardActions className="justify-center">
-        <Button
-          size="small"
-          variant="contained"
-          sx={{
-            borderRadius: "30px",
-            backgroundColor: "#eeeeee",
-            color: "#4d3869",
-            "&:hover": {
-              backgroundColor: "#ffffff",
-              outline: "none",
-              border: "none",
-              display: data && data.length > 3 ? "flex" : "none",
-            },
-          }}
-        >
-         Tất cả yêu cầu
-        </Button>
-      </CardActions>
       <Snackbar
         open={snackbarOpen}
         message="Addfriend successfully!"
@@ -377,4 +356,4 @@ const UserAccept = ({ session }: IPros) => {
     </Box>
   );
 };
-export default UserAccept;
+export default MentorMenuAccept;
