@@ -1,11 +1,9 @@
+import About from "@/components/about/app.about";
 import RightPost from "@/components/left-menu/app.right.menu";
-import { Box, Grid } from "@mui/material";
+import Post from "@/components/posts/post.main";
+import { Box } from "@mui/material";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
-import About from "@/components/about/app.about";
-import Post from "@/components/posts/post.main";
-import { sendRequest } from "@/components/utils/api";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
 
 export default async function Home() {
   const session: User | null = await getServerSession(authOptions);
@@ -37,7 +35,7 @@ export default async function Home() {
             minWidth: "210px",
           }}
         >
-          <RightPost />
+          <RightPost session={session}/>
         </Box>
       </Box>
     );

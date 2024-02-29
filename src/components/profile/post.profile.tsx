@@ -1,32 +1,33 @@
-import { Grid, IconButton, Tooltip, Typography } from "@mui/material";
-import Box from "@mui/material/Box";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import LockIcon from "@mui/icons-material/Lock";
+import CommentIcon from "@mui/icons-material/Comment";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import LockIcon from "@mui/icons-material/Lock";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ShareIcon from "@mui/icons-material/Share";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
-import CommentIcon from "@mui/icons-material/Comment";
-import { sendRequest } from "../utils/api";
-import useSWR, { SWRResponse } from "swr";
-import { CubeSpan } from "../utils/component.global";
-import { formatDateString } from "../utils/utils";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import { Grid, IconButton, Typography } from "@mui/material";
+import Box from "@mui/material/Box";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import React, { useState } from "react";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemText from "@mui/material/ListItemText";
+import useSWR, { SWRResponse } from "swr";
+import { sendRequest } from "../utils/api";
+import { CubeSpan } from "../utils/component.global";
+import { formatDateString } from "../utils/utils";
+import { GLOBAL_URL } from "../utils/veriable.global";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
-
+interface IPros{
+  session?: User;
+  fullname?: string;
+  hashTagText?: string;
+}
 const PostProfile = ({
   session,
   fullname,
-}: {
-  session: User;
-  fullname: string;
-}) => {
+  hashTagText
+}: IPros) => {
   const [anchorElReport, setAnchorElReport] = useState<null | HTMLElement>(
     null
   );
@@ -69,12 +70,12 @@ const PostProfile = ({
     return await sendRequest<Post[]>({
       url: url,
       method: "GET",
-      headers: { authorization: `Bearer ${session?.access_token}` },
+      headers: `${session?  { authorization: `Bearer ${session?.access_token}` }: ""}`,
       queryParams: { page: 0 },
     });
   };
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    GLOBAL_URL + "/api/post-by-user-logged",
+    GLOBAL_URL + `/api/${hashTagText?`detailhashtag/${hashTagText}`:"post-by-user-logged"}`,
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -123,7 +124,8 @@ const PostProfile = ({
   }
   return (
     <>
-      {data &&
+      { //@ts-ignore
+      !data?.error &&
         data?.map((item, index) => (
           <Box
             key={index}
@@ -186,7 +188,7 @@ const PostProfile = ({
                     fontWeight: "bold",
                   }}
                 >
-                  {fullname}
+                  {fullname?fullname:item?.userPost?.fullname}
                 </Typography>
                 <Box
                   sx={{ color: "#3339", display: "flex", alignItems: "center" }}

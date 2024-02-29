@@ -1,9 +1,9 @@
 import { Box } from "@mui/material";
-import React from "react";
 import MenuAccept from "./right-menu/menu.accept";
 import MenuMentor from "./right-menu/menu.mentor";
+import MenuSuggestFriend from "./right-menu/menu.suggest.friend";
 
-const RightPost = () => {
+const RightPost = ({session}: {session:User}) => {
   return (
     <Box
       sx={{
@@ -12,6 +12,7 @@ const RightPost = () => {
       }}
     >
       <MenuAccept />
+      <MenuSuggestFriend session={session}/>
       <MenuMentor />
     </Box>
   );

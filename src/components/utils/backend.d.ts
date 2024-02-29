@@ -1,4 +1,4 @@
-export {};
+export { };
 // https://bobbyhadz.com/blog/typescript-make-types-global#declare-global-types-in-typescript
 
 declare global {
@@ -181,6 +181,7 @@ declare global {
     userId: string;
     username: string;
     profilePicUrl?: string;
+    fullname?: string;
   }
   interface Hashtag {
     hashtagDetailName: string;
@@ -227,5 +228,11 @@ declare global {
     id: number;
     hashtagText: string;
     countHashtagOfDetail: number;
+  }
+
+  interface SuggestFriend {
+    id: string;
+    fullname: string;
+    profileImageUrl: string;
   }
 }
