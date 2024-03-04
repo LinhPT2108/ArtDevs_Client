@@ -1,5 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { GLOBAL_URL } from "./veriable.global";
 
 export const generateUniqueId = (): string => {
   const currentTime = new Date().getTime().toString();
@@ -21,7 +22,8 @@ export const isImage = (url: string) => {
       extension === "jpg" ||
       extension === "jpeg" ||
       extension === "png" ||
-      extension === "gif"
+      extension === "gif" ||
+      extension === "webp"
     ) {
       return "image";
     } else if (
@@ -37,6 +39,34 @@ export const isImage = (url: string) => {
     console.error("Error checking content type:", error);
     return "unknown";
   }
+};
+
+export const isFile = (url: any) => {
+  console.log(url);
+  if(url instanceof File){
+    return true;
+  }else
+  if(url instanceof Object){
+    return false;
+  }else{
+    return true;
+  }
+};
+
+export const checkUrl = (url: any): string => {
+  console.log(url);
+
+  let imageUrl: string;
+
+  if (typeof url === "string") {
+    imageUrl = url;
+  } else if (url instanceof Object) {
+    imageUrl = URL.createObjectURL(url);
+  } else {
+    return "false";
+  }
+
+  return imageUrl;
 };
 
 export const formatTimeDifference = (
@@ -78,3 +108,108 @@ export function deleteSpace(value: string): string {
 
   return result;
 }
+
+const postCommentApi = async (
+  commentToPostDTO: CommentToPostDTO,
+  session: User
+) => {
+  const formData = new FormData();
+  formData.append(
+    "commentToPostDTO",
+    new Blob(
+      [
+        JSON.stringify({
+          content: commentToPostDTO.content,
+          postToPost: commentToPostDTO.postToPost,
+          userToPost: commentToPostDTO.userToPost,
+          userReceive: commentToPostDTO.userReceive,
+        }),
+      ],
+      { type: "application/json" }
+    )
+  );
+
+  if (commentToPostDTO.listImageofComment) {
+    commentToPostDTO.listImageofComment.forEach((file: any, index: any) => {
+      formData.append("listImageofComment", file);
+    });
+  } else {
+    formData.append("listImageofComment", "");
+  }
+  console.log(formData.getAll("listImageofComment"));
+
+  try {
+    const response = await fetch(GLOBAL_URL + "/api/comment", {
+      method: "POST",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const responseData = await response.json();
+    console.log(responseData);
+    return responseData;
+  } catch (error) {
+    console.error("Error uploading content and files: ", error);
+    throw error;
+  }
+};
+
+export default postCommentApi;
+
+export const postReplyCommentApi = async (
+  replyCommentToPostDTO: ReplyCommentToPostDTO,
+  session: User
+) => {
+  const formData = new FormData();
+  formData.append(
+    "repcommentDTO",
+    new Blob(
+      [
+        JSON.stringify({
+          content: replyCommentToPostDTO.content,
+          commentToPost: replyCommentToPostDTO.commentToPost.id,
+          userToPost: replyCommentToPostDTO.userToPost,
+          userReceive: replyCommentToPostDTO.userReceive.userId,
+        }),
+      ],
+      { type: "application/json" }
+    )
+  );
+
+  if (replyCommentToPostDTO.listImageofComment) {
+    replyCommentToPostDTO.listImageofComment.forEach(
+      (file: any, index: any) => {
+        formData.append("listImageofComment", file);
+      }
+    );
+  } else {
+    formData.append("listImageofComment", "");
+  }
+  console.log(formData.getAll("listImageofComment"));
+
+  try {
+    const response = await fetch(
+      GLOBAL_URL + "/api/repcomment/" + replyCommentToPostDTO.commentToPost.id,
+      {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const responseData = await response.json();
+    console.log(responseData);
+    return responseData;
+  } catch (error) {
+    console.error("Error uploading content and files: ", error);
+    throw error;
+  }
+};

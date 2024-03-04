@@ -233,28 +233,38 @@ declare global {
     countHashtagOfDetail: number;
   }
 
-  interface CommentOfPostToPost{
-    content: string, 
-    listImageofComment: File[]|null,
-    userID: string
+  interface CommentToPostDTO {
+    // id:number
+    content: string;
+    listImageofComment: any;
+    userToPost: string;
+    postToPost: string;
+    userReceive: string
   }
-  interface CommentOfPost{
-    id: number,
-    content: string, 
-    timeComment: string,
-    listImageofComment: string[]|null,
-    listReplyComment: ListReplyComment[]|null,
-    userID: UserPost
-  }
-
-  interface ListReplyComment{
-    id: number,
-    content: string, 
-    timeComment: string,
-    listPictureOfComment: any[]|null,
-    commentId: number,
-    userID: UserPost
+  interface CommentOfPost {
+    id: number;
+    content: string;
+    timeComment: string;
+    listImageofComment: string[] | null;
+    listReplyComment: ListReplyComment[] | null;
+    userID: UserPost;
   }
 
+  interface ReplyCommentToPostDTO {
+    content: string;
+    listImageofComment: any;
+    commentToPost: any;
+    userToPost: string;
+    userReceive:UserPost;
+  }
 
+  interface ListReplyComment {
+    id: number;
+    content: string;
+    timeComment: string;
+    listPictureOfComment: any[] | null;
+    commentId: number;
+    userID: UserPost;
+    userReceiveDto: UserPost;
+  }
 }

@@ -24,6 +24,15 @@ import {
   IconButtonProps,
   styled,
   ToggleButton,
+  imageListItemBarClasses,
+  Grid,
+  Chip,
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Slide,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
@@ -33,12 +42,17 @@ import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import { red } from "@mui/material/colors";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, { useEffect, useId, useState } from "react";
+import React, { SetStateAction, useEffect, useId, useState } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import ClearIcon from "@mui/icons-material/Clear";
 import { sendRequest } from "../utils/api";
-import { generateUniqueId, isImage } from "../utils/utils";
+import uploadContentAndFiles, {
+  generateUniqueId,
+  isFile,
+  isImage,
+  postReplyCommentApi,
+} from "../utils/utils";
 import "../../style/post-loading.css";
 import Slider from "react-slick";
 import CustomPaging from "./media.post";
@@ -55,6 +69,13 @@ import Container from "@mui/material/Container";
 import Fab from "@mui/material/Fab";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { AddPhotoAlternate } from "@mui/icons-material";
+import {
+  ImageViewerEdit,
+  ImageViewer,
+  ImageReplyViewerEdit,
+} from "../utils/component.global";
+import postCommentApi from "../utils/utils";
+import { TransitionProps } from "@mui/material/transitions";
 
 interface Props {
   window?: () => Window;
@@ -160,6 +181,15 @@ const styleModalComment = {
   },
 };
 
+const Transition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement<any, any>;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
+
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
   "@keyframes fadeIn": {
@@ -183,9 +213,15 @@ const RemoveButton = styled(Button)({
 interface PreviewImageProps {
   url: File;
   index: number;
-  handleRemoveImage: (index: number) => void;
+  handleRemoveImage: (index: number, isComment: boolean) => void;
+  isComment: boolean;
 }
-const PreviewImage: React.FC<PreviewImageProps> = ({ url, index, handleRemoveImage }) => {
+const PreviewImage: React.FC<PreviewImageProps> = ({
+  url,
+  index,
+  isComment,
+  handleRemoveImage,
+}) => {
   const imageUrl = URL.createObjectURL(url);
 
   return (
@@ -196,8 +232,14 @@ const PreviewImage: React.FC<PreviewImageProps> = ({ url, index, handleRemoveIma
         mr: "8px",
       }}
     >
-      <FadeInImage src={imageUrl} alt={`Preview ${index}`} width="68" height="68" />
-      <RemoveButton onClick={() => handleRemoveImage(index)}>
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="68"
+        height="68"
+      />
+
+      <RemoveButton onClick={() => handleRemoveImage(index, isComment)}>
         <ClearIcon />
       </RemoveButton>
     </Box>
@@ -210,13 +252,10 @@ interface IPros {
 
 const Post = ({ user, post }: IPros, props: Props) => {
   // const { user, setUser } = useUser();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-
-  const [anchorEl2, setAnchorEl2] = React.useState<null | HTMLElement>(null);
-  const open2 = Boolean(anchorEl2);
-
-  const [openPost, setOpenPost] = React.useState(false);
+  const [openAlerts, setOpenAlerts] = useState(false);
+  const [openPost, setOpenPost] = useState(false);
   const handleOpenPost = () => setOpenPost(true);
   const handleClosePost = () => setOpenPost(false);
   const [dataLoading, setDataLoading] = useState<Post[]>([]);
@@ -226,34 +265,340 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [page, setPage] = useState<number>(1);
   const [posts, setPosts] = useState<Post[]>([]);
   const [comment, setComment] = useState<CommentOfPost[]>([]);
-  const [openModalCmt, setOpenModalCmt] = React.useState(false);
+  const [openModalCmt, setOpenModalCmt] = useState(false);
   const [selectPost, setSelectPost] = useState<any>();
   const [showAllComments, setShowAllComments] = useState([]);
   const [isShowReplies, setIsShowReplies] = useState(null);
-  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
-  const [previewURLs, setPreviewURLs] = React.useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isLoadingComment, setIsLoadingComment] = useState(false);
+  const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
+  const [isComment, setIsComment] = useState<boolean>(false);
+  const [anchorElArray, setAnchorElArray] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [anchorElArrayReply, setAnchorElArrayReply] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [openArray, setOpenArray] = useState([]);
+  const [openArrayReply, setOpenArrayReply] = useState([]);
+  const [editingIndexComment, setEditingIndexComment] = useState<string>("");
+  const [editedContentComment, setEditedContentComment] = useState("");
+  const [editedImageComment, setEditedImageComment] = useState<any>();
+
+  const [editingIndexReplyComment, setEditingIndexReplyComment] =
+    useState<string>("");
+
+  const [editedContentReplyComment, setEditedContentReplyComment] =
+    useState("");
+  const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
+
+  const handleClickOpenAlerts = () => {
+    setOpenAlerts(true);
+  };
+
+  const handleCloseAlerts = () => {
+    setOpenAlerts(false);
+  };
+  const handleAgreeAlerts = () => {
+    console.log("agree");
+    handleCloseAlerts();
+  };
+
+  const handleOpen3 = (
+    index: number,
+    event: React.MouseEvent<HTMLElement>,
+    isCmt: boolean
+  ) => {
+    console.log(isCmt);
+    const newOpenArray = isCmt
+      ? [...openArray]
+      : ([...openArrayReply] as boolean[]);
+    newOpenArray[index] = true;
+    const newAnchorElArray = isCmt
+      ? [...anchorElArray]
+      : [...anchorElArrayReply];
+    newAnchorElArray[index] = event.currentTarget;
+    if (isCmt) {
+      setOpenArray(newOpenArray as []);
+      setAnchorElArray(newAnchorElArray);
+    } else {
+      setOpenArrayReply(newOpenArray as []);
+      setAnchorElArrayReply(newAnchorElArray);
+    }
+  };
+
+  const handleClose3 = (index: number, isCmt: boolean) => {
+    const newOpenArray = isCmt
+      ? [...openArray]
+      : ([...openArrayReply] as boolean[]);
+    newOpenArray[index] = false;
+    const newAnchorElArray = isCmt
+      ? [...anchorElArray]
+      : [...anchorElArrayReply];
+    newAnchorElArray[index] = null;
+    if (isCmt) {
+      setOpenArray(newOpenArray as []);
+      setAnchorElArray(newAnchorElArray);
+    } else {
+      setOpenArrayReply(newOpenArray as []);
+      setAnchorElArrayReply(newAnchorElArray);
+    }
+  };
+
+  const handleEditCommentOrReplyComment = (
+    commentObject: any,
+    isComment: boolean,
+    index: number
+  ) => {
+    console.log("Edit comment:", commentObject);
+    if (isComment) {
+      setEditingIndexComment(("comment" + index) as any);
+      setEditedContentComment(commentObject.content);
+      setEditedImageComment(commentObject.listImageofComment);
+    } else {
+      setEditingIndexReplyComment(("replycomment" + index) as any);
+      setEditedContentReplyComment(commentObject.content);
+      setEditedImageReplyComment(commentObject.listPictureOfComment);
+    }
+    handleClose3(index, isComment);
+  };
+
+  const handleCancelEditComment = (isComment: boolean, index: number) => {
+    if (isComment) {
+      setEditingIndexComment("");
+      setEditedContentComment("");
+    } else {
+      setEditingIndexReplyComment("");
+      setEditedContentReplyComment("");
+    }
+  };
+
+  const handleChangePicEditComment = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    isComment: boolean
+  ) => {
+    console.log("change pic edit comment: ", isComment);
+    const fileInput = event.target as HTMLInputElement;
+    const selected = fileInput.files;
+
+    if (selected && selected.length > 0) {
+      if (isComment) {
+        setEditedImageComment((prevImages: any) => [
+          ...(prevImages as any),
+          ...Array.from(selected),
+        ]);
+      } else {
+        setEditedImageReplyComment((prevImages: any) => [
+          ...(prevImages as any),
+          ...Array.from(selected),
+        ]);
+      }
+    }
+  };
+
+  const handleSaveEditComment = async (
+    isComment: boolean,
+    commentObject: any,
+    content: string,
+    images: any
+  ) => {
+    setIsLoadingEditComment(true);
+    const imageFiles: File[] = Array.from(images).map((imageName: any) => {
+      if (typeof imageName.imageOfCommentUrl === "string") {
+        const blob = new Blob([], { type: "application/octet-stream" });
+        const fileType = "image/jpeg";
+        const fileSize = blob.size;
+        const file = new File([blob], imageName.imageOfCommentUrl, {
+          type: fileType,
+          size: fileSize,
+        } as any);
+        return file;
+      } else {
+        return imageName as File;
+      }
+    });
+    const formData = new FormData();
+    if (isComment) {
+      formData.append("content", content);
+      if (imageFiles) {
+        imageFiles.forEach((file: any, index: any) => {
+          console.log(file);
+
+          formData.append("listImageofComment", file);
+        });
+      } else {
+        formData.append("listImageofComment", "");
+      }
+      try {
+        const response = await fetch(
+          GLOBAL_URL + "/api/comment/" + commentObject.id,
+          {
+            method: "PUT",
+            headers: { authorization: `Bearer ${user?.access_token}` },
+            body: formData,
+          }
+        );
+
+        if (response.status == 200) {
+          setEditingIndexComment("");
+          setEditedContentComment("");
+          setEditedImageComment("");
+          const data = await response.json();
+          console.log(data);
+          setComment((prevComments) =>
+            prevComments.map((prevComment) =>
+              prevComment.id === data.id
+                ? { ...prevComment, ...data }
+                : prevComment
+            )
+          );
+          setIsLoadingEditComment(false);
+        }
+      } catch (error) {
+        setIsLoadingEditComment(false);
+        console.log(error);
+      }
+    } else {
+      setIsLoadingEditComment(true);
+      formData.append("content", content);
+      if (imageFiles) {
+        imageFiles.forEach((file: any, index: any) => {
+          console.log(file);
+          formData.append("listImageofComment", file);
+        });
+      } else {
+        formData.append("listImageofComment", "");
+      }
+      try {
+        const response = await fetch(
+          GLOBAL_URL + "/api/replyComment/" + commentObject.id,
+          {
+            method: "PUT",
+            headers: { authorization: `Bearer ${user?.access_token}` },
+            body: formData,
+          }
+        );
+
+        if (response.status == 200) {
+          setEditingIndexReplyComment("");
+          setEditedContentReplyComment("");
+          setEditedImageReplyComment("");
+          const data = await response.json();
+          console.log(data);
+          setComment((prevComments) => {
+            return prevComments.map((comment) => {
+              if (comment.id === data.commentID) {
+                return {
+                  ...comment,
+                  listReplyComment: comment.listReplyComment
+                    ? comment.listReplyComment.map((reply) =>
+                        reply.id === data.id ? data : reply
+                      )
+                    : [data],
+                };
+              }
+              return comment;
+            });
+          });
+          setIsLoadingEditComment(false);
+        }
+      } catch (error) {
+        setIsLoadingEditComment(false);
+        console.log(error);
+      }
+    }
+  };
+
+  const handleDeleteCommentOrReplyComment = async (
+    commentObject: any,
+    isComment2: boolean,
+    index: number
+  ) => {
+    console.log("Delete:", commentObject);
+    const url = isComment2
+      ? GLOBAL_URL+"/api/comment/" + commentObject.id
+      : GLOBAL_URL+"/api/replyComment/" + commentObject.id;
+
+    const response = await sendRequest<boolean>({
+      url,
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      method: "DELETE",
+    });
+
+    console.log(response);
+
+    if (response) {
+      if (isComment2) {
+        setComment((prevComments) =>
+          prevComments.filter((c) => c.id !== commentObject.id)
+        );
+      } else {
+        setComment((prevComments) =>
+          prevComments.map((c) =>
+            c.id === commentObject.commentID
+              ? {
+                  ...c,
+                  listReplyComment:
+                    c.listReplyComment &&
+                    c.listReplyComment?.filter(
+                      (reply) => reply.id !== commentObject.id
+                    ),
+                }
+              : c
+          )
+        );
+      }
+    }
+    handleClose3(index, isComment2);
+  };
+
   const [formDataComment, setFormDataComment] =
-    React.useState<CommentOfPostToPost>({
+    React.useState<CommentToPostDTO>({
       content: "",
       listImageofComment: null,
-      userID: user.user.userId,
+      userToPost: user?.user?.userId,
+      postToPost: "",
+      userReceive: "",
     });
-  const handleCloseModalCmt = () => setOpenModalCmt(false);
+
+  const [formDataReplyComment, setFormDataReplyComment] =
+    React.useState<ReplyCommentToPostDTO>({
+      content: "",
+      listImageofComment: null,
+      userToPost: user?.user?.userId,
+      commentToPost: null as unknown as number,
+      userReceive: {} as any,
+    });
+
+  const handleCloseModalCmt = () => {
+    setOpenModalCmt(false);
+    setIsShowReplies(null);
+  };
 
   const handleOpenModalCmt = async (post: Post) => {
+    setIsComment(true);
+    setFormDataComment({
+      content: "",
+      listImageofComment: null,
+      postToPost: "",
+    } as CommentToPostDTO);
     setOpenModalCmt(true);
     console.log(post.postId);
     setSelectPost(post.userPost.fullname);
 
     const getCommentOfPost = await sendRequest<CommentOfPost[]>({
-      url: "http://localhost:8080/api/comment/" + post.postId,
+      url: GLOBAL_URL+"/api/comment/" + post.postId,
       method: "GET",
       queryParams: {
         page: 0,
       },
     });
     setComment(getCommentOfPost);
-
+    setFormDataComment((prevData) => ({
+      ...prevData,
+      postToPost: post?.postId,
+      userReceive: post.userPost.userId,
+    }));
     console.log(comment);
   };
 
@@ -354,7 +699,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     try {
       const response = await sendRequest<Post[]>({
-        url: "http://localhost:8080/api/like/" + postId,
+        url: GLOBAL_URL+"/api/like/" + postId,
         method: "POST",
         headers: { authorization: `Bearer ${user?.access_token}` },
       });
@@ -432,7 +777,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     try {
       const response = await sendRequest<Post[]>({
-        url: "http://localhost:8080/api/unlike/" + postId,
+        url: GLOBAL_URL+"/api/unlike/" + postId,
         method: "POST",
         headers: { authorization: `Bearer ${user?.access_token}` },
       });
@@ -477,12 +822,19 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
   };
 
-  const handleReplyComment = (cmtId: number) => {
-    console.log(cmtId);
-  };
+  const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
+    console.log(cmt);
 
-  const handleExpandClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl2(event.currentTarget);
+    console.log(user);
+
+    setIsComment(false);
+    setFormDataReplyComment((prevData) => {
+      return {
+        ...prevData,
+        commentToPost: cmt,
+        userReceive: user,
+      };
+    });
   };
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -491,9 +843,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
-  const handleClose2 = () => {
-    setAnchorEl2(null);
-  };
+
   const [postData, setPostData] = useState<AddPost>({
     postId: "",
     content: "",
@@ -511,6 +861,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       content: value,
     }));
   };
+
   const handlePost = async () => {
     setPostData((prevData) => ({
       ...prevData,
@@ -520,73 +871,157 @@ const Post = ({ user, post }: IPros, props: Props) => {
     const response = await sendRequest({
       // url: "https://artdevs-server.azurewebsites.net/api/register",
       // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-      url: "http://localhost:8080/api/post",
+      url: GLOBAL_URL + "/api/comment",
       method: "POST",
       headers: { authorization: `Bearer ${user?.access_token}` },
       body: { ...postData },
     });
     console.log(">>> check post data: ", response);
   };
-  const handleChangeContentComment = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    const { name, value } = event.target;
-    setFormDataComment((prevFormData) => ({
-      ...prevFormData,
-      [name]: value,
-    }));
+  const handleChangeContentComment = (value: string) => {
+    if (isComment) {
+      setFormDataComment((prevFormData) => ({
+        ...prevFormData,
+        content: value,
+      }));
+    } else {
+      setFormDataReplyComment((prevFormData) => ({
+        ...prevFormData,
+        content: value,
+      }));
+    }
   };
 
   const handleChangePic = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target as HTMLInputElement;
     console.log(fileInput.files);
     const selected = fileInput.files;
-    setFormDataComment((prevData) => ({
-      ...prevData,
-      listImageofComment: [
-        ...(prevData.listImageofComment || []),
-        ...(selected ? Array.from(selected) : []),
-      ] as File[],
-    }));
-     if (selected || (selected == null && selectedFiles.length > 0)) {
-    const newSelectedFiles = Array.from(
-      selected == null ? selectedFiles : selected
-    );
-    setSelectedFiles(newSelectedFiles);
-
-    const newPreviewURLs: string[] = [];
-
-    newSelectedFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviewURLs.push(reader.result as string);
-        setPreviewURLs([...newPreviewURLs]);
-      };
-      reader.readAsDataURL(file);
-    });
-  } else {
-    setSelectedFiles([]);
-    setPreviewURLs([]);
-  }
+    if (isComment) {
+      setFormDataComment((prevData) => ({
+        ...prevData,
+        listImageofComment: [
+          ...(prevData.listImageofComment || []),
+          ...(selected ? Array.from(selected) : []),
+        ] as File[],
+      }));
+    } else {
+      setFormDataReplyComment((prevData) => ({
+        ...prevData,
+        listImageofComment: [
+          ...(prevData.listImageofComment || []),
+          ...(selected ? Array.from(selected) : []),
+        ] as File[],
+      }));
+    }
   };
 
-  const handleRemoveImage = (index: number) => {
-    const newSelectedFiles = [...selectedFiles];
+  const handleRemoveImage = (index: number, isComment: boolean) => {
+    const newSelectedFiles = isComment
+      ? [...formDataComment.listImageofComment]
+      : [...formDataReplyComment.listImageofComment];
     newSelectedFiles.splice(index, 1);
     setSelectedFiles(newSelectedFiles);
+    console.log(newSelectedFiles);
 
-    const newPreviewURLs = [...previewURLs];
-    newPreviewURLs.splice(index, 1);
-    setPreviewURLs(newPreviewURLs);
-    setFormDataComment((prevData) => ({
-      ...prevData,
-      "listImageofComment": newSelectedFiles
-    }));
+    if (isComment) {
+      setFormDataComment((prevData) => ({
+        ...prevData,
+        listImageofComment: newSelectedFiles,
+      }));
+    } else {
+      setFormDataReplyComment((prevData) => ({
+        ...prevData,
+        listImageofComment: newSelectedFiles,
+      }));
+    }
   };
 
-  const handlePostComment = () => {
-    console.log(formDataComment);
+  const handleRemoveImageEditComment = (nameFile: number) => {
+    console.log("close: " + nameFile);
+    const newSelectedFiles = [...editedImageComment];
+    newSelectedFiles.splice(nameFile, 1);
+    // const newImageCommentList = Array.from(editedImageComment).filter(
+    //   (editedImage) => editedImage !== nameFile
+    // );
+    setEditedImageComment(newSelectedFiles as any);
+    console.log(newSelectedFiles);
   };
+
+  const handleRemoveImageEditCommentReply = (nameFile: number) => {
+    console.log("close: " + nameFile);
+    const newSelectedFiles = [...editedImageReplyComment];
+    newSelectedFiles.splice(nameFile, 1);
+    setEditedImageReplyComment(newSelectedFiles as any);
+    console.log(newSelectedFiles);
+  };
+
+  const handleCancelReplyComment = () => setIsComment(true);
+
+  const handlePostComment = async () => {
+    if (isComment) {
+      console.log(formDataComment);
+      setIsLoadingComment(true);
+      const response = await postCommentApi(formDataComment, user);
+      console.log(response);
+      if (response != false) {
+        setComment((preData) => [response, ...preData]);
+        setFormDataComment({
+          content: "",
+          listImageofComment: null,
+          postToPost: "",
+        } as CommentToPostDTO);
+        setIsLoadingComment(false);
+      }
+      setIsComment(true);
+    } else {
+      console.log(formDataReplyComment);
+      setIsLoadingComment(true);
+      const response = await postReplyCommentApi(formDataReplyComment, user);
+      console.log(response);
+      if (response != false) {
+        setFormDataReplyComment(
+          (prevData) =>
+            ({
+              ...prevData,
+              content: "",
+              listImageofComment: null,
+              // userToPost: user?.user?.userId,
+              // commentToPost: null as unknown as number,
+            } as ReplyCommentToPostDTO)
+        );
+        setComment((prevComments) => {
+          return prevComments.map((comment) => {
+            if (comment.id === response.commentID) {
+              return {
+                ...comment,
+                listReplyComment: [
+                  ...(comment.listReplyComment || []),
+                  response,
+                ],
+              };
+            }
+            return comment;
+          });
+        });
+
+        setIsLoadingComment(false);
+        setIsComment(true);
+      }
+    }
+
+    setIsLoadingComment(false);
+  };
+
+  const handleSharePost = async (postId:string)=>{
+    console.log(postId);
+    const response = await sendRequest({
+      url: GLOBAL_URL+"/api/share/"+postId,
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      method: "POST",
+    });
+    console.log(response);
+    
+  }
 
   if (isLoading) {
     return (
@@ -895,6 +1330,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 sx={{
                   borderRadius: "10px",
                 }}
+                onClick={()=>handleSharePost(p.postId)}
               >
                 <Box
                   sx={{
@@ -1099,7 +1535,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                     marginRight: "0.75rem",
                   }}
                 >
-                  {p.totalLike} {p.likeByUserLogged ? "true" : "false"}
+                  {p.totalLike}
                 </Box>
                 <FavoriteIcon />
               </IconButton>
@@ -1337,7 +1773,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 <Box sx={{ my: 2, color: "white" }}>
                   {comment &&
                     comment?.map((c: CommentOfPost, index) => (
-                      <Box key={index + c.id}>
+                      <Box key={"comment" + index + c.id}>
                         <Box
                           component={"div"}
                           sx={{ display: "flex" }}
@@ -1348,151 +1784,308 @@ const Post = ({ user, post }: IPros, props: Props) => {
                             src={c.userID.profilePicUrl}
                             sx={{ width: 36, height: 36 }}
                           />
-                          <Box>
-                            <Card
-                              sx={{
-                                backgroundColor: "#3A3B3C",
-                                ml: "7px",
-                                color: "white",
-                                display: "inline-block ",
-                                borderRadius: "15px",
-                              }}
-                            >
-                              <Link
-                                href="/1"
-                                style={{ textDecoration: "none" }}
-                              >
-                                <CardHeader
-                                  title={c.userID.fullname}
-                                  subheader={""}
-                                  sx={{
-                                    fontSize: "10px",
-                                    paddingY: "7px",
-                                    color: "white !important",
-                                    mb: "0px",
-                                    paddingBottom: "0px",
-                                  }}
-                                  titleTypographyProps={{
-                                    fontSize: "1rem",
-                                  }}
-                                />
-                              </Link>
-                              <CardContent
-                                sx={{
-                                  paddingBottom: "7px !important",
-                                  paddingTop: "0px ",
-                                }}
-                              >
-                                <Typography variant="body1">
-                                  {c.content}
-                                </Typography>
-                              </CardContent>
-                            </Card>
-                            <Box sx={{ display: "flex", mt: "5px" }}>
-                              {c?.listImageofComment?.map(
-                                (item: any, index) => (
-                                  <CardMedia
-                                    key={index + item}
-                                    component={
-                                      isImage(item.imageOfCommentUrl) ===
-                                      "image"
-                                        ? "img"
-                                        : isImage(item.imageOfCommentUrl) ===
-                                          "video"
-                                        ? "video"
-                                        : "div"
-                                    }
-                                    // autoPlay={isImage(item.imageUrl) === "video"}
-                                    controls={
-                                      isImage(item.imageOfCommentUrl) ===
-                                      "video"
-                                    }
-                                    image={item.imageOfCommentUrl}
-                                    alt={item.imageOfCommentUrl}
-                                    sx={{
-                                      objectFit: "cover",
-                                      width: `20%`,
-                                      mx: "8px",
-                                      borderRadius: "15px",
-                                    }}
-                                  />
-                                )
-                              )}
-                            </Box>
+                          {editingIndexComment != "comment" + index ? (
                             <Box
-                              sx={{
-                                mx: "15px",
-                                display: "flex",
-                                alignItems: "center",
-                              }}
+                              className="block-comment"
+                              sx={{ display: "flex" }}
                             >
-                              <Tooltip
-                                title={formatDateString(c.timeComment)}
-                                TransitionComponent={Zoom}
-                                slotProps={{
-                                  popper: {
-                                    modifiers: [
-                                      {
-                                        name: "offset",
-                                        options: {
-                                          offset: [0, -14],
-                                        },
-                                      },
-                                    ],
-                                  },
-                                }}
+                              <Box
+                                component={"div"}
+                                className="content-comment"
                               >
-                                <Typography
-                                  variant="caption"
-                                  display="block"
-                                  gutterBottom
+                                <Card
                                   sx={{
-                                    mb: "0px",
-                                    color: "#a5a8ad",
-                                    mr: "7px",
+                                    backgroundColor: "#3A3B3C",
+                                    ml: "7px",
+                                    color: "white",
+                                    display: "inline-block ",
+                                    borderRadius: "15px",
                                   }}
                                 >
-                                  {calculateHoursDifference(c.timeComment)}
-                                </Typography>
-                              </Tooltip>
-                              <Button
-                                size="small"
-                                onClick={() => handleReplyComment(c.id)}
-                              >
-                                Phản hồi
-                              </Button>
+                                  <Link
+                                    href="/1"
+                                    style={{ textDecoration: "none" }}
+                                  >
+                                    <CardHeader
+                                      title={c.userID.fullname}
+                                      subheader={""}
+                                      sx={{
+                                        fontSize: "10px",
+                                        paddingY: "7px",
+                                        color: "white !important",
+                                        mb: "0px",
+                                        paddingBottom: "0px",
+                                      }}
+                                      titleTypographyProps={{
+                                        fontSize: "1rem",
+                                      }}
+                                    />
+                                  </Link>
+                                  <CardContent
+                                    sx={{
+                                      paddingBottom: "7px !important",
+                                      paddingTop: "0px ",
+                                    }}
+                                  >
+                                    <Typography variant="body1">
+                                      {c.content}
+                                    </Typography>
+                                  </CardContent>
+                                </Card>
+                                <Box sx={{ flexFlow: "wrap", display: "flex" }}>
+                                  {c?.listImageofComment?.map((item, index) => (
+                                    <Grid
+                                      item
+                                      key={"imageCmt" + index}
+                                      xs={4}
+                                      md={4}
+                                      lg={3}
+                                    >
+                                      <ImageViewer imageUrl={item} />
+                                    </Grid>
+                                  ))}
+                                </Box>
+                                <Box
+                                  sx={{
+                                    mx: "15px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                  }}
+                                >
+                                  <Tooltip
+                                    title={formatDateString(c.timeComment)}
+                                    TransitionComponent={Zoom}
+                                    slotProps={{
+                                      popper: {
+                                        modifiers: [
+                                          {
+                                            name: "offset",
+                                            options: {
+                                              offset: [0, -14],
+                                            },
+                                          },
+                                        ],
+                                      },
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      display="block"
+                                      gutterBottom
+                                      sx={{
+                                        mb: "0px",
+                                        color: "#a5a8ad",
+                                        mr: "7px",
+                                      }}
+                                    >
+                                      {calculateHoursDifference(c.timeComment)}
+                                    </Typography>
+                                  </Tooltip>
+                                  <Button
+                                    size="small"
+                                    onClick={() =>
+                                      handleReplyComment(c, c.userID)
+                                    }
+                                  >
+                                    Phản hồi
+                                  </Button>
+                                </Box>
+                              </Box>
+                              <Box className="buttons-action">
+                                {c.userID.userId == user.user?.userId && (
+                                  <div>
+                                    <Button
+                                      id={`option-button-${index}`}
+                                      aria-controls={
+                                        openArray[index]
+                                          ? `option-menu-${index}`
+                                          : undefined
+                                      }
+                                      aria-haspopup="true"
+                                      aria-expanded={
+                                        openArray[index] ? "true" : undefined
+                                      }
+                                      onClick={(event) =>
+                                        handleOpen3(index, event, true)
+                                      }
+                                      sx={{ p: "0px", minWidth: "0px" }}
+                                    >
+                                      <MoreVertIcon />
+                                    </Button>
+                                    <Menu
+                                      id={`option-menu-${index}`}
+                                      anchorEl={anchorElArray[index]}
+                                      open={openArray[index]}
+                                      onClose={() => handleClose3(index, true)}
+                                      MenuListProps={{
+                                        "aria-labelledby": `option-button-${index}`,
+                                      }}
+                                    >
+                                      <MenuItem
+                                        onClick={() =>
+                                          handleEditCommentOrReplyComment(
+                                            c,
+                                            true,
+                                            index
+                                          )
+                                        }
+                                      >
+                                        Chỉnh sửa
+                                      </MenuItem>
+                                      <MenuItem onClick={() =>
+                                          handleDeleteCommentOrReplyComment(
+                                            c,
+                                            true,
+                                            index
+                                          )}>
+                                        Xóa bình luận
+                                      </MenuItem>
+                                    </Menu>
+                                  </div>
+                                )}
+                              </Box>
                             </Box>
-                          </Box>
-                          {/* <div>
-                            <Button
-                              id="basic-button"
-                              aria-controls={open2 ? "basic-menu" : undefined}
-                              aria-haspopup="true"
-                              aria-expanded={open2 ? "true" : undefined}
-                              onClick={handleExpandClick}
-                              sx={{
-                                p: "0px",
-                                minWidth: "20px !important",
-                                borderRadius: "50%",
-                                ml: "5px",
-                              }}
+                          ) : (
+                            //keyEditComment
+                            <Box
+                              className="block-comment"
+                              sx={{ display: "flex", width: "100%" }}
                             >
-                              <MoreVertIcon />
-                            </Button>
-                            <Menu
-                              id="basic-menu"
-                              anchorEl={anchorEl2}
-                              open={open2}
-                              onClose={handleClose2}
-                              MenuListProps={{
-                                "aria-labelledby": "basic-button",
-                              }}
-                            >
-                              <MenuItem onClick={handleClose2}>
-                                Xóa bình luận
-                              </MenuItem>
-                            </Menu>
-                          </div> */}
+                              {isLoadingEditComment ? (
+                                <Box
+                                  sx={{
+                                    width: "100%",
+                                    alignSelf: "center",
+                                    padding: "15px",
+                                  }}
+                                >
+                                  <LinearProgress />
+                                </Box>
+                              ) : (
+                                <Box
+                                  component={"div"}
+                                  className="content-comment"
+                                  sx={{ width: "100%" }}
+                                >
+                                  <Card
+                                    sx={{
+                                      backgroundColor: "#3A3B3C",
+                                      ml: "7px",
+                                      color: "white",
+                                      display: "flex",
+                                      borderRadius: "15px",
+                                      width: "100%",
+                                    }}
+                                  >
+                                    <TextField
+                                      id=""
+                                      hiddenLabel
+                                      // label="Viết bình luận ..."
+                                      value={editedContentComment}
+                                      multiline
+                                      rows={3}
+                                      onChange={(e) =>
+                                        setEditedContentComment(e.target.value)
+                                      }
+                                      variant="filled"
+                                      size="small"
+                                      InputProps={{ sx: { color: "white" } }}
+                                      sx={{
+                                        color: "white !important",
+                                        width: "100%",
+                                      }}
+                                    />
+                                    <Button
+                                      component="label"
+                                      variant="contained"
+                                      startIcon={<AddPhotoAlternate />}
+                                      sx={{
+                                        p: "0px",
+                                        backgroundColor: "transparent",
+                                        color: "white",
+                                        "&:hover": {
+                                          backgroundColor: "transparent",
+                                          boxShadow: "none",
+                                        },
+                                        boxShadow: "none",
+                                      }}
+                                    >
+                                      <VisuallyHiddenInput
+                                        type="file"
+                                        accept=".jpg, .png "
+                                        onChange={(event) =>
+                                          handleChangePicEditComment(
+                                            event,
+                                            true
+                                          )
+                                        }
+                                        multiple
+                                        name="listImageofComment"
+                                      />
+                                    </Button>
+                                  </Card>
+                                  <Box
+                                    sx={{
+                                      flexFlow: "wrap",
+                                      display: "flex",
+                                      mt: "8px",
+                                    }}
+                                  >
+                                    {Array.from(editedImageComment)?.map(
+                                      (item, index) => (
+                                        <Grid
+                                          item
+                                          key={"imageCmt" + index}
+                                          xs={4}
+                                          md={4}
+                                          lg={3}
+                                        >
+                                          <ImageViewerEdit
+                                            index={index}
+                                            handleRemoveImage={
+                                              handleRemoveImageEditComment
+                                            }
+                                            _imageUrl={item}
+                                          />
+                                        </Grid>
+                                      )
+                                    )}
+                                  </Box>
+
+                                  <Box
+                                    sx={{
+                                      mx: "15px",
+                                      display: "flex",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Button
+                                      size="small"
+                                      sx={{ color: "gray" }}
+                                      onClick={() =>
+                                        handleCancelEditComment(true, index)
+                                      }
+                                    >
+                                      Hủy
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      onClick={() =>
+                                        handleSaveEditComment(
+                                          true,
+                                          c,
+                                          editedContentComment,
+                                          editedImageComment
+                                        )
+                                      }
+                                    >
+                                      Lưu
+                                    </Button>
+                                  </Box>
+                                </Box>
+                              )}
+                            </Box>
+                          )}
                         </Box>
                         {c.listReplyComment &&
                           c.listReplyComment?.length > 0 && (
@@ -1514,141 +2107,402 @@ const Post = ({ user, post }: IPros, props: Props) => {
                         {isShowReplies === c.id &&
                           c.listReplyComment &&
                           c.listReplyComment?.map(
-                            (rl: ListReplyComment, index) => (
+                            (rl: ListReplyComment, ir) => (
                               <Box
-                                key={index}
+                                key={ir}
                                 className="reply-comment"
                                 sx={{ ml: "2rem" }}
                               >
                                 <Box
                                   component={"div"}
                                   sx={{ display: "flex" }}
-                                  className="box-comment"
+                                  className="box-reply-comment"
                                 >
                                   <Avatar
                                     alt=""
                                     src={rl.userID.profilePicUrl}
                                     sx={{ width: 30, height: 30 }}
                                   />
-                                  <Box>
-                                    <Card
-                                      sx={{
-                                        backgroundColor: "#3A3B3C",
-                                        ml: "7px",
-                                        color: "white",
-                                        display: "inline-block ",
-                                        borderRadius: "15px",
-                                      }}
-                                    >
-                                      <Link
-                                        href="/1"
-                                        style={{ textDecoration: "none" }}
-                                      >
-                                        <CardHeader
-                                          title={rl.userID.fullname}
-                                          subheader={""}
-                                          sx={{
-                                            fontSize: "10px",
-                                            paddingY: "7px",
-                                            color: "white !important",
-                                            paddingBottom: "0px",
-                                          }}
-                                          titleTypographyProps={{
-                                            fontSize: "1rem",
-                                          }}
-                                        />
-                                      </Link>
-                                      <CardContent
-                                        sx={{
-                                          paddingBottom: "7px !important",
-                                          paddingTop: "0px ",
-                                        }}
-                                      >
-                                        <Typography variant="body1">
-                                          {rl.content}
-                                        </Typography>
-                                      </CardContent>
-                                    </Card>
-                                    <Box sx={{ display: "flex", mt: "5px" }}>
-                                      {rl.listPictureOfComment?.map(
-                                        (item2: any, index) => (
-                                          <CardMedia
-                                            key={index + item2}
-                                            component={
-                                              isImage(
-                                                item2.imageOfCommentUrl
-                                              ) === "image"
-                                                ? "img"
-                                                : isImage(
-                                                    item2.imageOfCommentUrl
-                                                  ) === "video"
-                                                ? "video"
-                                                : "div"
-                                            }
-                                            // autoPlay={isImage(item2.imageUrl) === "video"}
-                                            controls={
-                                              isImage(
-                                                item2.imageOfCommentUrl
-                                              ) === "video"
-                                            }
-                                            image={item2.imageOfCommentUrl}
-                                            alt={item2.imageOfCommentUrl}
-                                            sx={{
-                                              objectFit: "cover",
-                                              width: `20%`,
-                                              mx: "8px",
-                                              borderRadius: "15px",
-                                            }}
-                                          />
-                                        )
-                                      )}
-                                    </Box>
+                                  {editingIndexReplyComment !=
+                                  "replycomment" + ir ? (
                                     <Box
-                                      sx={{
-                                        mx: "15px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                      }}
+                                      className="block-comment"
+                                      sx={{ display: "flex" }}
                                     >
-                                      <Tooltip
-                                        title={formatDateString(c.timeComment)}
-                                        TransitionComponent={Zoom}
-                                        slotProps={{
-                                          popper: {
-                                            modifiers: [
-                                              {
-                                                name: "offset",
-                                                options: {
-                                                  offset: [0, -14],
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        }}
+                                      <Box
+                                        component={"div"}
+                                        className="content-comment"
                                       >
-                                        <Typography
-                                          variant="caption"
-                                          display="block"
-                                          gutterBottom
+                                        <Card
                                           sx={{
-                                            mb: "0px",
-                                            color: "#a5a8ad",
-                                            mr: "7px",
+                                            backgroundColor: "#3A3B3C",
+                                            ml: "7px",
+                                            color: "white",
+                                            display: "inline-block ",
+                                            borderRadius: "15px",
                                           }}
                                         >
-                                          {calculateHoursDifference(
-                                            c.timeComment
+                                          <Link
+                                            href="/1"
+                                            style={{ textDecoration: "none" }}
+                                          >
+                                            <CardHeader
+                                              title={rl.userID.fullname}
+                                              subheader={""}
+                                              sx={{
+                                                fontSize: "10px",
+                                                paddingY: "7px",
+                                                color: "white !important",
+                                                paddingBottom: "0px",
+                                              }}
+                                              titleTypographyProps={{
+                                                fontSize: "1rem",
+                                              }}
+                                            />
+                                          </Link>
+                                          <CardContent
+                                            sx={{
+                                              paddingBottom: "7px !important",
+                                              paddingTop: "0px ",
+                                              mt: "5px",
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
+                                            <Chip
+                                              avatar={
+                                                <Avatar
+                                                  alt={
+                                                    rl.userReceiveDto
+                                                      .profilePicUrl
+                                                  }
+                                                  src={
+                                                    rl.userReceiveDto
+                                                      .profilePicUrl
+                                                  }
+                                                  sx={{
+                                                    mx: "0px !important",
+                                                  }}
+                                                />
+                                              }
+                                              label={
+                                                <>
+                                                  Trả lời{" "}
+                                                  <span
+                                                    style={{
+                                                      fontWeight: "bold",
+                                                    }}
+                                                  >
+                                                    {rl.userReceiveDto.fullname}
+                                                  </span>
+                                                </>
+                                              }
+                                              sx={{
+                                                display: "inline-flex",
+                                                flexDirection: "row-reverse",
+                                                alignItems: "center",
+                                                color: "white",
+                                                px: "5px",
+                                              }}
+                                            />
+                                            <Typography
+                                              variant="body1"
+                                              marginLeft={1}
+                                            >
+                                              {rl.content}
+                                            </Typography>
+                                          </CardContent>
+                                        </Card>
+                                        <Box
+                                          sx={{ display: "flex", mt: "5px" }}
+                                        >
+                                          {rl.listPictureOfComment?.map(
+                                            (item2: any, imgIndex) => (
+                                              <Grid
+                                                item
+                                                key={"imageReplyCmt" + imgIndex}
+                                                xs={6}
+                                                md={4}
+                                                lg={3}
+                                              >
+                                                <ImageViewer
+                                                  imageUrl={
+                                                    item2.imageOfCommentUrl
+                                                  }
+                                                />
+                                              </Grid>
+                                            )
                                           )}
-                                        </Typography>
-                                      </Tooltip>
-                                      <Button
-                                        size="small"
-                                        onClick={() => handleReplyComment(c.id)}
-                                      >
-                                        Phản hồi
-                                      </Button>
+                                        </Box>
+                                        <Box
+                                          sx={{
+                                            mx: "15px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                          }}
+                                        >
+                                          <Tooltip
+                                            title={formatDateString(
+                                              c.timeComment
+                                            )}
+                                            TransitionComponent={Zoom}
+                                            slotProps={{
+                                              popper: {
+                                                modifiers: [
+                                                  {
+                                                    name: "offset",
+                                                    options: {
+                                                      offset: [0, -14],
+                                                    },
+                                                  },
+                                                ],
+                                              },
+                                            }}
+                                          >
+                                            <Typography
+                                              variant="caption"
+                                              display="block"
+                                              gutterBottom
+                                              sx={{
+                                                mb: "0px",
+                                                color: "#a5a8ad",
+                                                mr: "7px",
+                                              }}
+                                            >
+                                              {calculateHoursDifference(
+                                                c.timeComment
+                                              )}
+                                            </Typography>
+                                          </Tooltip>
+                                          <Button
+                                            size="small"
+                                            onClick={() =>
+                                              handleReplyComment(c, rl.userID)
+                                            }
+                                          >
+                                            Phản hồi
+                                          </Button>
+                                        </Box>
+                                      </Box>
+                                      {rl.userID.userId ==
+                                        user.user?.userId && (
+                                        <div>
+                                          <Button
+                                            id={`option-button-reply-${ir}`}
+                                            aria-controls={
+                                              openArrayReply[ir]
+                                                ? `option-menu-reply-${ir}`
+                                                : undefined
+                                            }
+                                            aria-haspopup="true"
+                                            aria-expanded={
+                                              openArrayReply[ir]
+                                                ? "true"
+                                                : undefined
+                                            }
+                                            onClick={(event) =>
+                                              handleOpen3(ir, event, false)
+                                            }
+                                            sx={{ p: "0px", minWidth: "0px" }}
+                                          >
+                                            <MoreVertIcon />
+                                          </Button>
+                                          <Menu
+                                            id={`option-menu-reply-${ir}`}
+                                            anchorEl={anchorElArrayReply[ir]}
+                                            open={openArrayReply[ir]}
+                                            onClose={() =>
+                                              handleClose3(ir, false)
+                                            }
+                                            MenuListProps={{
+                                              "aria-labelledby": `option-button-reply-${ir}`,
+                                            }}
+                                          >
+                                            <MenuItem
+                                              onClick={() =>
+                                                handleEditCommentOrReplyComment(
+                                                  rl,
+                                                  false,
+                                                  ir
+                                                )
+                                              }
+                                            >
+                                              Chỉnh sửa
+                                            </MenuItem>
+                                            <MenuItem
+                                              onClick={() =>
+                                                handleDeleteCommentOrReplyComment(
+                                                  rl,
+                                                  false,
+                                                  ir
+                                                )
+                                              }
+                                            >
+                                              Xóa bình luận
+                                            </MenuItem>
+                                          </Menu>
+                                        </div>
+                                      )}
                                     </Box>
-                                  </Box>
+                                  ) : (
+                                    <Box
+                                      className="block-reply-comment"
+                                      sx={{ display: "flex", width: "100%" }}
+                                    >
+                                      {isLoadingEditComment ? (
+                                        <Box
+                                          sx={{
+                                            width: "100%",
+                                            alignSelf: "center",
+                                            padding: "15px",
+                                          }}
+                                        >
+                                          <LinearProgress />
+                                        </Box>
+                                      ) : (
+                                        <Box
+                                          component={"div"}
+                                          className="content-reply-comment"
+                                          sx={{ width: "100%" }}
+                                        >
+                                          <Card
+                                            sx={{
+                                              backgroundColor: "#3A3B3C",
+                                              ml: "7px",
+                                              color: "white",
+                                              display: "flex",
+                                              borderRadius: "15px",
+                                              width: "100%",
+                                            }}
+                                          >
+                                            <TextField
+                                              id=""
+                                              hiddenLabel
+                                              // label="Viết bình luận ..."
+                                              value={editedContentReplyComment}
+                                              multiline
+                                              rows={3}
+                                              onChange={(e) =>
+                                                setEditedContentReplyComment(
+                                                  e.target.value
+                                                )
+                                              }
+                                              variant="filled"
+                                              size="small"
+                                              InputProps={{
+                                                sx: { color: "white" },
+                                              }}
+                                              sx={{
+                                                color: "white !important",
+                                                width: "100%",
+                                              }}
+                                            />
+                                            <Button
+                                              component="label"
+                                              variant="contained"
+                                              startIcon={<AddPhotoAlternate />}
+                                              sx={{
+                                                p: "0px",
+                                                backgroundColor: "transparent",
+                                                color: "white",
+                                                "&:hover": {
+                                                  backgroundColor:
+                                                    "transparent",
+                                                  boxShadow: "none",
+                                                },
+                                                boxShadow: "none",
+                                              }}
+                                            >
+                                              <VisuallyHiddenInput
+                                                type="file"
+                                                accept=".jpg, .png "
+                                                onChange={(event) =>
+                                                  handleChangePicEditComment(
+                                                    event,
+                                                    false
+                                                  )
+                                                }
+                                                multiple
+                                                name="listImageofComment"
+                                              />
+                                            </Button>
+                                          </Card>
+                                          <Box
+                                            sx={{
+                                              flexFlow: "wrap",
+                                              display: "flex",
+                                              mt: "8px",
+                                            }}
+                                          >
+                                            {Array.from(
+                                              editedImageReplyComment
+                                            )?.map((item: any, index) => (
+                                              <Grid
+                                                item
+                                                key={"imageReplyCmt" + index}
+                                                xs={4}
+                                                md={4}
+                                                lg={3}
+                                              >
+                                                {!isFile(item) ? (
+                                                  <ImageReplyViewerEdit
+                                                    index={index}
+                                                    handleRemoveImageReply={
+                                                      handleRemoveImageEditCommentReply
+                                                    }
+                                                    _imageUrl={
+                                                      item.imageOfCommentUrl
+                                                    }
+                                                  />
+                                                ) : (
+                                                  <ImageReplyViewerEdit
+                                                    index={index}
+                                                    handleRemoveImageReply={
+                                                      handleRemoveImageEditCommentReply
+                                                    }
+                                                    _imageUrl={item}
+                                                  />
+                                                )}
+                                              </Grid>
+                                            ))}
+                                          </Box>
+                                          <Box
+                                            sx={{
+                                              mx: "15px",
+                                              display: "flex",
+                                              alignItems: "center",
+                                            }}
+                                          >
+                                            <Button
+                                              size="small"
+                                              sx={{ color: "gray" }}
+                                              onClick={() =>
+                                                handleCancelEditComment(
+                                                  false,
+                                                  index
+                                                )
+                                              }
+                                            >
+                                              Hủy
+                                            </Button>
+                                            <Button
+                                              size="small"
+                                              onClick={() =>
+                                                handleSaveEditComment(
+                                                  false,
+                                                  rl,
+                                                  editedContentReplyComment,
+                                                  editedImageReplyComment
+                                                )
+                                              }
+                                            >
+                                              Lưu
+                                            </Button>
+                                          </Box>
+                                        </Box>
+                                      )}
+                                    </Box>
+                                  )}
                                 </Box>
                               </Box>
                             )
@@ -1686,6 +2540,44 @@ const Post = ({ user, post }: IPros, props: Props) => {
                     width: "100%",
                   }}
                 >
+                  {!isComment && (
+                    <Chip
+                      avatar={
+                        <Avatar
+                          alt={formDataReplyComment.userReceive?.profilePicUrl}
+                          src={formDataReplyComment.userReceive?.profilePicUrl}
+                          sx={{
+                            mx: "0px !important",
+                          }}
+                        />
+                      }
+                      label={
+                        <>
+                          Trả lời{" "}
+                          <span style={{ fontWeight: "bold" }}>
+                            {formDataReplyComment.userReceive.fullname}
+                          </span>
+                        </>
+                      }
+                      onDelete={handleCancelReplyComment}
+                      sx={{
+                        backgroundColor: "gray",
+                        px: "5px",
+                        mb: "8px",
+                        display: "inline-flex",
+                        flexDirection: "row-reverse",
+                        alignItems: "center",
+                        color: "white",
+                        "& .MuiChip-label": {
+                          paddingX: "5px",
+                          color: "black",
+                        },
+                        "& .MuiChip-deleteIcon": {
+                          margin: "0px",
+                        },
+                      }}
+                    />
+                  )}
                   <Box
                     sx={{ display: "flex", alignItems: "center", mb: "8px" }}
                   >
@@ -1709,8 +2601,14 @@ const Post = ({ user, post }: IPros, props: Props) => {
                         "& label": { color: "white" },
                       }}
                       InputProps={{ sx: { color: "white" } }}
-                      value={formDataComment.content}
-                      onChange={handleChangeContentComment}
+                      value={
+                        isComment
+                          ? formDataComment.content
+                          : formDataReplyComment.content
+                      }
+                      onChange={(e) =>
+                        handleChangeContentComment(e.target.value)
+                      }
                     />
                     <Button
                       component="label"
@@ -1743,24 +2641,70 @@ const Post = ({ user, post }: IPros, props: Props) => {
                         "&:hover": { backgroundColor: "#50595f" },
                       }}
                       onClick={handlePostComment}
+                      disabled={
+                        (isComment
+                          ? !formDataComment.content || isLoadingComment
+                          : !formDataReplyComment.content) || isLoadingComment
+                      }
                     >
-                      <SendIcon />
+                      {isLoadingComment ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        <SendIcon />
+                      )}
                     </IconButton>
                   </Box>
-                  {formDataComment.listImageofComment?.map((url, index) => (
-                    <PreviewImage
-                      key={index}
-                      url={url}
-                      index={index}
-                      handleRemoveImage={handleRemoveImage}
-                    />
-                  ))}
+                  {isComment
+                    ? formDataComment.listImageofComment?.map(
+                        (url: File, index: any) => (
+                          <PreviewImage
+                            key={index}
+                            url={url}
+                            index={index}
+                            isComment={true}
+                            handleRemoveImage={handleRemoveImage}
+                          />
+                        )
+                      )
+                    : formDataReplyComment.listImageofComment?.map(
+                        (url: File, index: any) => (
+                          <PreviewImage
+                            key={index}
+                            url={url}
+                            index={index}
+                            isComment={false}
+                            handleRemoveImage={handleRemoveImage}
+                          />
+                        )
+                      )}
                 </Box>
               </Paper>
             </React.Fragment>
           </Box>
         </Fade>
       </Modal>
+      <Dialog
+        TransitionComponent={Transition}
+        open={openAlerts}
+        onClose={handleCloseAlerts}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Xóa bình luận?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContent id="alert-dialog-description">
+          Bạn có chắc chắn muốn xóa bình luận này không?
+          </DialogContent>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAlerts}>Không</Button>
+          <Button onClick={handleAgreeAlerts} autoFocus>
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
