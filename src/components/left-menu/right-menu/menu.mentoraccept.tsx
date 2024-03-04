@@ -27,7 +27,7 @@ interface IPros {
   session: User;
 }
 
-const UserAccept = ({ session }: IPros) => {
+const MentorAccept = ({ session }: IPros) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
   var router = useRouter();
@@ -39,26 +39,23 @@ const UserAccept = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<Relation[], any> = useSWR(
-    "http://localhost:8080/api/get-request-friend",
+    "http://localhost:8080/api/get-match-from-user",
     fetchData,
     {
       shouldRetryOnError: true, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-  const acceptAddfriend = async (UserId: string): Promise<boolean> => {
+  const acceptMatch = async (UserId: string): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
-      const response = await fetch(
-        `${GLOBAL_URL}/api/accept-friend/${UserId}`,
-        {
-          method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
-          headers: {
-            authorization: `Bearer ${session?.access_token}`,
-          },
-          // Các tùy chọn khác nếu cần
-        }
-      );
+      const response = await fetch(`${GLOBAL_URL}/api/accept-match/${UserId}`, {
+        method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
+        // Các tùy chọn khác nếu cần
+      });
       console.log(response);
       // Xử lý kết quả
       const data = await response.json();
@@ -70,10 +67,10 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const handleacceptAddfriend = async (UserId: string) => {
+  const handleacceptMatch = async (UserId: string) => {
     try {
       // Gọi hàm thực hiện cuộc gọi API
-      const apiResult = await acceptAddfriend(UserId);
+      const apiResult = await acceptMatch(UserId);
 
       console.log("test Result" + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -89,11 +86,11 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string): Promise<boolean> => {
+  const refusedacceptMatch = async (UserId: string): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
-        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}`,
+        `${GLOBAL_URL}/api/cancel-sendmatch/${UserId}`,
         {
           method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
           headers: {
@@ -113,10 +110,10 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string) => {
+  const handrefusedacceptMatch = async (UserId: string) => {
     try {
       // Gọi hàm thực hiện cuộc gọi API
-      const apiResult = await refusedAddfriend(UserId);
+      const apiResult = await refusedacceptMatch(UserId);
 
       console.log("test Result" + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -210,7 +207,7 @@ const UserAccept = ({ session }: IPros) => {
             id="nested-list-subheader"
             className="rounded-md"
           >
-            Yêu cầu kết bạn
+            Yêu cầu Match
           </ListSubheader>
         }
       >
@@ -257,7 +254,7 @@ const UserAccept = ({ session }: IPros) => {
                     />
                   </ListItemIcon>
                   <ListItemText
-                    primary={item.userAction.fullname}
+                    primary={item.userAction.userId}
                     secondary={calculateTimeDifference(item?.timeRelation)}
                   />
                 </ListItemButton>
@@ -272,9 +269,7 @@ const UserAccept = ({ session }: IPros) => {
                   <Button
                     variant="contained"
                     color="success"
-                    onClick={() =>
-                      handleacceptAddfriend(item?.userAction?.userId)
-                    }
+                    onClick={() => handleacceptMatch(item?.userAction?.userId)}
                     sx={{
                       borderRadius: "30px",
 
@@ -302,7 +297,7 @@ const UserAccept = ({ session }: IPros) => {
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      handlerefusedAddfriend(item?.userAction?.userId)
+                      handrefusedacceptMatch(item?.userAction?.userId)
                     }
                     sx={{
                       borderRadius: "30px",
@@ -381,4 +376,4 @@ const UserAccept = ({ session }: IPros) => {
     </Box>
   );
 };
-export default UserAccept;
+export default MentorAccept;

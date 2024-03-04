@@ -61,7 +61,18 @@ export const formatTimeDifference = (
   }
 };
 
-export const formatDateString = (input: string | null | undefined): string => {
+export const formatVND = (value: number): string => {
+  // Use toLocaleString to format the number with commas
+  const formattedValue = value.toLocaleString('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  });
+
+  return formattedValue;
+};
+
+
+export const formatDateString = (input: string | null): string => {
   if (input) {
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
@@ -77,4 +88,32 @@ export function deleteSpace(value: string): string {
   const result: string = char.join(" ");
 
   return result;
+}
+
+export function calculateTimeDifference(timeRelation: string): string {
+  // Convert timeRelation to a Date object
+  const timeRelationDate = new Date(timeRelation);
+
+  // Check if timeRelationDate is a valid Date object
+  if (!(timeRelationDate instanceof Date) || isNaN(timeRelationDate.getTime())) {
+    return 'Invalid date';
+  }
+
+  const currentTime = new Date();
+
+  const timeDifference = currentTime.getTime() - timeRelationDate.getTime();
+
+  const millisecondsInMinute = 1000 * 60;
+  const millisecondsInHour = millisecondsInMinute * 60;
+  const millisecondsInDay = millisecondsInHour * 24;
+
+  const daysDifference = Math.floor(timeDifference / millisecondsInDay);
+  const hoursDifference = Math.floor((timeDifference % millisecondsInDay) / millisecondsInHour);
+  const minutesDifference = Math.floor((timeDifference % millisecondsInHour) / millisecondsInMinute);
+
+  if (daysDifference >= 1) {
+      return `${daysDifference} ngày ${hoursDifference} giờ trước`;
+  } else {
+      return `${hoursDifference} giờ ${minutesDifference} phút trước`;
+  }
 }

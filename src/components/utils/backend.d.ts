@@ -209,15 +209,21 @@ declare global {
   }
 
   interface MentorInfor {
-    userID: string;
+    userId: string;
     content: string;
-    listSkill: ListSkill[];
+    listSkillOfMentor: string[];
+    gender: integer;
+    isOnline: boolean;
+    isReady: boolean;
+    firstName: string;
+    middleName: string;
+    lastName: string;
+    priceMatch: number;
+    role: Role;
+    BackgroundImageUrl: string;
+    profilePicUrl: string;
   }
 
-  interface ListSkill {
-    id: number;
-    skill: string;
-  }
   interface HashtagInfor {
     id: number;
     hashtagText: string;
@@ -245,5 +251,19 @@ declare global {
     listPictureOfComment: any[] | null;
     commentId: number;
     userID: UserPost;
+  }
+
+  interface Relation {
+    id: string;
+    userAction: UserAction;
+    userID2: string;
+    userID1: string;
+    timeRelation: string;
+  }
+  interface UserAction {
+    userId: string;
+    username: string;
+    profilePicUrl: string;
+    fullname: string;
   }
 }
