@@ -27,7 +27,7 @@ interface IPros {
   session: User;
 }
 
-const MentorMenuAccept = ({ session }: IPros) => {
+const MentorAccept = ({ session }: IPros) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
   var router = useRouter();
@@ -39,26 +39,23 @@ const MentorMenuAccept = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<Relation[], any> = useSWR(
-    "http://localhost:8080/api/get-request-friend",
+    "http://localhost:8080/api/get-match-from-user",
     fetchData,
     {
       shouldRetryOnError: true, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-  const sendAddfriend = async (UserId: string): Promise<boolean> => {
+  const acceptMatch = async (UserId: string): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
-      const response = await fetch(
-        `${GLOBAL_URL}/api/accept-friend/${UserId}`,
-        {
-          method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
-          headers: {
-            authorization: `Bearer ${session?.access_token}`,
-          },
-          // Các tùy chọn khác nếu cần
-        }
-      );
+      const response = await fetch(`${GLOBAL_URL}/api/accept-match/${UserId}`, {
+        method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
+        // Các tùy chọn khác nếu cần
+      });
       console.log(response);
       // Xử lý kết quả
       const data = await response.json();
@@ -70,10 +67,10 @@ const MentorMenuAccept = ({ session }: IPros) => {
     }
   };
 
-  const handleSendAddFriend = async (UserId: string) => {
+  const handleacceptMatch = async (UserId: string) => {
     try {
       // Gọi hàm thực hiện cuộc gọi API
-      const apiResult = await sendAddfriend(UserId);
+      const apiResult = await acceptMatch(UserId);
 
       console.log("test Result" + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -89,11 +86,11 @@ const MentorMenuAccept = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string): Promise<boolean> => {
+  const refusedacceptMatch = async (UserId: string): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
-        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}`,
+        `${GLOBAL_URL}/api/cancel-sendmatch/${UserId}`,
         {
           method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
           headers: {
@@ -113,10 +110,10 @@ const MentorMenuAccept = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string) => {
+  const handrefusedacceptMatch = async (UserId: string) => {
     try {
       // Gọi hàm thực hiện cuộc gọi API
-      const apiResult = await refusedAddfriend(UserId);
+      const apiResult = await refusedacceptMatch(UserId);
 
       console.log("test Result" + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -162,19 +159,22 @@ const MentorMenuAccept = ({ session }: IPros) => {
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
   };
-
- 
+  const handleRedirectFriend = () => {
+    router.push(`/friend`);
+  };
+  console.log("check data>>", data);
   return (
     <Box
       sx={{
         width: "100%",
         maxWidth: 250,
+        bgcolor: "#293145",
       }}
     >
       <List
         sx={{
           width: "100%",
-          bgcolor: "#293145",
+
           color: "white",
           marginTop: "12px",
           "& p": {
@@ -207,12 +207,13 @@ const MentorMenuAccept = ({ session }: IPros) => {
             id="nested-list-subheader"
             className="rounded-md"
           >
-            Yêu cầu kết bạn
+            Yêu cầu Match
           </ListSubheader>
         }
       >
         {data &&
-          data?.map((item, index) => {
+          data.length &&
+          data.slice(0, 4).map((item, index) => {
             return (
               <Box
                 key={index}
@@ -253,7 +254,7 @@ const MentorMenuAccept = ({ session }: IPros) => {
                     />
                   </ListItemIcon>
                   <ListItemText
-                    primary={item.userAction.fullname}
+                    primary={item.userAction.userId}
                     secondary={calculateTimeDifference(item?.timeRelation)}
                   />
                 </ListItemButton>
@@ -268,9 +269,7 @@ const MentorMenuAccept = ({ session }: IPros) => {
                   <Button
                     variant="contained"
                     color="success"
-                    onClick={() =>
-                      handleSendAddFriend(item?.userAction?.userId)
-                    }
+                    onClick={() => handleacceptMatch(item?.userAction?.userId)}
                     sx={{
                       borderRadius: "30px",
 
@@ -297,7 +296,9 @@ const MentorMenuAccept = ({ session }: IPros) => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => refusedAddfriend(item?.userAction?.userId)}
+                    onClick={() =>
+                      handrefusedacceptMatch(item?.userAction?.userId)
+                    }
                     sx={{
                       borderRadius: "30px",
                       backgroundColor: "#eeeeee",
@@ -328,11 +329,30 @@ const MentorMenuAccept = ({ session }: IPros) => {
                     Từ chối
                   </Button>
                 </Stack>
-        
               </Box>
             );
           })}
       </List>
+      <CardActions className="justify-center">
+        <Button
+          size="small"
+          variant="contained"
+          onClick={() => handleRedirectFriend()}
+          sx={{
+            borderRadius: "30px",
+            backgroundColor: "#eeeeee",
+            color: "#4d3869",
+            display: data && data.length > 3 ? "flex" : "none",
+            "&:hover": {
+              backgroundColor: "#ffffff",
+              outline: "none",
+              border: "none",
+            },
+          }}
+        >
+          Tất cả yêu cầu
+        </Button>
+      </CardActions>
       <Snackbar
         open={snackbarOpen}
         message="Addfriend successfully!"
@@ -356,4 +376,4 @@ const MentorMenuAccept = ({ session }: IPros) => {
     </Box>
   );
 };
-export default MentorMenuAccept;
+export default MentorAccept;

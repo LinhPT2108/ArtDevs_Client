@@ -58,13 +58,20 @@ const AppMenu = () => {
     },
     {
       index: 2,
+      content: "Bạn bè",
+      icon: <AccountCircleIcon />,
+      bgColor: "#1e8d10",
+      url: "/friend",
+    },
+    {
+      index: 3,
       content: "Hash tag",
       icon: <BookmarksIcon />,
       bgColor: "#1e8d10",
       url: "/hash-tag",
     },
     {
-      index: 3,
+      index: 4,
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
       bgColor: "#263797",
@@ -73,28 +80,28 @@ const AppMenu = () => {
   ];
   const recent: ListItem[] = [
     {
-      index: 4,
+      index: 5,
       content: "Hộp thư điện tử",
       icon: <SmsIcon />,
       bgColor: "#263797",
       url: "/chat",
     },
     {
-      index: 5,
+      index: 6,
       content: "Near post",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/near-post",
     },
     {
-      index: 6,
+      index: 7,
       content: "Last event",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/last-event",
     },
     {
-      index: 7,
+      index: 8,
       content: "Live",
       icon: <FeedIcon />,
       bgColor: "#263797",
@@ -103,28 +110,28 @@ const AppMenu = () => {
   ];
   const setting: ListItem[] = [
     {
-      index: 8,
+      index: 9,
       content: "Cài đặt",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/setting",
     },
     {
-      index: 9,
+      index: 10,
       content: "Thống kê",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/statistical",
     },
     {
-      index: 10,
+      index: 11,
       content: "Quyền riêng tư",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/secure",
     },
     {
-      index: 11,
+      index: 12,
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",

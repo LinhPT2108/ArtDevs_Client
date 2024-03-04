@@ -26,6 +26,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { GLOBAL_URL } from "../utils/veriable.global";
 import { TransitionProps } from "@mui/material/transitions";
 import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
+import HomeFriend from "../friend/home.friend";
 
 interface IPros {
   user: User;
@@ -363,8 +364,8 @@ const HomeMentor = ({ user }: IPros) => {
               </Card>
             </Grid>
           ))}
+               <MentorAccept session={user} />
       </Grid>
-      <MentorAccept session={user} />
       <Snackbar
         open={snackbarOpen}
         message="Match request has been sent. Please wait for a response."

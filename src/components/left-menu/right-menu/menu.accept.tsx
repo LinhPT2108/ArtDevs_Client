@@ -46,7 +46,7 @@ const UserAccept = ({ session }: IPros) => {
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-  const sendAddfriend = async (UserId: string): Promise<boolean> => {
+  const acceptAddfriend = async (UserId: string): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
@@ -70,10 +70,10 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const handleSendAddFriend = async (UserId: string) => {
+  const handleacceptAddfriend = async (UserId: string) => {
     try {
       // Gọi hàm thực hiện cuộc gọi API
-      const apiResult = await sendAddfriend(UserId);
+      const apiResult = await acceptAddfriend(UserId);
 
       console.log("test Result" + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
@@ -162,6 +162,9 @@ const UserAccept = ({ session }: IPros) => {
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
   };
+  const handleRedirectFriend = () => {
+    router.push(`/friend`);
+  };
   console.log("check data>>", data);
   return (
     <Box
@@ -174,7 +177,7 @@ const UserAccept = ({ session }: IPros) => {
       <List
         sx={{
           width: "100%",
-        
+
           color: "white",
           marginTop: "12px",
           "& p": {
@@ -212,8 +215,8 @@ const UserAccept = ({ session }: IPros) => {
         }
       >
         {data &&
-          data.length > 3 &&
-          data.slice(0, 3).map((item, index) => {
+          data.length &&
+          data.slice(0, 4).map((item, index) => {
             return (
               <Box
                 key={index}
@@ -270,7 +273,7 @@ const UserAccept = ({ session }: IPros) => {
                     variant="contained"
                     color="success"
                     onClick={() =>
-                      handleSendAddFriend(item?.userAction?.userId)
+                      handleacceptAddfriend(item?.userAction?.userId)
                     }
                     sx={{
                       borderRadius: "30px",
@@ -339,19 +342,20 @@ const UserAccept = ({ session }: IPros) => {
         <Button
           size="small"
           variant="contained"
+          onClick={() => handleRedirectFriend()}
           sx={{
             borderRadius: "30px",
             backgroundColor: "#eeeeee",
             color: "#4d3869",
+            display: data && data.length > 3 ? "flex" : "none",
             "&:hover": {
               backgroundColor: "#ffffff",
               outline: "none",
               border: "none",
-              display: data && data.length > 3 ? "flex" : "none",
             },
           }}
         >
-         Tất cả yêu cầu
+          Tất cả yêu cầu
         </Button>
       </CardActions>
       <Snackbar
