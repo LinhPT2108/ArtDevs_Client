@@ -29,9 +29,10 @@ const Main = styled("main", {
 interface IPros {
   openContact: boolean;
   children: React.ReactNode;
+  session: User;
 }
 
-const MainHome = ({ children, openContact }: IPros) => {
+const MainHome = ({ children, openContact, session }: IPros) => {
   return (
     <Main
       open={openContact}
@@ -53,7 +54,7 @@ const MainHome = ({ children, openContact }: IPros) => {
           position: "relative",
         }}
       >
-        <AppMenu />
+        <AppMenu session={session} />
       </Grid>
       {children}
       {/* </Grid> */}

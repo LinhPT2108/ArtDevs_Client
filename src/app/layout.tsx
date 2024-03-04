@@ -45,7 +45,7 @@ export default async function RootLayout({
                   <NextAuthWrapper>
                     <HeaderWrapper user={session} />
                     <HomeWrapper>
-                      <BodyWrapper>{children}</BodyWrapper>
+                      <BodyWrapper session={session}>{children}</BodyWrapper>
                     </HomeWrapper>
                   </NextAuthWrapper>
                 )}

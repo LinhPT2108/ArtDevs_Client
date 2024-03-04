@@ -182,7 +182,10 @@ const HomeMentor = ({ user }: IPros) => {
           },
         }}
       >
-        {data &&
+        {user?.user?.role?.id == 3 ? (
+          <MentorAccept session={user} />
+        ) : (
+          data &&
           data?.map((mentor) => (
             <Grid item container xs={12} md={6} key={mentor.userId}>
               <Card
@@ -363,8 +366,8 @@ const HomeMentor = ({ user }: IPros) => {
                 </Grid>
               </Card>
             </Grid>
-          ))}
-               <MentorAccept session={user} />
+          ))
+        )}
       </Grid>
       <Snackbar
         open={snackbarOpen}

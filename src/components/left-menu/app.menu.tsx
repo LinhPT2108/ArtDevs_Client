@@ -36,11 +36,12 @@ const style = {
   borderRadius: "12px",
   p: 4,
 };
-const AppMenu = () => {
+const AppMenu = ({ session }: { session: User }) => {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const leftMenu = [];
+  console.log(">>> check session?.user?.role?.id: ", session?.user?.role?.id);
   const info: ListItem[] = [
     {
       index: 0,
@@ -51,20 +52,27 @@ const AppMenu = () => {
     },
     {
       index: 1,
-      content: "Giảng viên",
+      content: `${session?.user?.role?.id == 3 ? "Match" : "Giảng viên"}`,
       icon: <PersonSearchIcon />,
       bgColor: "#9c933c",
       url: "/mentor",
     },
     {
       index: 2,
+      content: "Bạn bè",
+      icon: <BookmarksIcon />,
+      bgColor: "#1e8d10",
+      url: "/friend",
+    },
+    {
+      index: 3,
       content: "Hash tag",
       icon: <BookmarksIcon />,
       bgColor: "#1e8d10",
       url: "/hash-tag",
     },
     {
-      index: 3,
+      index: 4,
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
       bgColor: "#263797",
@@ -73,28 +81,28 @@ const AppMenu = () => {
   ];
   const recent: ListItem[] = [
     {
-      index: 4,
+      index: 5,
       content: "Hộp thư điện tử",
       icon: <SmsIcon />,
       bgColor: "#263797",
       url: "/chat",
     },
     {
-      index: 5,
+      index: 6,
       content: "Near post",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/near-post",
     },
     {
-      index: 6,
+      index: 7,
       content: "Bảo mật",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/secure",
     },
     {
-      index: 7,
+      index: 8,
       content: "Thông tin chung",
       icon: <FeedIcon />,
       bgColor: "#263797",
@@ -108,7 +116,7 @@ const AppMenu = () => {
       url: "/feedback",
     },
     {
-      index: 9,
+      index: 10,
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",
@@ -124,7 +132,7 @@ const AppMenu = () => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
-    if (index == 9) {
+    if (index == 10) {
       handleOpen();
     }
     setSelectedIndex(index);

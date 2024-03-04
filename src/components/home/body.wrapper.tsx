@@ -9,8 +9,9 @@ import { usePathname } from "next/navigation";
 
 interface IPros {
   children: React.ReactNode;
+  session: User;
 }
-const BodyWrapper = ({ children }: IPros) => {
+const BodyWrapper = ({ children, session }: IPros) => {
   let pageUrl = "home";
   const { drawerOpen } = useDrawer();
   const { widthScreen } = useWidthScreen();
@@ -31,7 +32,9 @@ const BodyWrapper = ({ children }: IPros) => {
             paddingX: { xs: "0" },
           }}
         >
-          <MainHome openContact={drawerOpen}>{children}</MainHome>
+          <MainHome openContact={drawerOpen} session={session}>
+            {children}
+          </MainHome>
           <Drawer
             sx={{
               width: DRAWER_WIDTH,
