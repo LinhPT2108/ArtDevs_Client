@@ -82,6 +82,7 @@ export const authOptions: AuthOptions = {
             listSkillOfUser: [],
           },
         });
+        console.log(">>> check res: ", res.userdto);
         if (res.userdto) {
           if (token.picture) {
             res.userdto.profilePicUrl = token.picture;
@@ -89,6 +90,7 @@ export const authOptions: AuthOptions = {
           token.access_token = res.token;
           token.refresh_token = res.refeshToken;
           token.user = res.userdto;
+
           //@ts-ignore
           setGlobalUser(res);
         }

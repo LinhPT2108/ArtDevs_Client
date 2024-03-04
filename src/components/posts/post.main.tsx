@@ -1,11 +1,4 @@
 "use client";
-import ClearIcon from "@mui/icons-material/Clear";
-import CommentIcon from "@mui/icons-material/Comment";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import ShareIcon from "@mui/icons-material/Share";
 import {
   Autocomplete,
   Avatar,
@@ -23,17 +16,106 @@ import {
   Menu,
   MenuItem,
   Modal,
+  Paper,
   TextField,
   Typography,
+  Tooltip,
+  Zoom,
+  IconButtonProps,
+  styled,
+  ToggleButton,
 } from "@mui/material";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import ShareIcon from "@mui/icons-material/Share";
+import CommentIcon from "@mui/icons-material/Comment";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import { red } from "@mui/material/colors";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
+import React, { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-import useSWR, { SWRResponse } from "swr";
-import "../../style/post-loading.css";
+import { format, parseISO } from "date-fns";
+import ClearIcon from "@mui/icons-material/Clear";
 import { sendRequest } from "../utils/api";
-import { formatDateString, generateUniqueId, isImage } from "../utils/utils";
+import { generateUniqueId, isImage } from "../utils/utils";
+import "../../style/post-loading.css";
+import Slider from "react-slick";
+import CustomPaging from "./media.post";
+import { useUser } from "@/lib/custom.content";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import useSWR, { SWRResponse } from "swr";
+import SendIcon from "@mui/icons-material/Send";
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import CssBaseline from "@mui/material/CssBaseline";
+import useScrollTrigger from "@mui/material/useScrollTrigger";
+import Container from "@mui/material/Container";
+import Fab from "@mui/material/Fab";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import { AddPhotoAlternate } from "@mui/icons-material";
+
+interface Props {
+  window?: () => Window;
+  children: React.ReactElement;
+}
+
+function ScrollTop(props: Props) {
+  const { children, window } = props;
+  const trigger = useScrollTrigger({
+    target: window ? window() : undefined,
+    disableHysteresis: true,
+    threshold: 0,
+  });
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const anchor = (
+      (event.target as HTMLDivElement).ownerDocument || document
+    ).querySelector("#back-to-top-anchor");
+
+    if (anchor) {
+      anchor.scrollIntoView({
+        block: "center",
+      });
+    }
+  };
+
+  return (
+    <Fade in={trigger}>
+      <Box
+        onClick={handleClick}
+        role="presentation"
+        sx={{ position: "fixed", bottom: 16, right: 16 }}
+      >
+        {children}
+      </Box>
+    </Fade>
+  );
+}
+const formatDateString = (input: string | null): string => {
+  if (input) {
+    const dateObject = parseISO(input);
+    const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
+    return formattedDate;
+  } else {
+    return "";
+  }
+};
+function calculateHoursDifference(existingTime: string): number | string {
+  const existingDate = new Date(existingTime);
+  const currentDate = new Date();
+
+  const timeDifference = currentDate.getTime() - existingDate.getTime();
+  const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+  if (hoursDifference > 24) {
+    const daysDifference = Math.round(hoursDifference / 24);
+    return `${daysDifference} ngày trước`;
+  } else {
+    return `${Math.round(hoursDifference)} giờ trước`;
+  }
+}
 
 const style = {
   position: "absolute" as "absolute",
@@ -46,16 +128,103 @@ const style = {
   // border: "2px solid #000",
   // p: 4,
 };
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
+const styleModalComment = {
+  position: "absolute" as "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+  width: 700,
+  bgcolor: "#1c1e21",
+  borderRadius: "12px",
+  boxShadow: 24,
+  // p: 2,
+  "@media (max-width: 768px)": {
+    width: "90%",
+  },
+  "@media (max-width: 480px)": {
+    width: "80%",
+  },
+  "@media (max-width: 320px)": {
+    width: "90%",
+  },
+};
 
+const FadeInImage = styled("img")({
+  animation: "fadeIn 0.5s ease-in-out",
+  "@keyframes fadeIn": {
+    from: { opacity: 0 },
+    to: { opacity: 1 },
+  },
+});
+
+const RemoveButton = styled(Button)({
+  position: "absolute",
+  top: 0,
+  right: 0,
+  minWidth: "10px",
+  transform: "translate(30%, -30%)",
+  color: "#7b7b7b",
+  borderRadius: "15px",
+  backgroundColor: "#30363d",
+  padding: "0px !important",
+});
+// TypeScript interface for props
+interface PreviewImageProps {
+  url: File;
+  index: number;
+  handleRemoveImage: (index: number) => void;
+}
+const PreviewImage: React.FC<PreviewImageProps> = ({
+  url,
+  index,
+  handleRemoveImage,
+}) => {
+  const imageUrl = URL.createObjectURL(url);
+
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-block",
+        mr: "8px",
+      }}
+    >
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="68"
+        height="68"
+      />
+      <RemoveButton onClick={() => handleRemoveImage(index)}>
+        <ClearIcon />
+      </RemoveButton>
+    </Box>
+  );
+};
 interface IPros {
   user: User;
   post?: Post[];
 }
 
-const Post = ({ user, post }: IPros) => {
+const Post = ({ user, post }: IPros, props: Props) => {
   // const { user, setUser } = useUser();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const [anchorEl2, setAnchorEl2] = React.useState<null | HTMLElement>(null);
+  const open2 = Boolean(anchorEl2);
+
   const [openPost, setOpenPost] = React.useState(false);
   const handleOpenPost = () => setOpenPost(true);
   const handleClosePost = () => setOpenPost(false);
@@ -64,80 +233,47 @@ const Post = ({ user, post }: IPros) => {
   const [endPost, setEndPost] = useState<boolean>(false);
   const [endTextPost, setEndTextPost] = useState<string>("");
   const [page, setPage] = useState<number>(1);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const element = document.documentElement;
-      const isAtBottom =
-        element.scrollTop + element.clientHeight >= element.scrollHeight;
-      if (isAtBottom && !loading) {
-        const fetchData = async () => {
-          !endPost ? setLoading(true) : setEndTextPost("Bạn đã xem hết !");
-          const newData = await sendRequest<Post[]>({
-            url: GLOBAL_URL + "/api/post/page",
-            method: "GET",
-            headers: { authorization: `Bearer ${user?.access_token}` },
-            queryParams: {
-              page: `${page}`,
-            },
-          });
-          //@ts-ignore
-          if (newData?.statusCode == 403 || newData.length == 0) {
-            setEndPost(true);
-          } else {
-            setDataLoading((prevData) => [...prevData, ...newData]);
-            setPage((prevPage) => prevPage + 1);
-            setLoading(false);
-          }
-        };
-        fetchData();
-      }
-    };
-    !endPost && window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [loading]);
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const [postData, setPostData] = useState<AddPost>({
-    postId: "",
-    content: "",
-    time: new Date(),
-    timelineUserId: new Date(),
-    userId: user ? user?.user?.userId : "",
-    listImageofPost: null,
-    privacyPostDetails: 1,
-    listHashtag: null,
-  });
-
-  const handleContentPost = (value: string) => {
-    setPostData((prevData) => ({
-      ...prevData,
-      content: value,
-    }));
-  };
-  const handlePost = async () => {
-    setPostData((prevData) => ({
-      ...prevData,
-      postId: generateUniqueId(),
-    }));
-    console.log(">>> check post data: ", postData.postId);
-    const response = await sendRequest({
-      // url: "https://artdevs-server.azurewebsites.net/api/register",
-      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-      url: "http://localhost:8080/api/post",
-      method: "POST",
-      headers: { authorization: `Bearer ${user?.access_token}` },
-      body: { ...postData },
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [comment, setComment] = useState<CommentOfPost[]>([]);
+  const [openModalCmt, setOpenModalCmt] = React.useState(false);
+  const [selectPost, setSelectPost] = useState<any>();
+  const [showAllComments, setShowAllComments] = useState([]);
+  const [isShowReplies, setIsShowReplies] = useState(null);
+  const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
+  const [previewURLs, setPreviewURLs] = React.useState<string[]>([]);
+  const [formDataComment, setFormDataComment] =
+    React.useState<CommentToPostDTO>({
+      // id: 1231123,
+      content: "",
+      // listImageofComment: [],
+      userToPost: user?.user?.userId,
+      postToPost: "",
     });
-    console.log(">>> check post data: ", response);
+  const handleCloseModalCmt = () => setOpenModalCmt(false);
+
+  const handleOpenModalCmt = async (post: Post) => {
+    setOpenModalCmt(true);
+    console.log(post.postId);
+    setSelectPost(post?.userPost?.userId);
+    //@ts-ignore
+    const getCommentOfPost = await sendRequest<CommentOfPost[]>({
+      url: "http://localhost:8080/api/comment/" + post.postId,
+      method: "GET",
+      queryParams: {
+        page: 0,
+      },
+    });
+    setComment(getCommentOfPost);
+    setFormDataComment((prevData) => ({
+      ...prevData,
+      postToPost: post?.postId,
+    }));
+    console.log(comment);
+  };
+
+  const toggleShowReplyCmt = (cmtId: any) => {
+    console.log("show cmt");
+    setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
 
   const fetchData = async (url: string) => {
@@ -150,14 +286,276 @@ const Post = ({ user, post }: IPros) => {
       },
     });
   };
+
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    "http://localhost:8080/api/post/page",
+    "http://localhost:8080/api/post",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
+
+  useEffect(() => {
+    console.log(data);
+    if (data && !error) {
+      setPosts(data);
+    }
+    const handleScroll = () => {
+      const element = document.documentElement;
+      const isAtBottom =
+        element.scrollTop + element.clientHeight >= element.scrollHeight;
+      if (isAtBottom && !loading) {
+        const fetchData = async () => {
+          !endPost ? setLoading(true) : setEndTextPost("Bạn đã xem hết !");
+          const newData = await sendRequest<Post[]>({
+            url: GLOBAL_URL + "/api/news-feed",
+            method: "GET",
+            headers: { authorization: `Bearer ${user?.access_token}` },
+            queryParams: {
+              page: `${page}`,
+            },
+          });
+          //@ts-ignore
+          if (error || isLoading) {
+            setEndPost(true);
+          } else {
+            data && setDataLoading((prevData) => [...prevData, ...data]);
+            setPage((prevPage) => prevPage + 1);
+            setLoading(false);
+          }
+        };
+        fetchData();
+      }
+    };
+
+    !endPost && window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [loading, data, dataLoading]);
+
+  const handleLike = async (postId: string, isDataLoading: boolean) => {
+    console.log("like: " + postId);
+
+    if (isDataLoading) {
+      console.log(isDataLoading);
+      setDataLoading(
+        dataLoading.map((post) =>
+          post.postId === postId
+            ? {
+                ...post,
+                likeByUserLogged: true,
+                totalLike: post.totalLike + 1,
+                isProcessingLike: true,
+              }
+            : post
+        )
+      );
+    } else {
+      setPosts(
+        posts.map((post) =>
+          post.postId === postId
+            ? {
+                ...post,
+                likeByUserLogged: true,
+                totalLike: post.totalLike + 1,
+                isProcessingLike: true,
+              }
+            : post
+        )
+      );
+    }
+    try {
+      const response = await sendRequest<Post[]>({
+        url: "http://localhost:8080/api/like/" + postId,
+        method: "POST",
+        headers: { authorization: `Bearer ${user?.access_token}` },
+      });
+
+      console.log(response);
+      if (response) {
+        // Kết thúc xử lý API cho bài viết này
+        if (isDataLoading) {
+          console.log(isDataLoading);
+          setDataLoading(
+            dataLoading.map((post) =>
+              post.postId === postId
+                ? {
+                    ...post,
+                    likeByUserLogged: true,
+                    totalLike: post.totalLike + 1,
+                    isProcessingLike: false,
+                  }
+                : post
+            )
+          );
+        } else {
+          setPosts(
+            posts.map((post) =>
+              post.postId === postId
+                ? {
+                    ...post,
+                    likeByUserLogged: true,
+                    totalLike: post.totalLike + 1,
+                    isProcessingLike: false,
+                  }
+                : post
+            )
+          );
+        }
+        console.log(data);
+      } else {
+        console.log("something wrong");
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
+  };
+
+  const handleUnlike = async (postId: string, isDataLoading: boolean) => {
+    console.log("unlike: " + postId);
+
+    if (isDataLoading) {
+      console.log(isDataLoading);
+      setDataLoading(
+        dataLoading.map((post) =>
+          post.postId === postId
+            ? {
+                ...post,
+                likeByUserLogged: false,
+                totalLike: post.totalLike - 1,
+                isProcessingLike: true,
+              }
+            : post
+        )
+      );
+    } else {
+      setPosts(
+        posts.map((post) =>
+          post.postId === postId
+            ? {
+                ...post,
+                likeByUserLogged: false,
+                totalLike: post.totalLike - 1,
+                isProcessingLike: true,
+              }
+            : post
+        )
+      );
+    }
+    try {
+      const response = await sendRequest<Post[]>({
+        url: "http://localhost:8080/api/unlike/" + postId,
+        method: "POST",
+        headers: { authorization: `Bearer ${user?.access_token}` },
+      });
+
+      console.log(response);
+      if (response) {
+        // Kết thúc xử lý API cho bài viết này
+        if (isDataLoading) {
+          console.log(isDataLoading);
+          setDataLoading(
+            dataLoading.map((post) =>
+              post.postId === postId
+                ? {
+                    ...post,
+                    likeByUserLogged: false,
+                    totalLike: post.totalLike - 1,
+                    isProcessingLike: false,
+                  }
+                : post
+            )
+          );
+        } else {
+          setPosts(
+            posts.map((post) =>
+              post.postId === postId
+                ? {
+                    ...post,
+                    likeByUserLogged: false,
+                    totalLike: post.totalLike - 1,
+                    isProcessingLike: false,
+                  }
+                : post
+            )
+          );
+        }
+        console.log(data);
+      } else {
+        console.log("something wrong");
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
+  };
+
+  const handleReplyComment = (cmtId: number) => {
+    console.log(cmtId);
+  };
+
+  const handleExpandClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl2(event.currentTarget);
+  };
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  const handleClose2 = () => {
+    setAnchorEl2(null);
+  };
+  const [postData, setPostData] = useState<AddPost>({
+    content: "",
+    userId: user ? user?.user?.userId : "",
+    // listImageofPost: null,
+    privacyPostDetails: 1,
+    listHashtag: [1, 2],
+  });
+
+  const handleContentPost = (value: string) => {
+    setPostData((prevData) => ({
+      ...prevData,
+      content: value,
+    }));
+  };
+
+  const handlePost = async () => {
+    const response = await sendRequest({
+      // url: "https://artdevs-server.azurewebsites.net/api/register",
+      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
+      url: "http://localhost:8080/api/post",
+      method: "POST",
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      body: { ...postData },
+    });
+    console.log(">>> check post data: ", response);
+  };
+
+  const handleChangeContentComment = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const { name, value } = event.target;
+    setFormDataComment((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+  const handlePostComment = async () => {
+    console.log(">>> check form: ", formDataComment);
+
+    const response = await sendRequest({
+      url: "http://localhost:8080/api/comment",
+      method: "POST",
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      body: { ...formDataComment },
+    });
+    console.log(">>> check post formDataComment: ", response);
+  };
+
   if (isLoading) {
     return (
       <Box
@@ -207,7 +605,7 @@ const Post = ({ user, post }: IPros) => {
               }}
               aria-label="recipe"
               alt="Profile Picture"
-              src={user?.user?.profilePicUrl}
+              src={user?.user?.profileImageUrl}
             ></Avatar>
           }
           title={
@@ -269,25 +667,26 @@ const Post = ({ user, post }: IPros) => {
                 },
               }}
             >
-              {user?.user?.username}
+              {user?.user?.lastName + " ơi, Bạn đang nghĩ gì thế ?"}
             </Button>
           }
         />
 
-        <CardActions disableSpacing>
+        {/* <CardActions disableSpacing>
           <IconButton aria-label="add to favorites">
             <FavoriteIcon />
           </IconButton>
+
           <IconButton aria-label="share">
             <CommentIcon />
           </IconButton>
           <IconButton aria-label="share">
             <ShareIcon />
           </IconButton>
-        </CardActions>
+        </CardActions> */}
       </Card>
-      {data &&
-        data?.map((p, index) => (
+      {posts &&
+        posts?.map((p, index) => (
           <Card
             sx={{
               borderRadius: "12px",
@@ -300,7 +699,7 @@ const Post = ({ user, post }: IPros) => {
                 color: "white",
               },
             }}
-            key={index + p.userPost.userId}
+            key={index}
           >
             <CardHeader
               sx={{
@@ -404,14 +803,75 @@ const Post = ({ user, post }: IPros) => {
               {/* </Slider> */}
             </Box>
 
-            <CardActions disableSpacing>
-              <IconButton aria-label="add to favorites">
-                <FavoriteIcon />
-              </IconButton>
-              <IconButton aria-label="share">
+            <CardActions
+              disableSpacing
+              sx={{
+                marginX: "2rem",
+                display: "flex",
+                justifyContent: "space-evenly",
+                borderTop: "1px solid gray",
+              }}
+            >
+              {/* <IconButton
+                aria-label="add to favorites"
+                sx={{
+                  borderRadius: "10px",
+                  color: p.likeByUserLogged ? "#ff0000" : "#57585b",
+                }}
+                onClick={() =>
+                  p.likeByUserLogged
+                    ? handleUnlike(p?.postId, false)
+                    : handleLike(p?.postId, false)
+                }
+                disabled={p.isProcessingLike}
+              >
+                <Box
+                  sx={{
+                    color: "#57585b",
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalLike}
+                </Box>
+                {p.isProcessingLike ? (
+                  <CircularProgress size={24} color="secondary" />
+                ) : (
+                  <FavoriteIcon />
+                )}
+              </IconButton> */}
+              <IconButton
+                aria-label="comment"
+                sx={{
+                  borderRadius: "10px",
+                }}
+                onClick={() => handleOpenModalCmt(p)}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalComment}
+                </Box>
                 <CommentIcon />
               </IconButton>
-              <IconButton aria-label="share">
+
+              <IconButton
+                aria-label="share"
+                sx={{
+                  borderRadius: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalShare}
+                </Box>
                 <ShareIcon />
               </IconButton>
             </CardActions>
@@ -579,14 +1039,69 @@ const Post = ({ user, post }: IPros) => {
               {/* </Slider> */}
             </Box>
 
-            <CardActions disableSpacing>
-              <IconButton aria-label="add to favorites">
+            <CardActions
+              disableSpacing
+              sx={{
+                marginX: "2rem",
+                display: "flex",
+                justifyContent: "space-evenly",
+                borderTop: "1px solid gray",
+              }}
+            >
+              {/* <IconButton
+                aria-label="add to favorites"
+                sx={{
+                  borderRadius: "10px",
+                  color: p.likeByUserLogged ? "#ff0000" : "#57585b",
+                }}
+                onClick={() =>
+                  p.likeByUserLogged
+                    ? handleUnlike(p?.postId, true)
+                    : handleLike(p?.postId, true)
+                }
+              >
+                <Box
+                  sx={{
+                    color: "#57585b",
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalLike} {p.likeByUserLogged ? "true" : "false"}
+                </Box>
                 <FavoriteIcon />
-              </IconButton>
-              <IconButton aria-label="share">
+              </IconButton> */}
+              <IconButton
+                aria-label="comment"
+                sx={{
+                  borderRadius: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalComment}
+                </Box>
                 <CommentIcon />
               </IconButton>
-              <IconButton aria-label="share">
+
+              <IconButton
+                aria-label="share"
+                sx={{
+                  borderRadius: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontWeight: "bold",
+                    marginRight: "0.75rem",
+                  }}
+                >
+                  {p.totalShare}
+                </Box>
                 <ShareIcon />
               </IconButton>
             </CardActions>
@@ -676,7 +1191,7 @@ const Post = ({ user, post }: IPros) => {
                     sx={{ bgcolor: red[500] }}
                     aria-label="recipe"
                     alt="Profile Picture"
-                    src={user?.user?.profilePicUrl}
+                    src={user?.user?.profileImageUrl}
                   ></Avatar>
                 }
                 action={
@@ -734,6 +1249,163 @@ const Post = ({ user, post }: IPros) => {
                 Đăng
               </Button>
             </Box>
+          </Box>
+        </Fade>
+      </Modal>
+
+      <Modal
+        aria-labelledby="transition-modal-title"
+        aria-describedby="transition-modal-description"
+        open={openModalCmt}
+        onClose={handleCloseModalCmt}
+        closeAfterTransition
+        slots={{ backdrop: Backdrop }}
+        slotProps={{
+          backdrop: {
+            timeout: 500,
+          },
+        }}
+      >
+        <Fade in={openModalCmt}>
+          <Box sx={styleModalComment}>
+            <React.Fragment>
+              <CssBaseline />
+              <AppBar
+                sx={{ backgroundColor: "#1c1e21", padding: "0px !important" }}
+              >
+                <Toolbar
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Typography variant="h6" component="div">
+                    Bài viết của {selectPost}
+                  </Typography>
+                  <IconButton
+                    onClick={handleCloseModalCmt}
+                    size="small"
+                    aria-controls={openPost ? "account-menu" : undefined}
+                    aria-haspopup="true"
+                    aria-expanded={openPost ? "true" : undefined}
+                  >
+                    <Avatar
+                      sx={{ width: 32, height: 32, backgroundColor: "gray" }}
+                    >
+                      <ClearIcon />
+                    </Avatar>
+                  </IconButton>
+                </Toolbar>
+              </AppBar>
+              <Toolbar id="back-to-top-anchor" />
+              <Container
+                sx={{
+                  maxHeight: "500px",
+                  overflowY: "auto",
+                  backgroundColor: "#1c1e21",
+                }}
+              >
+                <Box sx={{ my: 2, color: "white" }}></Box>
+              </Container>
+              {/*  <ScrollTop {...props}>
+                <Fab size="small" aria-label="scroll back to top">
+                  <KeyboardArrowUpIcon />
+                </Fab>
+              </ScrollTop>
+              */}
+              <Paper
+                elevation={2}
+                sx={{
+                  backgroundColor: "#1c1e21",
+                  padding: "16px",
+                  display: "flex",
+                }}
+              >
+                <Avatar
+                  sx={{
+                    bgcolor: red[500],
+                    color: "#000000",
+                    marginRight: "12px",
+                  }}
+                  aria-label="recipe"
+                  alt="Profile Picture"
+                  src={user?.user?.profileImageUrl}
+                ></Avatar>
+                <Box
+                  sx={{
+                    width: "100%",
+                  }}
+                >
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", mb: "8px" }}
+                  >
+                    <TextField
+                      name="content"
+                      label="Viết bình luận..."
+                      variant="outlined"
+                      multiline
+                      rows={3}
+                      fullWidth
+                      sx={{
+                        backgroundColor: "#1c1e21",
+                        borderRadius: "7px",
+                        color: "white",
+                        "& label.Mui-focused": { color: "white" },
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "white" },
+                          "&:hover fieldset": { borderColor: "white" },
+                          "&.Mui-focused fieldset": { borderColor: "white" },
+                        },
+                        "& label": { color: "white" },
+                      }}
+                      InputProps={{ sx: { color: "white" } }}
+                      value={formDataComment.content}
+                      onChange={handleChangeContentComment}
+                    />
+                    {/* <Button
+                      component="label"
+                      variant="contained"
+                      startIcon={<AddPhotoAlternate />}
+                      sx={{
+                        p: "0px",
+                        backgroundColor: "transparent",
+                        color: "white",
+                        "&:hover": {
+                          backgroundColor: "transparent",
+                          boxShadow: "none",
+                        },
+                        boxShadow: "none",
+                      }}
+                    >
+                      <VisuallyHiddenInput
+                        type="file"
+                        accept=".jpg, .png "
+                        onChange={handleChangePic}
+                        multiple
+                        name="listImageofComment"
+                      />
+                    </Button> */}
+                    <IconButton
+                      color="primary"
+                      sx={{
+                        marginLeft: "8px",
+                        backgroundColor: "#30363d",
+                        "&:hover": { backgroundColor: "#50595f" },
+                      }}
+                      onClick={handlePostComment}
+                      disabled={!formDataComment.content}
+                    >
+                      <SendIcon />
+                    </IconButton>
+                  </Box>
+                  {/* {formDataComment.listImageofComment?.map((url, index) => (
+                    <PreviewImage
+                      key={index}
+                      url={url}
+                      index={index}
+                      handleRemoveImage={handleRemoveImage}
+                    />
+                  ))} */}
+                </Box>
+              </Paper>
+            </React.Fragment>
           </Box>
         </Fade>
       </Modal>

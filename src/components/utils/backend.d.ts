@@ -113,6 +113,7 @@ declare global {
     username: string;
     role: Role;
     dateOfBirth: string;
+    profileImageUrl: string;
     gender: string;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
@@ -172,14 +173,14 @@ declare global {
     userPost: UserPost;
     listHashtag: Hashtag[];
     listImageofPost: ImageofPost[];
-    privacyPostDetails: PostDetails[];
+    privacyPostDetails: PostDetails;
     totalComment: number;
     totalLike: number;
     totalShare: number;
   }
   interface UserPost {
     userId: string;
-    username: string;
+    fullname: string;
     profilePicUrl?: string;
   }
   interface Hashtag {
@@ -195,20 +196,14 @@ declare global {
     time: string;
   }
   interface PostDetails {
-    createDate: string;
     id: number;
-    postId: string;
-    privacyPostId: number;
-    status: boolean;
+    namePrivacy: string;
   }
 
   interface AddPost {
-    postId: string;
     content: string;
-    time: Date;
-    timelineUserId: Date;
     userId: string;
-    listImageofPost: string[] | null;
+    // listImageofPost: string[] | null;
     privacyPostDetails: number;
     listHashtag: number[] | null;
   }
@@ -227,5 +222,28 @@ declare global {
     id: number;
     hashtagText: string;
     countHashtagOfDetail: number;
+  }
+  interface CommentToPostDTO {
+    // id: 1231123,
+    content: string;
+    // listImageofComment:string,
+    userToPost: string;
+    postToPost: string;
+  }
+  interface CommentOfPost {
+    id: number;
+    content: string;
+    timeComment: string;
+    listImageofComment: string[] | null;
+    listReplyComment: ListReplyComment[] | null;
+    userID: UserPost;
+  }
+  interface ListReplyComment {
+    id: number;
+    content: string;
+    timeComment: string;
+    listPictureOfComment: any[] | null;
+    commentId: number;
+    userID: UserPost;
   }
 }

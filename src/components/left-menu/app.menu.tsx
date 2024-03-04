@@ -88,61 +88,43 @@ const AppMenu = () => {
     },
     {
       index: 6,
-      content: "Last event",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/last-event",
-    },
-    {
-      index: 7,
-      content: "Live",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/live",
-    },
-  ];
-  const setting: ListItem[] = [
-    {
-      index: 8,
-      content: "Cài đặt",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/setting",
-    },
-    {
-      index: 9,
-      content: "Thống kê",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/statistical",
-    },
-    {
-      index: 10,
-      content: "Quyền riêng tư",
+      content: "Bảo mật",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/secure",
     },
     {
-      index: 11,
+      index: 7,
+      content: "Thông tin chung",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/infor",
+    },
+    {
+      index: 8,
+      content: "Đóng góp ý kiến",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/feedback",
+    },
+    {
+      index: 9,
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/",
-      // url: "/api/auth/signout",
     },
   ];
   leftMenu.push(info);
   leftMenu.push(recent);
-  leftMenu.push(setting);
-  const titleMenu = ["Thông tin", "Gần đây", "Thiết lập"];
+  const titleMenu = ["Thông tin", "Gần đây"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   const handleListItemClick = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
-    if (index == 11) {
+    if (index == 9) {
       handleOpen();
     }
     setSelectedIndex(index);

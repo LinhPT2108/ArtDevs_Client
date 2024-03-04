@@ -780,7 +780,7 @@ const HomeProfile = ({ session }: { session: User }) => {
                       <Box
                         sx={{
                           display: "flex",
-                          justifyContent: "center",
+                          justifyContent: "flex-start",
                           padding: "10px 0px 0px 0px",
                         }}
                       >
@@ -792,6 +792,8 @@ const HomeProfile = ({ session }: { session: User }) => {
                             boxSizing: "border-box",
                             backgroundColor: "#fff",
                             borderRadius: "20px",
+                            marginRight: "8px",
+                            filter: "drop-shadow(0 0 0.1rem crimson)",
                             cursor: "pointer",
                             "&:hover": {
                               backgroundColor: "#E4E6EB",
@@ -827,6 +829,7 @@ const HomeProfile = ({ session }: { session: User }) => {
                             boxSizing: "border-box",
                             backgroundColor: "#fff",
                             borderRadius: "20px",
+                            filter: "drop-shadow(0 0 0.1rem green)",
                             cursor: "pointer",
                             "&:hover": {
                               backgroundColor: "#E4E6EB",

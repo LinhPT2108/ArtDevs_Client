@@ -61,7 +61,7 @@ export const formatTimeDifference = (
   }
 };
 
-export const formatDateString = (input: string | null): string => {
+export const formatDateString = (input: string | null | undefined): string => {
   if (input) {
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
