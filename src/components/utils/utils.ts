@@ -63,16 +63,15 @@ export const formatTimeDifference = (
 
 export const formatVND = (value: number): string => {
   // Use toLocaleString to format the number with commas
-  const formattedValue = value.toLocaleString('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
+  const formattedValue = value.toLocaleString("vi-VN", {
+    style: "currency",
+    currency: "VND",
   });
 
   return formattedValue;
 };
 
-
-export const formatDateString = (input: string | null): string => {
+export const formatDateString = (input: string | null | undefined): string => {
   if (input) {
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
@@ -95,8 +94,11 @@ export function calculateTimeDifference(timeRelation: string): string {
   const timeRelationDate = new Date(timeRelation);
 
   // Check if timeRelationDate is a valid Date object
-  if (!(timeRelationDate instanceof Date) || isNaN(timeRelationDate.getTime())) {
-    return 'Invalid date';
+  if (
+    !(timeRelationDate instanceof Date) ||
+    isNaN(timeRelationDate.getTime())
+  ) {
+    return "Invalid date";
   }
 
   const currentTime = new Date();
@@ -108,12 +110,16 @@ export function calculateTimeDifference(timeRelation: string): string {
   const millisecondsInDay = millisecondsInHour * 24;
 
   const daysDifference = Math.floor(timeDifference / millisecondsInDay);
-  const hoursDifference = Math.floor((timeDifference % millisecondsInDay) / millisecondsInHour);
-  const minutesDifference = Math.floor((timeDifference % millisecondsInHour) / millisecondsInMinute);
+  const hoursDifference = Math.floor(
+    (timeDifference % millisecondsInDay) / millisecondsInHour
+  );
+  const minutesDifference = Math.floor(
+    (timeDifference % millisecondsInHour) / millisecondsInMinute
+  );
 
   if (daysDifference >= 1) {
-      return `${daysDifference} ngày ${hoursDifference} giờ trước`;
+    return `${daysDifference} ngày ${hoursDifference} giờ trước`;
   } else {
-      return `${hoursDifference} giờ ${minutesDifference} phút trước`;
+    return `${hoursDifference} giờ ${minutesDifference} phút trước`;
   }
 }
