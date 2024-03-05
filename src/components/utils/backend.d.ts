@@ -108,7 +108,7 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
-    profilePicUrl?: string;
+    profileImageUrl?: string;
     provider?: string;
     username: string;
     role: Role;
@@ -166,6 +166,7 @@ declare global {
     result: T[];
   }
   interface Post {
+    isProcessingLike: boolean | undefined;
     postId: string;
     content: string;
     time: string;
@@ -177,11 +178,14 @@ declare global {
     totalComment: number;
     totalLike: number;
     totalShare: number;
+    likeByUserLogged: boolean;
+    typePost: string;
   }
   interface UserPost {
     userId: string;
     fullname: string;
     profilePicUrl?: string;
+    fullname: string;
   }
   interface Hashtag {
     hashtagDetailName: string;
@@ -229,12 +233,19 @@ declare global {
     hashtagText: string;
     countHashtagOfDetail: number;
   }
+  // interface CommentToPostDTO {
+  //   content: string;
+  //   userToPost: string;
+  //   postToPost: string;
+  // }
+
   interface CommentToPostDTO {
-    // id: 1231123,
+    // id:number
     content: string;
-    // listImageofComment:string,
+    listImageofComment: any;
     userToPost: string;
     postToPost: string;
+    userReceive: string;
   }
   interface CommentOfPost {
     id: number;
@@ -244,6 +255,15 @@ declare global {
     listReplyComment: ListReplyComment[] | null;
     userID: UserPost;
   }
+
+  interface ReplyCommentToPostDTO {
+    content: string;
+    listImageofComment: any;
+    commentToPost: any;
+    userToPost: string;
+    userReceive: UserPost;
+  }
+
   interface ListReplyComment {
     id: number;
     content: string;
@@ -265,5 +285,6 @@ declare global {
     username: string;
     profilePicUrl: string;
     fullname: string;
+    userReceiveDto: UserPost;
   }
 }

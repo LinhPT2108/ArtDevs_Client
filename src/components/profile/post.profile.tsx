@@ -219,8 +219,8 @@ const PostProfile = ({
                     <a href="#">
                       <img
                         src={`${
-                          session?.user?.profilePicUrl
-                            ? session?.user?.profilePicUrl
+                          session?.user?.profileImageUrl
+                            ? session?.user?.profileImageUrl
                             : "/profile/user.jpg"
                         }`}
                       />
