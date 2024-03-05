@@ -33,6 +33,9 @@ import {
   DialogContent,
   DialogActions,
   Slide,
+  Divider,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
@@ -57,7 +60,12 @@ import "../../style/post-loading.css";
 import Slider from "react-slick";
 import CustomPaging from "./media.post";
 import { useUser } from "@/lib/custom.content";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_DELETE_COMMENT_MESSAGE,
+  GLOBAL_ERROR_MESSAGE,
+  GLOBAL_SHARE_MESSAGE,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import useSWR, { SWRResponse } from "swr";
 import SendIcon from "@mui/icons-material/Send";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
@@ -76,7 +84,6 @@ import {
 } from "../utils/component.global";
 import postCommentApi from "../utils/utils";
 import { TransitionProps } from "@mui/material/transitions";
-
 interface Props {
   window?: () => Window;
   children: React.ReactElement;
@@ -291,16 +298,92 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [editedContentReplyComment, setEditedContentReplyComment] =
     useState("");
   const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
+  const [contentSharePost, setContentSharePost] = useState<string>("");
 
-  const handleClickOpenAlerts = () => {
+  const [actionDialog, setActionDialog] = useState<any>({
+    actionType: "",
+    data: {},
+  });
+
+  const [dataSnackbar, setDataSnackbar] = useState<any>({
+    openSnackbar: false,
+    contentSnackbar: "",
+    type: "",
+  });
+
+  // const handleClickOpenSnackbar = (content: string) => () => {
+  //   setDataSnackbar({
+  //     openSnackbar: true,
+  //     contentSnackbar: "content",
+  //   });
+  // };
+
+  const handleCloseSnackbar = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setDataSnackbar({
+      openSnackbar: false,
+      contentSnackbar: "",
+      type: "",
+    });
+  };
+
+  const handleClickOpenAlerts = (
+    dataId: any,
+    actionType: string,
+    isComment: boolean,
+    index: number,
+    isDataLoading: boolean
+  ) => {
+    if (actionType == "deleteCmt") {
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          comment: dataId,
+          isComment: isComment,
+          index: index,
+        },
+      });
+    } else {
+      setContentSharePost("");
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          post: dataId,
+          isComment: isComment,
+          index: index,
+          isDataloading: isDataLoading,
+        },
+      });
+    }
+    console.log(actionDialog);
     setOpenAlerts(true);
   };
 
   const handleCloseAlerts = () => {
+    setContentSharePost("");
     setOpenAlerts(false);
   };
   const handleAgreeAlerts = () => {
     console.log("agree");
+    console.log(contentSharePost);
+    if (actionDialog.actionType === "deleteCmt") {
+      handleDeleteCommentOrReplyComment(
+        actionDialog.data.comment,
+        actionDialog.data.isComment,
+        actionDialog.data.index
+      );
+    } else {
+      handleSharePost(
+        actionDialog.data.post.postId,
+        actionDialog.data.isDataloading
+      );
+    }
+    console.log(dataSnackbar);
     handleCloseAlerts();
   };
 
@@ -516,8 +599,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
   ) => {
     console.log("Delete:", commentObject);
     const url = isComment2
-      ? GLOBAL_URL+"/api/comment/" + commentObject.id
-      : GLOBAL_URL+"/api/replyComment/" + commentObject.id;
+      ? GLOBAL_URL + "/api/comment/" + commentObject.id
+      : GLOBAL_URL + "/api/replyComment/" + commentObject.id;
 
     const response = await sendRequest<boolean>({
       url,
@@ -548,6 +631,17 @@ const Post = ({ user, post }: IPros, props: Props) => {
           )
         );
       }
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_DELETE_COMMENT_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
     }
     handleClose3(index, isComment2);
   };
@@ -587,7 +681,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setSelectPost(post.userPost.fullname);
 
     const getCommentOfPost = await sendRequest<CommentOfPost[]>({
-      url: GLOBAL_URL+"/api/comment/" + post.postId,
+      url: GLOBAL_URL + "/api/comment/" + post.postId,
       method: "GET",
       queryParams: {
         page: 0,
@@ -699,7 +793,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     try {
       const response = await sendRequest<Post[]>({
-        url: GLOBAL_URL+"/api/like/" + postId,
+        url: GLOBAL_URL + "/api/like/" + postId,
         method: "POST",
         headers: { authorization: `Bearer ${user?.access_token}` },
       });
@@ -777,7 +871,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     try {
       const response = await sendRequest<Post[]>({
-        url: GLOBAL_URL+"/api/unlike/" + postId,
+        url: GLOBAL_URL + "/api/unlike/" + postId,
         method: "POST",
         headers: { authorization: `Bearer ${user?.access_token}` },
       });
@@ -1012,16 +1106,57 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setIsLoadingComment(false);
   };
 
-  const handleSharePost = async (postId:string)=>{
+  const handleSharePost = async (postId: string, isDataLoading: boolean) => {
     console.log(postId);
-    const response = await sendRequest({
-      url: GLOBAL_URL+"/api/share/"+postId,
+    const response: any = await sendRequest({
+      url: GLOBAL_URL + "/api/share/" + postId,
       headers: { authorization: `Bearer ${user?.access_token}` },
       method: "POST",
+      queryParams: {
+        content: contentSharePost,
+      },
     });
     console.log(response);
-    
-  }
+    if (response.statusCode == 400) {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_SHARE_MESSAGE,
+        type: "error",
+      });
+      console.log(dataSnackbar);
+    } else {
+      if (isDataLoading) {
+        console.log(isDataLoading);
+        setDataLoading(
+          dataLoading.map((post) =>
+            post.postId === postId
+              ? {
+                  ...post,
+                  totalShare: post.totalShare + 1,
+                }
+              : post
+          )
+        );
+      } else {
+        setPosts(
+          posts.map((post) =>
+            post.postId === postId
+              ? {
+                  ...post,
+                  totalShare: post.totalShare + 1,
+                }
+              : post
+          )
+        );
+      }
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_SHARE_MESSAGE,
+        type: "success",
+      });
+      console.log(dataSnackbar);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -1330,7 +1465,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 sx={{
                   borderRadius: "10px",
                 }}
-                onClick={()=>handleSharePost(p.postId)}
+                //handleSharePost(p.postId, false)
+                onClick={() =>
+                  handleClickOpenAlerts(p, "share", false, -1, false)
+                }
               >
                 <Box
                   sx={{
@@ -1561,6 +1699,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 sx={{
                   borderRadius: "10px",
                 }}
+                onClick={() => handleSharePost(p.postId, true)}
               >
                 <Box
                   sx={{
@@ -1932,12 +2071,23 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                       >
                                         Chỉnh sửa
                                       </MenuItem>
-                                      <MenuItem onClick={() =>
-                                          handleDeleteCommentOrReplyComment(
-                                            c,
-                                            true,
-                                            index
-                                          )}>
+                                      <MenuItem
+                                        onClick={
+                                          () =>
+                                            handleClickOpenAlerts(
+                                              c,
+                                              "deleteCmt",
+                                              true,
+                                              index,
+                                              false
+                                            )
+                                          // handleDeleteCommentOrReplyComment(
+                                          //   c,
+                                          //   true,
+                                          //   index
+                                          // )
+                                        }
+                                      >
                                         Xóa bình luận
                                       </MenuItem>
                                     </Menu>
@@ -2331,11 +2481,18 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                             </MenuItem>
                                             <MenuItem
                                               onClick={() =>
-                                                handleDeleteCommentOrReplyComment(
+                                                handleClickOpenAlerts(
                                                   rl,
+                                                  "deleteCmt",
                                                   false,
-                                                  ir
+                                                  ir,
+                                                  false
                                                 )
+                                                // handleDeleteCommentOrReplyComment(
+                                                //   rl,
+                                                //   false,
+                                                //   ir
+                                                // )
                                               }
                                             >
                                               Xóa bình luận
@@ -2689,22 +2846,169 @@ const Post = ({ user, post }: IPros, props: Props) => {
         onClose={handleCloseAlerts}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        PaperProps={{
+          style: {
+            backgroundColor: "#3e4042",
+          },
+        }}
       >
-        <DialogTitle id="alert-dialog-title">
-          {"Xóa bình luận?"}
+        <DialogTitle
+          id="alert-dialog-title"
+          sx={{ color: "white", textAlign: "center" }}
+        >
+          {actionDialog.actionType == "deleteCmt"
+            ? "Xóa bình luận?"
+            : "Chia sẻ bài viết"}
         </DialogTitle>
-        <DialogContent>
-          <DialogContent id="alert-dialog-description">
-          Bạn có chắc chắn muốn xóa bình luận này không?
-          </DialogContent>
+        <Divider />
+        <DialogContent id="alert-dialog-description">
+          {actionDialog.actionType == "deleteCmt" ? (
+            <Typography sx={{ color: "white" }}>
+              Bạn có chắc chắn muốn xóa bình luận này không?
+            </Typography>
+          ) : (
+            <>
+              <TextField
+                autoFocus
+                required
+                margin="dense"
+                name="content"
+                hiddenLabel
+                fullWidth
+                variant="standard"
+                label="Bạn nghĩ gì về bài viết này ?"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                  },
+                }}
+                onChange={(e) => setContentSharePost(e.target.value)}
+              />
+              <Box
+                className="block-post-share"
+                sx={{
+                  border: "1px solid white",
+                  borderRadius: "16px",
+                  minWidth: "320px",
+                  mt: "8px",
+                  backgroundColor: "gray",
+                }}
+              >
+                <CardHeader
+                  sx={{
+                    color: "#000000",
+                  }}
+                  avatar={
+                    <Avatar
+                      sx={{ bgcolor: red[500] }}
+                      aria-label="recipe"
+                      alt="Profile Picture"
+                      src={actionDialog.data?.post?.userPost?.profilePicUrl}
+                    ></Avatar>
+                  }
+                  title={actionDialog.data?.post?.userPost?.fullname}
+                  subheader={formatDateString(actionDialog.data?.post?.time)}
+                />
+
+                <CardContent
+                  sx={{
+                    pt: 0,
+                    "& p": {
+                      color: "black",
+                    },
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: "black" }}>
+                    {actionDialog.data?.post?.content}
+                  </Typography>
+                </CardContent>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    paddingX: "16px",
+                    paddingBottom: "16px",
+                    "& a": {
+                      backgroundColor: "#d6e8fa",
+                      color: "#0c3b6a",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      // fontWeight: "400",
+                      padding: "4.8px 6px",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease-in-out",
+                      margin: "0 2px 2px 0",
+                      border: "1px solid #BDC0C7",
+                      textDecoration: "none",
+                      gridArea: "auto",
+                      "&:hover": {
+                        transform: "translateY(-1px) translateX(0)",
+                        boxShadow: "0 1px 0 0 #BDC0C7",
+                      },
+                    },
+                  }}
+                >
+                  {actionDialog.data?.post?.listHashtag?.map((item: any) => (
+                    <Link key={item.id} href="/">
+                      {item.hashtagDetailName}
+                    </Link>
+                  ))}
+                </Box>
+                <Box sx={{ width: "100%" }} className="slider-container">
+                  {/* <Slider {...settings}> */}
+                  {actionDialog.data?.post?.listImageofPost?.map(
+                    (item: any, index: number) => (
+                      // <div key={item.id}>
+                      <CardMedia
+                        key={index + item.id}
+                        component={
+                          isImage(item.imageUrl) === "image"
+                            ? "img"
+                            : isImage(item.imageUrl) === "video"
+                            ? "video"
+                            : "div"
+                        }
+                        // autoPlay={isImage(item.imageUrl) === "video"}
+                        controls={isImage(item.imageUrl) === "video"}
+                        image={item?.imageUrl}
+                        alt={item?.postID}
+                        sx={{
+                          objectFit: "cover",
+                          maxWidth: "100%",
+                          width: ` 100%`,
+                          borderRadius: "16px",
+                        }}
+                      />
+                      // </div>
+                    )
+                  )}
+                  {/* </Slider> */}
+                </Box>
+              </Box>
+            </>
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAlerts}>Không</Button>
+          <Button onClick={handleCloseAlerts} sx={{ color: "gray" }}>
+            Không
+          </Button>
           <Button onClick={handleAgreeAlerts} autoFocus>
-            Xóa
+            {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={dataSnackbar.openSnackbar}
+        autoHideDuration={2000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert variant="filled" severity={dataSnackbar.type}>
+          {dataSnackbar.type == "success"
+            ? dataSnackbar.contentSnackbar
+            : GLOBAL_ERROR_MESSAGE}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
