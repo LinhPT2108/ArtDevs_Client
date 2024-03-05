@@ -487,20 +487,37 @@ const Post = ({ user, post }: IPros, props: Props) => {
   ) => {
     setIsLoadingEditComment(true);
     const imageFiles: File[] = Array.from(images).map((imageName: any) => {
-      if (typeof imageName.imageOfCommentUrl === "string") {
-        const blob = new Blob([], { type: "application/octet-stream" });
-        const fileType = "image/jpeg";
-        const fileSize = blob.size;
-        const file = new File([blob], imageName.imageOfCommentUrl, {
-          type: fileType,
-          size: fileSize,
-        } as any);
-        return file;
+      if (!isComment) {
+        if (typeof imageName.imageOfCommentUrl === "string") {
+          const blob = new Blob([], { type: "application/octet-stream" });
+          const fileType = "image/jpeg";
+          const fileSize = blob.size;
+          const file = new File([blob], imageName.imageOfCommentUrl, {
+            type: fileType,
+            size: fileSize,
+          } as any);
+          return file;
+        } else {
+          return imageName as File;
+        }
       } else {
-        return imageName as File;
+        if (typeof imageName === "string") {
+          const blob = new Blob([], { type: "application/octet-stream" });
+          const fileType = "image/jpeg";
+          const fileSize = blob.size;
+          const file = new File([blob], imageName, {
+            type: fileType,
+            size: fileSize,
+          } as any);
+          return file;
+        } else {
+          return imageName as File;
+        }
       }
     });
     const formData = new FormData();
+    console.log(imageFiles);
+    
     if (isComment) {
       formData.append("content", content);
       if (imageFiles) {
@@ -2480,14 +2497,15 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                               Chỉnh sửa
                                             </MenuItem>
                                             <MenuItem
-                                              onClick={() =>
-                                                handleClickOpenAlerts(
-                                                  rl,
-                                                  "deleteCmt",
-                                                  false,
-                                                  ir,
-                                                  false
-                                                )
+                                              onClick={
+                                                () =>
+                                                  handleClickOpenAlerts(
+                                                    rl,
+                                                    "deleteCmt",
+                                                    false,
+                                                    ir,
+                                                    false
+                                                  )
                                                 // handleDeleteCommentOrReplyComment(
                                                 //   rl,
                                                 //   false,
