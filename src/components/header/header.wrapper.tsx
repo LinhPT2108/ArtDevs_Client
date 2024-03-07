@@ -34,6 +34,7 @@ const HeaderWrapper = ({ user }: HomeProps) => {
             handleChangeTab={handleValueTab}
             openContact={drawerOpen}
             pageUrl={"home"}
+            session ={user}
           />
         </Box>
       </Grid>

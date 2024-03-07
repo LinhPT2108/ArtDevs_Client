@@ -2,17 +2,24 @@ export {};
 // https://bobbyhadz.com/blog/typescript-make-types-global#declare-global-types-in-typescript
 
 declare global {
+  interface UserMessage {
+    userId: string;
+    username: string;
+    profilePicUrl: string;
+    fullname: string;
+    online: boolean;
+  }
+  interface IUser {
+    user: ListItem;
+    active: boolean;
+    timeActive: Date;
+  }
   interface ListItem {
     index: number;
     content: string;
     icon: SvgIconProps;
     bgColor: string;
     url: string;
-  }
-  interface IUser {
-    user: ListItem;
-    active: boolean;
-    timeActive: Date;
   }
   interface MessageExample {
     primary: string;
