@@ -1,4 +1,5 @@
 import {
+  Avatar,
   Box,
   Drawer,
   List,
@@ -11,16 +12,14 @@ import React from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ChatMessagesForm from "../chat/chat.form";
 import { styled } from "@mui/system";
+import useSWR, { SWRResponse } from "swr";
+import { sendRequest } from "../utils/api";
 
-interface IUser {
-  user: ListItem;
-  active: boolean;
-  timeActive: Date;
-}
 interface IPros {
   openContact: boolean;
   pageUrl: string;
-  getUser?: (user: IUser) => void;
+  getUser?: (user: UserMessage) => void;
+  session: User;
 }
 
 type Anchor = "top" | "left" | "bottom" | "right";
@@ -40,170 +39,55 @@ export const closeDrawer = () => {
 };
 
 const ContactMenu = (pros: IPros) => {
-  const { openContact, pageUrl, getUser } = pros;
+  const { openContact, pageUrl, getUser, session } = pros;
+
+  const fetchData = async (url: string) => {
+    return await sendRequest<UserMessage[]>({
+      url: url,
+      method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+    });
+  };
+  const {
+    data: ListFriend,
+    error,
+    isLoading,
+  }: SWRResponse<UserMessage[], any> = useSWR(
+    "http://localhost:8080/api/get-list-friend",
+    fetchData,
+    {
+      shouldRetryOnError: true, // Ngăn SWR thử lại yêu cầu khi có lỗi
+      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+    }
+  );
+  console.log("Check data :", ListFriend);
+
+  const fetchData2 = async (url: string) => {
+    return await sendRequest<UserMessage[]>({
+      url: url,
+      method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+    });
+  };
+  const {
+    data: ListMentor,
+    error: errorMentor,
+    isLoading: isLoadingMentor,
+  }: SWRResponse<UserMessage[], any> = useSWR(
+    "http://localhost:8080/api/get-list-mentor-match",
+    fetchData2,
+    {
+      shouldRetryOnError: true, // Ngăn SWR thử lại yêu cầu khi có lỗi
+      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+    }
+  );
+  console.log("Check data :", ListFriend);
+  console.log("Check data :", ListMentor);
 
   const rightMenu = [];
-  const info: IUser[] = [
-    {
-      user: {
-        index: 0,
-        content: "Linh Phan",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9b2828",
-        url: "/",
-      },
-      active: false,
-      timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
-    },
-    {
-      user: {
-        index: 1,
-        content: "Trần Chí Nguyễn",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9c933c",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 2,
-        content: "Vinh Olo",
-        icon: <AccountCircleIcon />,
-        bgColor: "#1e8d10",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 3,
-        content: "Vương Gia Khánh",
-        icon: <AccountCircleIcon />,
-        bgColor: "#263797",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 4,
-        content: "Linh Phan",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9b2828",
-        url: "/",
-      },
-      active: false,
-      timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
-    },
-    {
-      user: {
-        index: 5,
-        content: "Trần Chí Nguyễn",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9c933c",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 6,
-        content: "Vinh Olo",
-        icon: <AccountCircleIcon />,
-        bgColor: "#1e8d10",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 7,
-        content: "Vương Gia Khánh",
-        icon: <AccountCircleIcon />,
-        bgColor: "#263797",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 8,
-        content: "Linh Phan",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9b2828",
-        url: "/",
-      },
-      active: false,
-      timeActive: new Date(new Date().getTime() - 2 * 60 * 1000),
-    },
-    {
-      user: {
-        index: 9,
-        content: "Trần Chí Nguyễn",
-        icon: <AccountCircleIcon />,
-        bgColor: "#9c933c",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 10,
-        content: "Vinh Olo",
-        icon: <AccountCircleIcon />,
-        bgColor: "#1e8d10",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 11,
-        content: "Vương Gia Khánh",
-        icon: <AccountCircleIcon />,
-        bgColor: "#263797",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-  ];
-  const recent: IUser[] = [
-    {
-      user: {
-        index: 12,
-        content: "Nguyễn C2BT",
-        icon: <AccountCircleIcon />,
-        bgColor: "pink",
-        url: "/",
-      },
-      active: true,
-      timeActive: new Date(),
-    },
-    {
-      user: {
-        index: 13,
-        content: "Thầy Vinh",
-        icon: <AccountCircleIcon />,
-        bgColor: "pink",
-        url: "/",
-      },
-      active: false,
-      timeActive: new Date(new Date().getTime() - 18 * 60 * 1000),
-    },
-  ];
 
-  rightMenu.push(info);
-  rightMenu.push(recent);
+  rightMenu.push(ListFriend);
+  rightMenu.push(ListMentor);
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
@@ -233,11 +117,11 @@ const ContactMenu = (pros: IPros) => {
     bottom: false,
     right: false,
   });
-  const [user, setUser] = React.useState<IUser | undefined>();
+  const [user, setUser] = React.useState<UserMessage | undefined>();
   const toggleDrawer = (
     anchor: Anchor,
     open: boolean,
-    item: IUser | undefined
+    item: UserMessage | undefined
   ) => {
     {
       anchor == "right" && !open && setOpenMessages(open);
@@ -297,7 +181,7 @@ const ContactMenu = (pros: IPros) => {
         {rightMenu?.map((items, index) => {
           return (
             <List
-              key={`${index}-out${items[index].user.index}`}
+              key={index}
               sx={{
                 width: "100%",
                 bgcolor: "#293145",
@@ -337,7 +221,7 @@ const ContactMenu = (pros: IPros) => {
                           margin: " 0",
                         }}
                         key={index}
-                        selected={selectedIndex === item.user.index}
+                        selected={selectedIndex === index}
                         onClick={() => {
                           if (pageUrl === "home") {
                             toggleDrawer(anchor, true, item);
@@ -346,36 +230,36 @@ const ContactMenu = (pros: IPros) => {
                           }
                         }}
                       >
-                        <ListItemIcon
-                          sx={{
-                            color: "white",
-                            backgroundColor: `${item?.user.bgColor}`,
-                            padding: "8px",
-                            minWidth: "40px",
-                            marginRight: { xs: "6px" },
-                            borderRadius: "100%",
-                          }}
-                        >
-                          {item.user.icon}
-                        </ListItemIcon>
+                        {item?.profilePicUrl ? (
+                          <Avatar
+                            alt={item?.profilePicUrl || ""}
+                            src={item?.profilePicUrl}
+                          />
+                        ) : (
+                          <ListItemIcon
+                            sx={{
+                              color: "white",
+                              backgroundColor: "grey",
+                              padding: "8px",
+                              minWidth: "40px",
+                              marginRight: { xs: "6px" },
+                              borderRadius: "100%",
+                            }}
+                          >
+                            <AccountCircleIcon />
+                          </ListItemIcon>
+                        )}
 
                         <ListItemText
-                          primary={item.user.content}
-                          secondary={`${
-                            item.active
-                              ? ""
-                              : formatTimeDifference(
-                                  new Date(),
-                                  item.timeActive
-                                )
-                          }`}
+                          primary={item?.fullname}
+                          secondary={`${item?.online ? "Online" : "Offline"}`}
                         />
 
                         <ListItemIcon
                           sx={{
                             color: "white",
                             backgroundColor: `${
-                              item.active ? "success.main" : "#7a837e"
+                              item?.online ? "success.main" : "#7a837e"
                             }`,
                             padding: "6px",
                             minWidth: "6px",

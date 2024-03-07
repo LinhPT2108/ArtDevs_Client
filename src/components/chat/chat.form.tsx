@@ -1,5 +1,6 @@
 "use client";
 import {
+  Avatar,
   Box,
   IconButton,
   ListItemButton,
@@ -7,6 +8,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import React from "react";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ClearIcon from "@mui/icons-material/Clear";
 import Messsages from "./chat.messages";
 import MessageBox from "./chat.input";
@@ -14,12 +16,12 @@ import MessageBox from "./chat.input";
 type Anchor = "top" | "left" | "bottom" | "right";
 
 interface IPros {
-  data?: IUser;
+  data?: UserMessage;
   formatTimeDifference: (startTime: Date, endTime: Date) => string;
   toggleDrawer?: (
     anchor: Anchor,
     open: boolean,
-    item: IUser | undefined
+    item: UserMessage | undefined
   ) => void;
   pageUrl: string;
 }
@@ -30,7 +32,7 @@ const ChatMessagesForm = (pros: IPros) => {
   const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
   const handleContent = (messageContent: MessageContent) => {
     messageContent.from = "123";
-    messageContent.to = data ? data.user.content : "";
+    messageContent.to = data ? data?.fullname : "";
     setContent(messageContent);
   };
 
@@ -65,18 +67,28 @@ const ChatMessagesForm = (pros: IPros) => {
               borderBottom: "1px solid #80808026",
             }}
           >
-            <ListItemIcon
-              sx={{
-                color: "white",
-                backgroundColor: `${data?.user.bgColor}`,
-                padding: "8px",
-                minWidth: "40px",
-                marginRight: { xs: "6px" },
-                borderRadius: "100%",
-              }}
-            >
-              {data?.user.icon}
-            </ListItemIcon>
+            {data?.profilePicUrl ? (
+              <Avatar
+                alt={data?.profilePicUrl || ""}
+                src={data?.profilePicUrl}
+                sx={{
+                  boxShadow: "0 0 2px 2px gray",
+                }}
+              />
+            ) : (
+              <ListItemIcon
+                sx={{
+                  color: "white",
+                  backgroundColor: "grey",
+                  padding: "8px",
+                  minWidth: "40px",
+                  marginRight: { xs: "6px" },
+                  borderRadius: "100%",
+                }}
+              >
+                <AccountCircleIcon />
+              </ListItemIcon>
+            )}
 
             <ListItemText
               sx={{
@@ -90,7 +102,7 @@ const ChatMessagesForm = (pros: IPros) => {
                 "& p::before": {
                   content: `""`,
                   backgroundColor: `${
-                    data?.active ? "success.main" : "#7a837e"
+                    data?.online ? "success.main" : "#7a837e"
                   }`,
                   padding: "0 6px",
                   minWidth: "6px",
@@ -99,15 +111,8 @@ const ChatMessagesForm = (pros: IPros) => {
                   marginRight: "6px",
                 },
               }}
-              primary={data?.user.content}
-              secondary={`${
-                data?.active
-                  ? "Online"
-                  : `hoạt động ${formatTimeDifference(
-                      new Date(),
-                      data?.timeActive
-                    )}`
-              }`}
+              primary={data?.fullname}
+              secondary={`${data?.online ? "Online" : "Offline"}`}
             />
             {toggleDrawer && (
               <IconButton

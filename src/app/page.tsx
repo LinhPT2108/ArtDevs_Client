@@ -184,7 +184,7 @@ export default async function Home() {
             minWidth: "210px",
           }}
         >
-          <RightPost />
+          <RightPost session={session}/>
         </Box>
       </Box>
     );

@@ -64,7 +64,7 @@ interface IPros {
   handleChangeTab: (newValue: number) => void;
   openContact: boolean;
   pageUrl: string;
-  // user: User | null;
+  session: User | null;
 }
 export default function AppHeader(pros: IPros) {
   const { widthScreen, setWidthScreen } = useWidthScreen();
@@ -193,12 +193,12 @@ export default function AppHeader(pros: IPros) {
     >
       {anchor === "left" ? (
         pros.pageUrl == "home" ? (
-          <AppMenu />
+          pros?.session&& <AppMenu session={pros?.session} />
         ) : (
-          <ContactMenu openContact={pros.openContact} pageUrl={"home"} />
+          pros?.session&& <ContactMenu openContact={pros.openContact} pageUrl={"home"} session={pros?.session} />
         )
       ) : pros.pageUrl == "home" ? (
-        <ContactMenu openContact={pros.openContact} pageUrl={"home"} />
+        pros?.session&& <ContactMenu openContact={pros.openContact} pageUrl={"home"} session={pros?.session}/>
       ) : (
         <OptionChat />
       )}

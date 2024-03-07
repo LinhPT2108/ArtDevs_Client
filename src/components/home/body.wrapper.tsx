@@ -49,7 +49,11 @@ const BodyWrapper = ({ children, session }: IPros) => {
             anchor="right"
             open={widthScreen < 900 ? false : drawerOpen}
           >
-            <ContactMenu openContact={drawerOpen} pageUrl={pageUrl} />
+            <ContactMenu
+              session={session}
+              openContact={drawerOpen}
+              pageUrl={pageUrl}
+            />
           </Drawer>
         </Box>
       ) : (
