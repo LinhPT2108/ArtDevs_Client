@@ -193,12 +193,24 @@ export default function AppHeader(pros: IPros) {
     >
       {anchor === "left" ? (
         pros.pageUrl == "home" ? (
-          pros?.session&& <AppMenu session={pros?.session} />
+          pros?.session && <AppMenu session={pros?.session} />
         ) : (
-          pros?.session&& <ContactMenu openContact={pros.openContact} pageUrl={"home"} session={pros?.session} />
+          pros?.session && (
+            <ContactMenu
+              openContact={pros.openContact}
+              pageUrl={"home"}
+              session={pros?.session}
+            />
+          )
         )
       ) : pros.pageUrl == "home" ? (
-        pros?.session&& <ContactMenu openContact={pros.openContact} pageUrl={"home"} session={pros?.session}/>
+        pros?.session && (
+          <ContactMenu
+            openContact={pros.openContact}
+            pageUrl={"home"}
+            session={pros?.session}
+          />
+        )
       ) : (
         <OptionChat />
       )}
@@ -422,10 +434,10 @@ export default function AppHeader(pros: IPros) {
               }}
             >
               {user?.user ? (
-                user?.user?.profilePicUrl ? (
+                user?.user?.profileImageUrl ? (
                   <Avatar
                     alt={user?.user?.firstName || ""}
-                    src={user?.user?.profilePicUrl}
+                    src={user?.user?.profileImageUrl}
                   />
                 ) : (
                   <AccountCircle

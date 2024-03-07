@@ -85,7 +85,7 @@ export const authOptions: AuthOptions = {
         console.log(">>> check res: ", res.userdto);
         if (res.userdto) {
           if (token.picture) {
-            res.userdto.profilePicUrl = token.picture;
+            res.userdto.profileImageUrl = token.picture;
           }
           token.access_token = res.token;
           token.refresh_token = res.refeshToken;
