@@ -1,11 +1,7 @@
 "use client";
-import { Grid } from "@mui/material";
+import { Avatar, CardHeader, Grid } from "@mui/material";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Typography from "@mui/material/Typography";
 import Link from "next/link";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
@@ -69,42 +65,42 @@ const HomeHashtag = () => {
 
   return (
     <Box sx={{ flexGrow: 1, marginTop: "24px" }}>
-      <Grid
-        container
-        columns={16}
-        spacing={2}
-        sx={{
-          "& .MuiGrid-item": {
-            padding: { xs: "0 0 16px 16px" },
-          },
-        }}
-      >
-        {data &&
-          data?.map((item, index) => (
-            <Grid item xs={12} md={8} key={index}>
-              <Card sx={{ borderRadius: "32px" }}>
-                <CardMedia
-                  component="img"
-                  alt="green iguana"
-                  height="140"
-                  image={`/hashtag/${item.hashtagText}.png`}
+    <Grid container columns={16} spacing={2}>
+      {data &&
+        data?.map((item, index) => (
+          <Grid item xs={12} md={8} key={index}>
+
+            <Link href={`/hash-tag/${item.hashtagText}`}>
+              <Card sx={{ borderRadius: "20px" }}>
+                <CardHeader
+                  avatar={
+                    <Avatar aria-label="recipe" src={`/hashtag-image/${item.hashtagText}.png`}>
+
+                    </Avatar>
+                  }
+
+                  title={item.hashtagText}
+                  subheader={`${item.countHashtagOfDetail} Bài đăng`}
                 />
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {item.hashtagText}
-                  </Typography>
-                </CardContent>
-                <CardActions sx={{ padding: "16px" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    {`${item.countHashtagOfDetail} Bài đăng`}
-                  </Typography>
-                  <Link href="/">Xem thêm</Link>
-                </CardActions>
+                {/* <CardActions sx={{
+                  '& a': {
+                    textDecoration: "none",
+                    color: "black",
+
+
+                  },
+                  justifyContent: "flex-end", paddingRight: "50px"
+                }} disableSpacing>
+                  <Link href={"/"}>Xem chi tiết</Link>
+
+                </CardActions> */}
               </Card>
-            </Grid>
-          ))}
-      </Grid>
-    </Box>
+            </Link>
+
+          </Grid>
+        ))}
+    </Grid>
+  </Box>
   );
 };
 export default HomeHashtag;
