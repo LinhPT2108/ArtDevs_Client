@@ -81,14 +81,15 @@ const ContactMenu = (pros: IPros) => {
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-  console.log("Check data :", ListFriend);
-  console.log("Check data :", ListMentor);
+  console.log("Check ListFriend :", ListFriend);
+  console.log("Check ListMentor :", ListMentor);
 
   const rightMenu = [];
 
   rightMenu.push(ListFriend);
   rightMenu.push(ListMentor);
   const titleMenu = ["Bạn bè", "Mentor"];
+  console.log(">>> check rightMenu: ", rightMenu);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   function formatTimeDifference(startTime: Date, endTime: Date): string {
@@ -178,136 +179,137 @@ const ContactMenu = (pros: IPros) => {
           },
         }}
       >
-        {rightMenu?.map((items, index) => {
-          return (
-            <List
-              key={index}
-              sx={{
-                width: "100%",
-                bgcolor: "#293145",
-                color: "white",
-                marginTop: "12px",
-                "& p": {
-                  color: "gray",
-                },
-              }}
-              className="rounded-md"
-              component="nav"
-              aria-label="main mailbox folders"
-              subheader={
-                <ListSubheader
-                  sx={{
-                    bgcolor: "#293145",
-                    color: "white",
-                    fontWeight: "bold",
-                    zIndex: "0",
-                    position: "relative",
-                  }}
-                  component="div"
-                  id="nested-list-subheader"
-                  className="rounded-md"
-                >
-                  {titleMenu[index]}
-                </ListSubheader>
-              }
-            >
-              {(["right"] as const).map((anchor) => (
-                <React.Fragment key={anchor}>
-                  {items?.map((item, index) => {
-                    return (
-                      <ListItemButton
-                        sx={{
-                          padding: { xs: "6px" },
-                          margin: " 0",
-                        }}
-                        key={index}
-                        selected={selectedIndex === index}
-                        onClick={() => {
-                          if (pageUrl === "home") {
-                            toggleDrawer(anchor, true, item);
-                          } else {
-                            getUser && getUser(item);
-                          }
-                        }}
-                      >
-                        {item?.profilePicUrl ? (
-                          <Avatar
-                            alt={item?.profilePicUrl || ""}
-                            src={item?.profilePicUrl}
+        {rightMenu &&
+          rightMenu?.map((items, index) => {
+            return (
+              <List
+                key={index}
+                sx={{
+                  width: "100%",
+                  bgcolor: "#293145",
+                  color: "white",
+                  marginTop: "12px",
+                  "& p": {
+                    color: "gray",
+                  },
+                }}
+                className="rounded-md"
+                component="nav"
+                aria-label="main mailbox folders"
+                subheader={
+                  <ListSubheader
+                    sx={{
+                      bgcolor: "#293145",
+                      color: "white",
+                      fontWeight: "bold",
+                      zIndex: "0",
+                      position: "relative",
+                    }}
+                    component="div"
+                    id="nested-list-subheader"
+                    className="rounded-md"
+                  >
+                    {titleMenu[index]}
+                  </ListSubheader>
+                }
+              >
+                {(["right"] as const).map((anchor) => (
+                  <React.Fragment key={anchor}>
+                    {items?.map((item, index) => {
+                      return (
+                        <ListItemButton
+                          sx={{
+                            padding: { xs: "6px" },
+                            margin: " 0",
+                          }}
+                          key={index}
+                          selected={selectedIndex === index}
+                          onClick={() => {
+                            if (pageUrl === "home") {
+                              toggleDrawer(anchor, true, item);
+                            } else {
+                              getUser && getUser(item);
+                            }
+                          }}
+                        >
+                          {item?.profilePicUrl ? (
+                            <Avatar
+                              alt={item?.profilePicUrl || ""}
+                              src={item?.profilePicUrl}
+                            />
+                          ) : (
+                            <ListItemIcon
+                              sx={{
+                                color: "white",
+                                backgroundColor: "grey",
+                                padding: "8px",
+                                minWidth: "40px",
+                                marginRight: { xs: "6px" },
+                                borderRadius: "100%",
+                              }}
+                            >
+                              <AccountCircleIcon />
+                            </ListItemIcon>
+                          )}
+
+                          <ListItemText
+                            primary={item?.fullname}
+                            secondary={`${item?.online ? "Online" : "Offline"}`}
                           />
-                        ) : (
+
                           <ListItemIcon
                             sx={{
                               color: "white",
-                              backgroundColor: "grey",
-                              padding: "8px",
-                              minWidth: "40px",
-                              marginRight: { xs: "6px" },
-                              borderRadius: "100%",
+                              backgroundColor: `${
+                                item?.online ? "success.main" : "#7a837e"
+                              }`,
+                              padding: "6px",
+                              minWidth: "6px",
                             }}
-                          >
-                            <AccountCircleIcon />
-                          </ListItemIcon>
-                        )}
-
-                        <ListItemText
-                          primary={item?.fullname}
-                          secondary={`${item?.online ? "Online" : "Offline"}`}
-                        />
-
-                        <ListItemIcon
-                          sx={{
-                            color: "white",
-                            backgroundColor: `${
-                              item?.online ? "success.main" : "#7a837e"
-                            }`,
-                            padding: "6px",
-                            minWidth: "6px",
-                          }}
-                          className="rounded-full"
-                        ></ListItemIcon>
-                      </ListItemButton>
-                    );
-                  })}
-                  <Drawer
-                    className="hello"
-                    anchor={anchor}
-                    open={state[anchor]}
-                    sx={{
-                      top: "auto",
-                      left: "auto",
-                      right: "auto",
-                      bottom: "auto",
-                      overflow: "auto",
-                      "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-                        height: "400px",
-                        borderRadius: "6px 6px 0 0",
-                      },
-                      "& .MuiBackdrop-root": {
+                            className="rounded-full"
+                          ></ListItemIcon>
+                        </ListItemButton>
+                      );
+                    })}
+                    <Drawer
+                      className="hello"
+                      anchor={anchor}
+                      open={state[anchor]}
+                      sx={{
                         top: "auto",
                         left: "auto",
                         right: "auto",
                         bottom: "auto",
-                      },
-                      "& .MuiPaper-root": {
-                        top: "auto",
-                        right: `${openContact ? "210px" : 0}`,
-                        "@media (min-width: 600px)": {
-                          bottom: "56px",
+                        overflow: "auto",
+                        "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                          height: "400px",
+                          borderRadius: "6px 6px 0 0",
                         },
-                        "@media (min-width: 900px)": {
-                          bottom: "0",
+                        "& .MuiBackdrop-root": {
+                          top: "auto",
+                          left: "auto",
+                          right: "auto",
+                          bottom: "auto",
                         },
-                      },
-                    }}
-                  >
-                    {list(anchor)}
-                  </Drawer>
-                </React.Fragment>
-              ))}
-            </List>
-          );
-        })}
+                        "& .MuiPaper-root": {
+                          top: "auto",
+                          right: `${openContact ? "210px" : 0}`,
+                          "@media (min-width: 600px)": {
+                            bottom: "56px",
+                          },
+                          "@media (min-width: 900px)": {
+                            bottom: "0",
+                          },
+                        },
+                      }}
+                    >
+                      {list(anchor)}
+                    </Drawer>
+                  </React.Fragment>
+                ))}
+              </List>
+            );
+          })}
       </Box>
     </Box>
   );
