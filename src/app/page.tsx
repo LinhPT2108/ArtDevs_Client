@@ -6,6 +6,9 @@ import VideoFileIcon from "@mui/icons-material/VideoFile";
 import { Box, Typography } from "@mui/material";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/route";
+import Post from "@/components/posts/post.main";
+import { sendRequest } from "@/components/utils/api";
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
 
 export default async function Home() {
   const session: User | null = await getServerSession(authOptions);
@@ -13,6 +16,14 @@ export default async function Home() {
   let middleName = session?.user?.middleName ? session?.user?.middleName : "";
   let lastName = session?.user?.lastName ? session?.user?.lastName : "";
   let fullname = firstName + " " + middleName + " " + lastName;
+  const post = await sendRequest<Post[]>({
+    url: GLOBAL_URL + "/api/post/page",
+    method: "GET",
+    headers: { authorization: `Bearer ${session?.access_token}` },
+    queryParams: {
+      page: 0,
+    },
+  });
   if (session) {
     return (
       <Box sx={{ display: "flex", flexGrow: 1, justifyContent: "flex-end" }}>
@@ -59,8 +70,8 @@ export default async function Home() {
                   <a href="#">
                     <img
                       src={`${
-                        session?.user?.profilePicUrl
-                          ? session?.user?.profilePicUrl
+                        session?.user?.profileImageUrl
+                          ? session?.user?.profileImageUrl
                           : "/profile/user.jpg"
                       }`}
                     />
@@ -172,7 +183,8 @@ export default async function Home() {
                 </Box>
               </Box>
             </Box>
-            <PostProfile session={session} fullname={fullname} />
+            <Post user={session} post={post} />
+            {/* <PostProfile session={session} fullname={fullname} /> */}
           </Box>
         </Box>
         <Box
@@ -184,7 +196,7 @@ export default async function Home() {
             minWidth: "210px",
           }}
         >
-          <RightPost />
+          <RightPost session={session} />
         </Box>
       </Box>
     );

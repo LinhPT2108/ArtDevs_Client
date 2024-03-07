@@ -165,6 +165,15 @@ declare global {
     };
     result: T[];
   }
+
+  interface ResPost {
+    id: number;
+    typePost: string;
+    fullname: string;
+    content: string;
+    postId: Post;
+  }
+
   interface Post {
     isProcessingLike: boolean | undefined;
     postId: string;
@@ -174,7 +183,7 @@ declare global {
     userPost: UserPost;
     listHashtag: Hashtag[];
     listImageofPost: ImageofPost[];
-    privacyPostDetails: PostDetails;
+    privacyPostDetails: PostDetails[];
     totalComment: number;
     totalLike: number;
     totalShare: number;
@@ -271,6 +280,7 @@ declare global {
     listPictureOfComment: any[] | null;
     commentId: number;
     userID: UserPost;
+    userReceiveDto: UserPost;
   }
 
   interface Relation {

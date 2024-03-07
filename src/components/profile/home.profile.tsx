@@ -143,8 +143,8 @@ const HomeProfile = ({ session }: { session: User }) => {
           <img
             id="Profile_images"
             src={`${
-              session?.user?.profilePicUrl
-                ? session?.user?.profilePicUrl
+              session?.user?.profileImageUrl
+                ? session?.user?.profileImageUrl
                 : "/profile/user.jpg"
             }`}
           />
@@ -686,13 +686,13 @@ const HomeProfile = ({ session }: { session: User }) => {
               </Box>
               <Box
                 sx={{
-                  maxHeight: { xs: "auto", sm: "700px" },
+                  // maxHeight: { xs: "auto", sm: "700px" },
                   overflow: "hidden",
                 }}
               >
                 <Box
                   sx={{
-                    maxHeight: { xs: "auto", sm: "700px" },
+                    // maxHeight: { xs: "auto", sm: "700px" },
                     overflowY: "scroll",
                     "::-webkit-scrollbar": {
                       width: "2px",
@@ -741,8 +741,8 @@ const HomeProfile = ({ session }: { session: User }) => {
                           <a href="#">
                             <img
                               src={`${
-                                session?.user?.profilePicUrl
-                                  ? session?.user?.profilePicUrl
+                                session?.user?.profileImageUrl
+                                  ? session?.user?.profileImageUrl
                                   : "/profile/user.jpg"
                               }`}
                             />

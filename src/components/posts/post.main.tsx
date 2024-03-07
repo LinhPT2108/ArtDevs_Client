@@ -167,6 +167,7 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
+
 const styleModalComment = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -331,7 +332,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       type: "",
     });
   };
-
   const handleClickOpenAlerts = (
     dataId: any,
     actionType: string,
@@ -363,7 +363,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
     console.log(actionDialog);
     setOpenAlerts(true);
   };
-
   const handleCloseAlerts = () => {
     setContentSharePost("");
     setOpenAlerts(false);
@@ -386,7 +385,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
     console.log(dataSnackbar);
     handleCloseAlerts();
   };
-
   const handleOpen3 = (
     index: number,
     event: React.MouseEvent<HTMLElement>,
@@ -409,7 +407,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setAnchorElArrayReply(newAnchorElArray);
     }
   };
-
   const handleClose3 = (index: number, isCmt: boolean) => {
     const newOpenArray = isCmt
       ? [...openArray]
@@ -427,7 +424,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setAnchorElArrayReply(newAnchorElArray);
     }
   };
-
   const handleEditCommentOrReplyComment = (
     commentObject: any,
     isComment: boolean,
@@ -445,7 +441,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     handleClose3(index, isComment);
   };
-
   const handleCancelEditComment = (isComment: boolean, index: number) => {
     if (isComment) {
       setEditingIndexComment("");
@@ -455,7 +450,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setEditedContentReplyComment("");
     }
   };
-
   const handleChangePicEditComment = (
     event: React.ChangeEvent<HTMLInputElement>,
     isComment: boolean
@@ -478,7 +472,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }
     }
   };
-
   const handleSaveEditComment = async (
     isComment: boolean,
     commentObject: any,
@@ -591,7 +584,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }
     }
   };
-
   const handleDeleteCommentOrReplyComment = async (
     commentObject: any,
     isComment2: boolean,
@@ -645,7 +637,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     handleClose3(index, isComment2);
   };
-
   const [formDataComment, setFormDataComment] =
     React.useState<CommentToPostDTO>({
       content: "",
@@ -654,7 +645,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       postToPost: "",
       userReceive: "",
     });
-
   const [formDataReplyComment, setFormDataReplyComment] =
     React.useState<ReplyCommentToPostDTO>({
       content: "",
@@ -663,12 +653,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
       commentToPost: null as unknown as number,
       userReceive: {} as any,
     });
-
   const handleCloseModalCmt = () => {
     setOpenModalCmt(false);
     setIsShowReplies(null);
   };
-
   const handleOpenModalCmt = async (post: Post) => {
     setIsComment(true);
     setFormDataComment({
@@ -695,12 +683,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }));
     console.log(comment);
   };
-
   const toggleShowReplyCmt = (cmtId: any) => {
     console.log("show cmt");
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
-
   const fetchData = async (url: string) => {
     return await sendRequest<Post[]>({
       url: url,
@@ -711,16 +697,14 @@ const Post = ({ user, post }: IPros, props: Props) => {
       },
     });
   };
-
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    "http://localhost:8080/api/news-feed",
+    GLOBAL_URL + "/api/news-feed",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-
   useEffect(() => {
     console.log(data);
     if (data && !error) {
@@ -759,7 +743,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [loading, data, dataLoading]);
-
   const handleLike = async (postId: string, isDataLoading: boolean) => {
     console.log("like: " + postId);
 
@@ -837,7 +820,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       console.error("Error during API call:", error);
     }
   };
-
   const handleUnlike = async (postId: string, isDataLoading: boolean) => {
     console.log("unlike: " + postId);
 
@@ -915,7 +897,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       console.error("Error during API call:", error);
     }
   };
-
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
     console.log(cmt);
 
@@ -930,38 +911,30 @@ const Post = ({ user, post }: IPros, props: Props) => {
       };
     });
   };
-
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
     setAnchorEl(null);
   };
-
   const [postData, setPostData] = useState<AddPost>({
-    postId: "",
     content: "",
-    time: new Date(),
-    timelineUserId: new Date(),
     userId: user ? user?.user?.userId : "",
-    listImageofPost: null,
+    // listImageofPost: null,
     privacyPostDetails: 1,
     listHashtag: null,
   });
-
   const handleContentPost = (value: string) => {
     setPostData((prevData) => ({
       ...prevData,
       content: value,
     }));
   };
-
   const handlePost = async () => {
     setPostData((prevData) => ({
       ...prevData,
       postId: generateUniqueId(),
     }));
-    console.log(">>> check post data: ", postData.postId);
     const response = await sendRequest({
       // url: "https://artdevs-server.azurewebsites.net/api/register",
       // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
@@ -985,7 +958,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
-
   const handleChangePic = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target as HTMLInputElement;
     console.log(fileInput.files);
@@ -1008,7 +980,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
-
   const handleRemoveImage = (index: number, isComment: boolean) => {
     const newSelectedFiles = isComment
       ? [...formDataComment.listImageofComment]
@@ -1029,7 +1000,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
-
   const handleRemoveImageEditComment = (nameFile: number) => {
     console.log("close: " + nameFile);
     const newSelectedFiles = [...editedImageComment];
@@ -1040,7 +1010,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setEditedImageComment(newSelectedFiles as any);
     console.log(newSelectedFiles);
   };
-
   const handleRemoveImageEditCommentReply = (nameFile: number) => {
     console.log("close: " + nameFile);
     const newSelectedFiles = [...editedImageReplyComment];
@@ -1048,9 +1017,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setEditedImageReplyComment(newSelectedFiles as any);
     console.log(newSelectedFiles);
   };
-
   const handleCancelReplyComment = () => setIsComment(true);
-
   const handlePostComment = async () => {
     if (isComment) {
       console.log(formDataComment);
@@ -1105,7 +1072,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
 
     setIsLoadingComment(false);
   };
-
   const handleSharePost = async (postId: string, isDataLoading: boolean) => {
     console.log(postId);
     const response: any = await sendRequest({
@@ -2480,14 +2446,15 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                               Chỉnh sửa
                                             </MenuItem>
                                             <MenuItem
-                                              onClick={() =>
-                                                handleClickOpenAlerts(
-                                                  rl,
-                                                  "deleteCmt",
-                                                  false,
-                                                  ir,
-                                                  false
-                                                )
+                                              onClick={
+                                                () =>
+                                                  handleClickOpenAlerts(
+                                                    rl,
+                                                    "deleteCmt",
+                                                    false,
+                                                    ir,
+                                                    false
+                                                  )
                                                 // handleDeleteCommentOrReplyComment(
                                                 //   rl,
                                                 //   false,
