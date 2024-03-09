@@ -31,6 +31,7 @@ export default async function Home() {
           sx={{
             marginTop: "12px",
             padding: { xs: "0 24px", md: "0 0 0 0" },
+            flexGrow: 1,
           }}
         >
           <Box>
@@ -183,8 +184,8 @@ export default async function Home() {
                 </Box>
               </Box>
             </Box>
-            <Post user={session} post={post} />
-            {/* <PostProfile session={session} fullname={fullname} /> */}
+            {/* <Post user={session} post={post} /> */}
+            <PostProfile session={session} />
           </Box>
         </Box>
         <Box

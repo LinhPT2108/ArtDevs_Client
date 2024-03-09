@@ -68,7 +68,10 @@ export default function HomeInfor({ session }: { session: User }) {
   return (
     <React.Fragment>
       <CssBaseline />
-      <Container maxWidth="lg" sx={{ paddingTop: { xs: "24px", sm: 0 } }}>
+      <Container
+        maxWidth="lg"
+        sx={{ paddingTop: { xs: "24px", sm: 0 }, marginTop: "12px" }}
+      >
         <Typography component={"h4"} variant="h4">
           Thông tin của bạn
         </Typography>

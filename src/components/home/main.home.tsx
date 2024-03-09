@@ -37,7 +37,7 @@ const MainHome = ({ children, openContact, session }: IPros) => {
     <Main
       open={openContact}
       sx={{
-        padding: { xs: 0, sm: "16px 24px 0 24px" },
+        padding: { xs: 0, sm: "0 24px 0 24px" },
         // paddingLeft: { xs: 0, sm: "24px" },
         // paddingRight: { xs: 0, sm: "24px" },
       }}

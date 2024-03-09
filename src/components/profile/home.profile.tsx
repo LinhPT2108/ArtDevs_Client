@@ -4,12 +4,28 @@ import EditIcon from "@mui/icons-material/Edit";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import VpnLockIcon from "@mui/icons-material/VpnLock";
-import { Button, Tab, Tabs, TextField, Typography } from "@mui/material";
+import {
+  Autocomplete,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
 import Box from "@mui/material/Box";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../../style/style.css";
 import { deleteSpace } from "../utils/utils";
 import PostProfile from "./post.profile";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { sendRequest } from "../utils/api";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -18,7 +34,6 @@ interface TabPanelProps {
 }
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -43,9 +58,12 @@ function a11yProps(index: number) {
   };
 }
 
-const HomeProfile = ({ session }: { session: User }) => {
+interface IPros {
+  session: User;
+}
+
+const HomeProfile = ({ session }: IPros) => {
   const [value, setValue] = useState(0);
-  const [editBio, setEditBio] = useState<boolean>(false);
   let firstName = session?.user?.firstName ? session?.user?.firstName : "";
   let middleName = session?.user?.middleName ? session?.user?.middleName : "";
   let lastName = session?.user?.lastName ? session?.user?.lastName : "";
@@ -54,8 +72,220 @@ const HomeProfile = ({ session }: { session: User }) => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-  const handleEditBio = (value: boolean) => {
-    setEditBio(value);
+
+  //xử lý mở modal cập nhật
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const [open, setOpen] = useState<boolean>(false);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  //xử lý địa chỉ
+  const [provinces, setProvinces] = useState<Province[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [city, setCity] = useState<Province>();
+  const [district, setDistrict] = useState<District>();
+  const [ward, setWard] = useState<District>();
+  const [programingLanguage, setProgramingLanguage] = useState<
+    MyLanguageProgram[]
+  >([]);
+  useEffect(() => {
+    const fetchDataProvince = async () => {
+      try {
+        const province = await sendRequest<Result<Province[]>>({
+          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
+          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
+          url: "https://vapi.vnappmob.com/api/province/",
+          method: "GET",
+        });
+        province && setProvinces(province.results);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchDataProvince();
+  }, []);
+
+  useEffect(() => {
+    const fetchDataDistrict = async () => {
+      try {
+        if (city && city?.province_id) {
+          const district = await sendRequest<Result<District[]>>({
+            url: `https://vapi.vnappmob.com/api/province/district/${city.province_id}`,
+            method: "GET",
+          });
+          district && setDistricts(district.results);
+        } else {
+          setDistricts([]);
+          setDistrict(undefined);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchDataDistrict();
+  }, [city]);
+
+  useEffect(() => {
+    const fetchDataWard = async () => {
+      try {
+        if (district && district?.district_id) {
+          const ward = await sendRequest<Result<Ward[]>>({
+            url: `https://vapi.vnappmob.com/api/province/ward/${district?.district_id}`,
+            method: "GET",
+          });
+          ward && setWards(ward.results);
+        } else {
+          setWards([]);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchDataWard();
+  }, [district]);
+  useEffect(() => {
+    const fetchDataDemand = async () => {
+      try {
+        const response = await sendRequest<MyLanguageProgram[]>({
+          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
+          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
+          url: "http://localhost:8080/api/programingLanguage",
+          method: "GET",
+        });
+        response && setProgramingLanguage(response);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchDataDemand();
+  }, []);
+  //xử lý cập nhật thông tin người dùng
+  const [data, setData] = useState<UserRegister>({
+    lastName: "",
+    middleName: "",
+    firstName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    dateOfBirth: "",
+    gender: "male",
+    city: "",
+    district: "",
+    ward: "",
+    role: { id: 2, roleName: "user" },
+    userId: "",
+    username: "",
+    isOnline: false,
+    listDemandOfUser: [],
+    listSkillOfUser: [],
+  });
+  const handleLastName = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      lastName: value,
+    }));
+  };
+  const handleMiddleName = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      middleName: value,
+    }));
+  };
+  const handleFirstName = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      firstName: value,
+    }));
+  };
+  const handleDateOfBirth = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      dateOfBirth: value,
+    }));
+  };
+  const handleGender = (value: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      gender: value,
+    }));
+  };
+  const handleCity = (value: Province) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        city: value?.province_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        city: "",
+        district: "",
+        ward: "",
+      }));
+    }
+  };
+  const handleDistrict = (value: District) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        district: value?.district_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        district: "",
+        ward: "",
+      }));
+    }
+  };
+  const handleWard = (value: Ward) => {
+    if (value) {
+      setData((prevData) => ({
+        ...prevData,
+        ward: value?.ward_name,
+      }));
+    } else {
+      setData((prevData) => ({
+        ...prevData,
+        ward: "",
+      }));
+    }
+  };
+  const handleListDemandOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
+    let arrayOfValues: string[] = [];
+    if (myLanguageProgram) {
+      arrayOfValues = Object.values(myLanguageProgram).map(
+        (item) => item.languageName
+      );
+    }
+    setData((prevData) => ({
+      ...prevData,
+      listDemandOfUser: arrayOfValues,
+    }));
+  };
+  const handleListSkillOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
+    let arrayOfValues: string[] = [];
+    if (myLanguageProgram) {
+      arrayOfValues = Object.values(myLanguageProgram).map(
+        (item) => item.languageName
+      );
+    }
+    setData((prevData) => ({
+      ...prevData,
+      listSkillOfUser: arrayOfValues,
+    }));
+  };
+
+  const handleUpdateProfile = () => {
+    console.log(">>> check data: ", data);
   };
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
@@ -297,242 +527,295 @@ const HomeProfile = ({ session }: { session: User }) => {
                       fontSize: "18px",
                       color: "#000",
                       fontWeight: "bold",
+                      marginBottom: "16px",
                     }}
                   >
-                    Intro
+                    Thông tin người dùng
                   </Typography>
 
-                  <Typography
-                    component={"p"}
-                    sx={{ display: `${!editBio ? "block" : "none"}` }}
+                  <Box
+                    sx={{
+                      width: "100%",
+                      paddingX: "16px",
+                    }}
                   >
-                    {deleteSpace(fullname)}
-                  </Typography>
-                  <Box sx={{ display: `${editBio ? "block" : "none"}` }}>
-                    <TextField
-                      fullWidth
-                      hiddenLabel
-                      id="filled-hidden-label-small"
-                      value={deleteSpace(fullname)}
-                      variant="filled"
-                      size="small"
-                      sx={{ "& input": { textAlign: "center" } }}
-                    />
                     <Typography
+                      component={"p"}
                       sx={{
-                        fontSize: "11px",
-                        color: "#333",
-                        textAlign: "right",
-                        padding: "3px",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        borderBottom: "1px solid #80808061",
                       }}
                     >
-                      Tiểu sử bản thân
+                      Địa chỉ
                     </Typography>
                     <Box
                       sx={{
                         display: "flex",
-                        justifyContent: "space-between",
+                        justifyContent: "flex-start",
                         alignItems: "center",
                       }}
                     >
                       <Box
                         sx={{
-                          display: "flex",
-                          flexWrap: "nowrap",
-                          alignItems: "center",
-                          justifyContent: "flex-start",
+                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
                         }}
                       >
-                        <VpnLockIcon />
-                        <Typography
-                          component={"p"}
-                          sx={{ marginLeft: "2px", fontSize: "12px" }}
-                        >
-                          Public
-                        </Typography>
+                        Tỉnh/TP:
                       </Box>
+                      <Typography
+                        component={"p"}
+                        sx={{
+                          marginLeft: "6px",
+                          fontWeight: "bold",
+                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
+                        }}
+                      >
+                        {session?.user?.city ? session?.user?.city : ""}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "center",
+                      }}
+                    >
                       <Box
                         sx={{
-                          padding: "0px",
-                          textAlign: "right",
+                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
                         }}
                       >
-                        <Button
-                          variant="outlined"
-                          sx={{
-                            margin: "0",
-                            fontSize: "10px",
-                            padding: "3px",
-                            borderRadius: "3px",
-                            width: "40px",
-                          }}
-                          onClick={() => {
-                            handleEditBio(false);
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          sx={{
-                            marginLeft: "2px",
-                            fontSize: "10px",
-                            padding: "3px",
-                            borderRadius: "3px",
-                          }}
-                        >
-                          Save
-                        </Button>
+                        Quận/Huyện:
                       </Box>
+                      <Typography
+                        component={"p"}
+                        sx={{
+                          marginLeft: "6px",
+                          fontWeight: "bold",
+                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
+                        }}
+                      >
+                        {session?.user?.city ? session?.user?.city : ""}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
+                        }}
+                      >
+                        Xã/Phường:
+                      </Box>
+                      <Typography
+                        component={"p"}
+                        sx={{
+                          marginLeft: "6px",
+                          fontWeight: "bold",
+                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
+                        }}
+                      >
+                        {session?.user?.city ? session?.user?.city : ""}
+                      </Typography>
                     </Box>
                   </Box>
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      width: "100%",
-                      fontWeight: "bold",
-                      color: "#000",
-                      margin: "12px 0",
-                    }}
-                    onClick={() => {
-                      handleEditBio(true);
-                    }}
-                  >
-                    Edit Bio
-                  </Button>
 
                   <Box
                     sx={{
-                      width: "100%",
+                      marginTop: "16px",
+                      paddingX: "16px",
                     }}
                   >
-                    <Box
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Tỉnh/TP
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {session?.user?.city ? session?.user?.city : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Quận/Huyện
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {session?.user?.city ? session?.user?.city : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Xã/Phường
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {session?.user?.city ? session?.user?.city : ""}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      width: "100%",
-                      fontWeight: "bold",
-                      color: "#000",
-                      margin: "12px 0",
-                    }}
-                  >
-                    Edit Details
-                  </Button>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {session?.user?.listDemandOfUser &&
-                      session?.user?.listDemandOfUser?.map((item, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            borderRadius: "20px",
-                            border: "1px solid gray",
-                            padding: "5px 16px",
-                            marginTop: "16px",
-                          }}
-                        >
-                          {item}
-                        </Box>
-                      ))}
-                  </Box>
-                  {session?.user?.listDemandOfUser &&
-                  session?.user?.listDemandOfUser?.length > 0 ? (
-                    <Button
-                      variant="outlined"
-                      sx={{
-                        width: "100%",
+                        fontSize: "16px",
                         fontWeight: "bold",
-                        color: "#000",
-                        marginTop: "16px",
+                        borderBottom: "1px solid #80808061",
                       }}
                     >
-                      Edit Demand
-                    </Button>
-                  ) : (
-                    ""
-                  )}
+                      Quan tâm
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {session?.user?.listDemandOfUser &&
+                        session?.user?.listDemandOfUser?.map((item, index) => (
+                          <Box
+                            key={index}
+                            sx={{
+                              borderRadius: "20px",
+                              border: "1px solid gray",
+                              padding: "5px 16px",
+                              marginTop: "8px",
+                              marginX: "3px",
+                            }}
+                          >
+                            {item}
+                          </Box>
+                        ))}
+                    </Box>
+                  </Box>
+
+                  <Button
+                    variant="outlined"
+                    sx={{
+                      width: "100%",
+                      fontWeight: "bold",
+                      color: "#000",
+                      marginTop: "16px",
+                    }}
+                    onClick={handleOpen}
+                  >
+                    Cập nhật thông tin
+                  </Button>
+                  <Dialog
+                    fullScreen={fullScreen}
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="responsive-dialog-title"
+                  >
+                    <DialogTitle
+                      id="responsive-dialog-title"
+                      sx={{ color: "#293145", fontWeight: "bold" }}
+                    >
+                      Cập nhật thông tin cá nhân
+                    </DialogTitle>
+                    <Box sx={{ padding: "0 24px" }}>
+                      <Divider />
+                    </Box>
+                    <DialogContent>
+                      <Grid
+                        container
+                        spacing={2}
+                        sx={{ paddingLeft: "0 !important" }}
+                      >
+                        <Grid item xs={24} md={8}>
+                          <Autocomplete
+                            id="country-select-demo"
+                            sx={{ width: 300 }}
+                            options={provinces || []}
+                            autoHighlight
+                            getOptionLabel={(province) =>
+                              province?.province_name
+                            }
+                            value={provinces.find(
+                              (province) =>
+                                province?.province_name === data?.city
+                            )}
+                            onChange={(event, newValue) => {
+                              handleCity(newValue!);
+                              setCity(newValue!);
+                            }}
+                            renderOption={(props, province) => (
+                              <Box component="li" {...props}>
+                                {province?.province_name}
+                              </Box>
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Chọn tỉnh/TP"
+                                inputProps={{
+                                  ...params.inputProps,
+                                  autoComplete: "new-password",
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={24} md={8}>
+                          <Autocomplete
+                            id="district-select-demo"
+                            sx={{ width: 300 }}
+                            options={districts || []}
+                            autoHighlight
+                            getOptionLabel={(district) =>
+                              district.district_name
+                            }
+                            value={
+                              districts.length > 0
+                                ? districts?.find(
+                                    (district) =>
+                                      district.district_name === data?.district
+                                  )
+                                : null
+                            }
+                            onChange={(event, newValue) => {
+                              handleDistrict(newValue!);
+                              setDistrict(newValue!);
+                            }}
+                            renderOption={(props, district) => (
+                              <Box component="li" {...props}>
+                                {district.district_name}
+                              </Box>
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Chọn Quận/Huyện"
+                                inputProps={{
+                                  ...params.inputProps,
+                                  autoComplete: "new-password",
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={24} md={8}>
+                          <Autocomplete
+                            id="district-select-demo"
+                            sx={{ width: 300 }}
+                            options={wards || []}
+                            autoHighlight
+                            getOptionLabel={(ward) => ward.ward_name}
+                            value={
+                              wards.length > 0
+                                ? wards.find(
+                                    (ward) => ward.ward_name === data?.ward
+                                  )
+                                : null
+                            }
+                            onChange={(event, newValue) => {
+                              handleWard(newValue!);
+                            }}
+                            renderOption={(props, ward) => (
+                              <Box component="li" {...props}>
+                                {ward.ward_name}
+                              </Box>
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Chọn Xã/Phường/TT"
+                                inputProps={{
+                                  ...params.inputProps,
+                                  autoComplete: "new-password",
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                      </Grid>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button autoFocus onClick={handleClose}>
+                        Hủy bỏ
+                      </Button>
+                      <Button onClick={handleUpdateProfile} autoFocus>
+                        Lưu lại
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
                 </Box>
 
                 <Box
@@ -860,7 +1143,10 @@ const HomeProfile = ({ session }: { session: User }) => {
                       </Box>
                     </Box>
 
-                    <PostProfile session={session} fullname={fullname} />
+                    <PostProfile
+                      session={session}
+                      profile="/post-by-user-logged"
+                    />
                   </Box>
                 </Box>
               </Box>

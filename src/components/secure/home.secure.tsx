@@ -62,7 +62,7 @@ export default function HomeSecure() {
   return (
     <React.Fragment>
       <CssBaseline />
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ marginTop: "12px" }}>
         <Typography component={"h4"} variant="h4">
           Bảo mật
         </Typography>

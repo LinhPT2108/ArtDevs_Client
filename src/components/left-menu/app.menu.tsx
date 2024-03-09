@@ -109,7 +109,7 @@ const AppMenu = ({ session }: { session: User }) => {
       url: "/infor",
     },
     {
-      index: 8,
+      index: 9,
       content: "Đóng góp ý kiến",
       icon: <FeedIcon />,
       bgColor: "#263797",

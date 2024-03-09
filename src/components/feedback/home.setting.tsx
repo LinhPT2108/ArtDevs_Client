@@ -51,6 +51,7 @@ export default function HomeFeedback() {
     <Box
       sx={{
         flexGrow: 1,
+        marginTop: "12px",
         padding: { xs: "24px 12px 12px 12px", sm: "0" },
       }}
     >

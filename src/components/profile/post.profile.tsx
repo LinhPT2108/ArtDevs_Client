@@ -164,18 +164,24 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
-const PostProfile = ({
-  session,
-  fullname,
-}: {
+interface IPros {
   session: User;
-  fullname: string;
-}) => {
+  // fullname?: string;
+  hashTagText?: string;
+  profile?: string;
+}
+const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
     null
   );
+
+  let url = profile
+    ? profile
+    : hashTagText
+    ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
+    : "/news-feed";
 
   //get data bài đăng
   const fetchData = async (url: string) => {
@@ -186,8 +192,9 @@ const PostProfile = ({
       queryParams: { page: 0 },
     });
   };
+
   const { data, error, isLoading, mutate }: SWRResponse<ResPost[], any> =
-    useSWR(GLOBAL_URL + "/api/post-by-user-logged", fetchData, {
+    useSWR(GLOBAL_URL + "/api" + url, fetchData, {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     });
@@ -588,8 +595,6 @@ const PostProfile = ({
       method: "DELETE",
     });
 
-    console.log(response);
-
     if (response) {
       if (isComment2) {
         setComment((prevComments) =>
@@ -653,7 +658,6 @@ const PostProfile = ({
       postToPost: "",
     } as CommentToPostDTO);
     setOpenModalCmt(true);
-    console.log(post.postId);
     setSelectPost(post.userPost.fullname);
 
     const getCommentOfPost = await sendRequest<CommentOfPost[]>({
@@ -669,10 +673,8 @@ const PostProfile = ({
       postToPost: post?.postId,
       userReceive: post.userPost.userId,
     }));
-    console.log(comment);
   };
   const toggleShowReplyCmt = (cmtId: any) => {
-    console.log("show cmt");
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
 
@@ -685,7 +687,6 @@ const PostProfile = ({
   //   }
   // );
   useEffect(() => {
-    console.log(data);
     if (data && !error) {
       setPosts(data);
     }
@@ -722,75 +723,47 @@ const PostProfile = ({
       window.removeEventListener("scroll", handleScroll);
     };
   }, [loading, data, dataLoading]);
-  const handleLike = async (postId: string, isDataLoading: boolean) => {
-    console.log("like: " + postId);
 
-    if (isDataLoading) {
-      console.log(isDataLoading);
-      setDataLoading(
-        dataLoading.map((resPost) =>
-          resPost?.postId?.postId === postId
-            ? {
-                ...resPost,
-                likeByUserLogged: true,
-                totalLike: resPost?.postId?.totalLike + 1,
-                isProcessingLike: true,
-              }
-            : resPost
-        )
-      );
-    } else {
-      setPosts(
-        posts.map((resPost) =>
-          resPost?.postId?.postId === postId
-            ? {
-                ...resPost,
-                likeByUserLogged: true,
-                totalLike: resPost?.postId?.totalLike + 1,
-                isProcessingLike: true,
-              }
-            : resPost
-        )
-      );
-    }
+  const handleLike = async (postId: string, isDataLoading: boolean) => {
+    await setPosts(
+      posts.map((resPost) => {
+        if (resPost?.postId?.postId === postId) {
+          return {
+            ...resPost,
+            postId: {
+              ...resPost.postId,
+              likeByUserLogged: true,
+              totalLike: resPost.postId.totalLike + 1,
+              isProcessingLike: true,
+            },
+          };
+        }
+        return resPost;
+      })
+    );
     try {
-      const response = await sendRequest<Post[]>({
+      const response = await sendRequest({
         url: GLOBAL_URL + "/api/like/" + postId,
         method: "POST",
         headers: { authorization: `Bearer ${session?.access_token}` },
       });
-
       console.log(response);
       if (response) {
-        // Kết thúc xử lý API cho bài viết này
-        if (isDataLoading) {
-          console.log(isDataLoading);
-          setDataLoading(
-            dataLoading.map((resPost) =>
-              resPost?.postId?.postId === postId
-                ? {
-                    ...resPost,
+        setPosts(
+          posts.map((resPost) =>
+            resPost?.postId?.postId === postId
+              ? {
+                  ...resPost,
+                  postId: {
+                    ...resPost.postId,
                     likeByUserLogged: true,
-                    totalLike: resPost?.postId?.totalLike + 1,
+                    totalLike: resPost.postId.totalLike + 1,
                     isProcessingLike: false,
-                  }
-                : resPost
-            )
-          );
-        } else {
-          setPosts(
-            posts.map((resPost) =>
-              resPost?.postId?.postId === postId
-                ? {
-                    ...resPost,
-                    likeByUserLogged: true,
-                    totalLike: resPost?.postId?.totalLike + 1,
-                    isProcessingLike: false,
-                  }
-                : resPost
-            )
-          );
-        }
+                  },
+                }
+              : resPost
+          )
+        );
         console.log(data);
       } else {
         console.log("something wrong");
@@ -799,37 +772,26 @@ const PostProfile = ({
       console.error("Error during API call:", error);
     }
   };
+
   const handleUnlike = async (postId: string, isDataLoading: boolean) => {
     console.log("unlike: " + postId);
 
-    if (isDataLoading) {
-      console.log(isDataLoading);
-      setDataLoading(
-        dataLoading.map((resPost) =>
-          resPost?.postId?.postId === postId
-            ? {
-                ...resPost,
+    setPosts(
+      posts.map((resPost) =>
+        resPost?.postId?.postId === postId
+          ? {
+              ...resPost,
+              postId: {
+                ...resPost.postId,
                 likeByUserLogged: false,
-                totalLike: resPost?.postId?.totalLike - 1,
+                totalLike: resPost.postId.totalLike - 1,
                 isProcessingLike: true,
-              }
-            : resPost
-        )
-      );
-    } else {
-      setPosts(
-        posts.map((resPost) =>
-          resPost?.postId?.postId === postId
-            ? {
-                ...resPost,
-                likeByUserLogged: false,
-                totalLike: resPost?.postId?.totalLike - 1,
-                isProcessingLike: true,
-              }
-            : resPost
-        )
-      );
-    }
+              },
+            }
+          : resPost
+      )
+    );
+
     try {
       const response = await sendRequest<Post[]>({
         url: GLOBAL_URL + "/api/unlike/" + postId,
@@ -840,34 +802,23 @@ const PostProfile = ({
       console.log(response);
       if (response) {
         // Kết thúc xử lý API cho bài viết này
-        if (isDataLoading) {
-          console.log(isDataLoading);
-          setDataLoading(
-            dataLoading.map((resPost) =>
-              resPost?.postId?.postId === postId
-                ? {
-                    ...resPost,
+
+        setPosts(
+          posts.map((resPost) =>
+            resPost?.postId?.postId === postId
+              ? {
+                  ...resPost,
+                  postId: {
+                    ...resPost.postId,
                     likeByUserLogged: false,
-                    totalLike: resPost?.postId?.totalLike - 1,
+                    totalLike: resPost.postId.totalLike - 1,
                     isProcessingLike: false,
-                  }
-                : resPost
-            )
-          );
-        } else {
-          setPosts(
-            posts.map((resPost) =>
-              resPost?.postId?.postId === postId
-                ? {
-                    ...resPost,
-                    likeByUserLogged: false,
-                    totalLike: resPost?.postId?.totalLike - 1,
-                    isProcessingLike: false,
-                  }
-                : resPost
-            )
-          );
-        }
+                  },
+                }
+              : resPost
+          )
+        );
+
         console.log(data);
       } else {
         console.log("something wrong");
@@ -1249,7 +1200,7 @@ const PostProfile = ({
                         fontWeight: "bold",
                       }}
                     >
-                      {fullname}
+                      {item?.postId?.userPost?.fullname}
                     </Typography>
                     <Box
                       sx={{
@@ -1725,10 +1676,19 @@ const PostProfile = ({
                     }
                     disabled={item?.postId?.isProcessingLike}
                   >
-                    <ThumbUpOffAltIcon />
-                    <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Like
-                    </Typography>
+                    {item?.postId?.isProcessingLike ? (
+                      <CircularProgress size={24} color="secondary" />
+                    ) : (
+                      <>
+                        <ThumbUpOffAltIcon />
+                        <Typography
+                          component={"span"}
+                          sx={{ marginLeft: "5px" }}
+                        >
+                          Like
+                        </Typography>
+                      </>
+                    )}
                   </IconButton>
                 </Grid>
                 <Grid
