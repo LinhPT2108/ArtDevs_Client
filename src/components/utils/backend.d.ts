@@ -212,9 +212,9 @@ declare global {
     time: Date;
     timelineUserId: Date;
     userId: string;
-    listImageofPost: string[] | null;
+    listImageofPost: File[] | null;
     privacyPostDetails: number;
-    listHashtag: number[] | null;
+    listHashtag: string[] | null;
   }
 
   interface MentorInfor {
