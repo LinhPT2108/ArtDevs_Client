@@ -228,9 +228,20 @@ declare global {
   interface AddPost {
     content: string;
     userId: string;
-    // listImageofPost: string[] | null;
+    listImageofPost: File[] | null;
     privacyPostDetails: number;
-    listHashtag: number[] | null;
+    listHashtag: string[] | null;
+  }
+
+  interface UpdatePost {
+    postId: string;
+    content: string;
+    time: Date;
+    timelineUserId: Date;
+    userId: string;
+    listImageofPost: File[] | null;
+    privacyPostDetails: number;
+    listHashtag: HashtagInfor[];
   }
 
   interface MentorInfor {

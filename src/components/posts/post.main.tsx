@@ -36,6 +36,13 @@ import {
   Divider,
   Snackbar,
   Alert,
+  DialogContentText,
+  FormControl,
+  Select,
+  SelectChangeEvent,
+  FormHelperText,
+  ImageList,
+  ImageListItem,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
@@ -43,9 +50,16 @@ import CommentIcon from "@mui/icons-material/Comment";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
+import Stack from "@mui/material/Stack";
 import { red } from "@mui/material/colors";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, { SetStateAction, useEffect, useId, useState } from "react";
+import React, {
+  HtmlHTMLAttributes,
+  SetStateAction,
+  useEffect,
+  useId,
+  useState,
+} from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -62,8 +76,10 @@ import CustomPaging from "./media.post";
 import { useUser } from "@/lib/custom.content";
 import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
+  GLOBAL_DELETE_POST_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_SHARE_MESSAGE,
+  GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
 } from "../utils/veriable.global";
 import useSWR, { SWRResponse } from "swr";
@@ -74,6 +90,7 @@ import Toolbar from "@mui/material/Toolbar";
 import CssBaseline from "@mui/material/CssBaseline";
 import useScrollTrigger from "@mui/material/useScrollTrigger";
 import Container from "@mui/material/Container";
+import CheckIcon from "@mui/icons-material/Check";
 import Fab from "@mui/material/Fab";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import { AddPhotoAlternate } from "@mui/icons-material";
@@ -84,6 +101,9 @@ import {
 } from "../utils/component.global";
 import postCommentApi from "../utils/utils";
 import { TransitionProps } from "@mui/material/transitions";
+import Input from "@mui/material/Input";
+const ariaLabel = { "aria-label": "description" };
+
 interface Props {
   window?: () => Window;
   children: React.ReactElement;
@@ -150,11 +170,20 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
-  bgcolor: "background.paper",
+  width: 700,
+  bgcolor: "#1c1e21",
   borderRadius: "12px",
   // border: "2px solid #000",
   // p: 4,
+  "@media (max-width: 768px)": {
+    width: "90%",
+  },
+  "@media (max-width: 480px)": {
+    width: "80%",
+  },
+  "@media (max-width: 320px)": {
+    width: "90%",
+  },
 };
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -167,7 +196,6 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
-
 const styleModalComment = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -217,13 +245,48 @@ const RemoveButton = styled(Button)({
   backgroundColor: "#30363d",
   padding: "0px !important",
 });
-// TypeScript interface for props
+interface PreviewImageOfPostProps {
+  url: File;
+  index: number;
+  handleRemoveImageOfPost: (index: number) => void;
+}
+
+const PreviewImageOfPost: React.FC<PreviewImageOfPostProps> = ({
+  url,
+  index,
+  handleRemoveImageOfPost,
+}) => {
+  const imageUrl = URL.createObjectURL(url);
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-block",
+        mr: "8px",
+      }}
+    >
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="100%"
+        height="100%"
+        loading="lazy"
+      />
+
+      <RemoveButton onClick={() => handleRemoveImageOfPost(index)}>
+        <ClearIcon />
+      </RemoveButton>
+    </Box>
+  );
+};
+
 interface PreviewImageProps {
   url: File;
   index: number;
   handleRemoveImage: (index: number, isComment: boolean) => void;
   isComment: boolean;
 }
+
 const PreviewImage: React.FC<PreviewImageProps> = ({
   url,
   index,
@@ -231,7 +294,6 @@ const PreviewImage: React.FC<PreviewImageProps> = ({
   handleRemoveImage,
 }) => {
   const imageUrl = URL.createObjectURL(url);
-
   return (
     <Box
       sx={{
@@ -253,6 +315,7 @@ const PreviewImage: React.FC<PreviewImageProps> = ({
     </Box>
   );
 };
+
 interface IPros {
   user: User;
   post?: Post[];
@@ -260,12 +323,29 @@ interface IPros {
 
 const Post = ({ user, post }: IPros, props: Props) => {
   // const { user, setUser } = useUser();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [anchorEl, setAnchorEl] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [open, setOpen] = useState([]);
   const [openAlerts, setOpenAlerts] = useState(false);
   const [openPost, setOpenPost] = useState(false);
-  const handleOpenPost = () => setOpenPost(true);
+  const handleOpenPost = () => {
+    setPostData({
+      postId: "",
+      content: "",
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: user ? user?.user?.userId : "",
+      listImageofPost: null,
+      privacyPostDetails: 1,
+      listHashtag: [],
+    });
+    setIsEditPost(false);
+    setOpenPost(true);
+  };
   const handleClosePost = () => setOpenPost(false);
+  const [isEditPost, setIsEditPost] = useState(false);
+
   const [dataLoading, setDataLoading] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [endPost, setEndPost] = useState<boolean>(false);
@@ -281,6 +361,16 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [isLoadingComment, setIsLoadingComment] = useState(false);
   const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
   const [isComment, setIsComment] = useState<boolean>(false);
+  const [postData, setPostData] = useState<AddPost>({
+    postId: "",
+    content: "",
+    time: new Date(),
+    timelineUserId: new Date(),
+    userId: user ? user?.user?.userId : "",
+    listImageofPost: null,
+    privacyPostDetails: 1,
+    listHashtag: [],
+  });
   const [anchorElArray, setAnchorElArray] = useState<
     ((EventTarget & HTMLElement) | null)[]
   >([]);
@@ -292,33 +382,31 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [editingIndexComment, setEditingIndexComment] = useState<string>("");
   const [editedContentComment, setEditedContentComment] = useState("");
   const [editedImageComment, setEditedImageComment] = useState<any>();
-
   const [editingIndexReplyComment, setEditingIndexReplyComment] =
     useState<string>("");
-
   const [editedContentReplyComment, setEditedContentReplyComment] =
     useState("");
   const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
   const [contentSharePost, setContentSharePost] = useState<string>("");
-
+  const [searchValueHashtag, setSearchValueHashtag] = useState("");
   const [actionDialog, setActionDialog] = useState<any>({
     actionType: "",
     data: {},
   });
-
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hashtagData, setHashtagData] = useState<HashtagInfor[]>([]);
+  const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [dataSnackbar, setDataSnackbar] = useState<any>({
     openSnackbar: false,
     contentSnackbar: "",
-    type: "",
+    type: "success",
   });
-
   // const handleClickOpenSnackbar = (content: string) => () => {
   //   setDataSnackbar({
   //     openSnackbar: true,
   //     contentSnackbar: "content",
   //   });
   // };
-
   const handleCloseSnackbar = (
     event: React.SyntheticEvent | Event,
     reason?: string
@@ -329,9 +417,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setDataSnackbar({
       openSnackbar: false,
       contentSnackbar: "",
-      type: "",
+      type: "success",
     });
   };
+
   const handleClickOpenAlerts = (
     dataId: any,
     actionType: string,
@@ -348,8 +437,18 @@ const Post = ({ user, post }: IPros, props: Props) => {
           index: index,
         },
       });
-    } else {
+    } else if (actionType == "share") {
       setContentSharePost("");
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          post: dataId,
+          isComment: isComment,
+          index: index,
+          isDataloading: isDataLoading,
+        },
+      });
+    } else if (actionType == "deletePost") {
       setActionDialog({
         actionType: actionType,
         data: {
@@ -363,28 +462,33 @@ const Post = ({ user, post }: IPros, props: Props) => {
     console.log(actionDialog);
     setOpenAlerts(true);
   };
+
   const handleCloseAlerts = () => {
     setContentSharePost("");
     setOpenAlerts(false);
   };
+
   const handleAgreeAlerts = () => {
     console.log("agree");
     console.log(contentSharePost);
-    if (actionDialog.actionType === "deleteCmt") {
+    if (actionDialog.actionType == "deleteCmt") {
       handleDeleteCommentOrReplyComment(
         actionDialog.data.comment,
         actionDialog.data.isComment,
         actionDialog.data.index
       );
-    } else {
+    } else if (actionDialog.actionType == "share") {
       handleSharePost(
         actionDialog.data.post.postId,
         actionDialog.data.isDataloading
       );
+    } else if (actionDialog.actionType == "deletePost") {
+      handleDeletePost(actionDialog.data.post.postId);
     }
     console.log(dataSnackbar);
     handleCloseAlerts();
   };
+
   const handleOpen3 = (
     index: number,
     event: React.MouseEvent<HTMLElement>,
@@ -407,6 +511,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setAnchorElArrayReply(newAnchorElArray);
     }
   };
+
   const handleClose3 = (index: number, isCmt: boolean) => {
     const newOpenArray = isCmt
       ? [...openArray]
@@ -424,6 +529,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setAnchorElArrayReply(newAnchorElArray);
     }
   };
+
   const handleEditCommentOrReplyComment = (
     commentObject: any,
     isComment: boolean,
@@ -441,6 +547,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     handleClose3(index, isComment);
   };
+
   const handleCancelEditComment = (isComment: boolean, index: number) => {
     if (isComment) {
       setEditingIndexComment("");
@@ -450,6 +557,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       setEditedContentReplyComment("");
     }
   };
+
   const handleChangePicEditComment = (
     event: React.ChangeEvent<HTMLInputElement>,
     isComment: boolean
@@ -472,6 +580,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }
     }
   };
+
   const handleSaveEditComment = async (
     isComment: boolean,
     commentObject: any,
@@ -480,20 +589,37 @@ const Post = ({ user, post }: IPros, props: Props) => {
   ) => {
     setIsLoadingEditComment(true);
     const imageFiles: File[] = Array.from(images).map((imageName: any) => {
-      if (typeof imageName.imageOfCommentUrl === "string") {
-        const blob = new Blob([], { type: "application/octet-stream" });
-        const fileType = "image/jpeg";
-        const fileSize = blob.size;
-        const file = new File([blob], imageName.imageOfCommentUrl, {
-          type: fileType,
-          size: fileSize,
-        } as any);
-        return file;
+      if (!isComment) {
+        if (typeof imageName.imageOfCommentUrl === "string") {
+          const blob = new Blob([], { type: "application/octet-stream" });
+          const fileType = "image/jpeg";
+          const fileSize = blob.size;
+          const file = new File([blob], imageName.imageOfCommentUrl, {
+            type: fileType,
+            size: fileSize,
+          } as any);
+          return file;
+        } else {
+          return imageName as File;
+        }
       } else {
-        return imageName as File;
+        if (typeof imageName === "string") {
+          const blob = new Blob([], { type: "application/octet-stream" });
+          const fileType = "image/jpeg";
+          const fileSize = blob.size;
+          const file = new File([blob], imageName, {
+            type: fileType,
+            size: fileSize,
+          } as any);
+          return file;
+        } else {
+          return imageName as File;
+        }
       }
     });
     const formData = new FormData();
+    console.log(imageFiles);
+
     if (isComment) {
       formData.append("content", content);
       if (imageFiles) {
@@ -584,6 +710,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }
     }
   };
+
   const handleDeleteCommentOrReplyComment = async (
     commentObject: any,
     isComment2: boolean,
@@ -637,6 +764,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     handleClose3(index, isComment2);
   };
+
   const [formDataComment, setFormDataComment] =
     React.useState<CommentToPostDTO>({
       content: "",
@@ -645,6 +773,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       postToPost: "",
       userReceive: "",
     });
+
   const [formDataReplyComment, setFormDataReplyComment] =
     React.useState<ReplyCommentToPostDTO>({
       content: "",
@@ -653,10 +782,12 @@ const Post = ({ user, post }: IPros, props: Props) => {
       commentToPost: null as unknown as number,
       userReceive: {} as any,
     });
+
   const handleCloseModalCmt = () => {
     setOpenModalCmt(false);
     setIsShowReplies(null);
   };
+
   const handleOpenModalCmt = async (post: Post) => {
     setIsComment(true);
     setFormDataComment({
@@ -683,10 +814,12 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }));
     console.log(comment);
   };
+
   const toggleShowReplyCmt = (cmtId: any) => {
     console.log("show cmt");
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
+
   const fetchData = async (url: string) => {
     return await sendRequest<Post[]>({
       url: url,
@@ -697,8 +830,9 @@ const Post = ({ user, post }: IPros, props: Props) => {
       },
     });
   };
+
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    GLOBAL_URL + "/api/news-feed",
+    "http://localhost:8080/api/post-by-user-logged",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -706,6 +840,27 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
   );
   useEffect(() => {
+    const fetchDataHashtag = async () => {
+      console.log("Fetching data for:", searchValueHashtag);
+      try {
+        const getHashtag = await sendRequest<HashtagInfor[]>({
+          url: GLOBAL_URL + "/api/search-detailhashtag",
+          method: "GET",
+          queryParams: {
+            keyword: searchValueHashtag,
+          },
+        });
+        console.log(getHashtag);
+
+        setHashtagData(getHashtag);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    if (searchValueHashtag) {
+      fetchDataHashtag();
+    }
+
     console.log(data);
     if (data && !error) {
       setPosts(data);
@@ -742,7 +897,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [loading, data, dataLoading]);
+  }, [loading, data, dataLoading, searchValueHashtag]);
+
   const handleLike = async (postId: string, isDataLoading: boolean) => {
     console.log("like: " + postId);
 
@@ -820,6 +976,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       console.error("Error during API call:", error);
     }
   };
+
   const handleUnlike = async (postId: string, isDataLoading: boolean) => {
     console.log("unlike: " + postId);
 
@@ -860,7 +1017,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
 
       console.log(response);
       if (response) {
-        // Kết thúc xử lý API cho bài viết này
         if (isDataLoading) {
           console.log(isDataLoading);
           setDataLoading(
@@ -897,6 +1053,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       console.error("Error during API call:", error);
     }
   };
+
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
     console.log(cmt);
 
@@ -911,40 +1068,294 @@ const Post = ({ user, post }: IPros, props: Props) => {
       };
     });
   };
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+    const newOpenArray = [...open] as boolean[];
+    newOpenArray[index] = true;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = event.currentTarget;
+
+    setOpen(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
   };
-  const handleClose = () => {
-    setAnchorEl(null);
+
+  const handleClose = (index: any) => {
+    console.log(index);
+    const newOpenArray = [...open] as boolean[];
+    newOpenArray[index] = false;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = null;
+
+    setOpen(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
   };
-  const [postData, setPostData] = useState<AddPost>({
-    content: "",
-    userId: user ? user?.user?.userId : "",
-    // listImageofPost: null,
-    privacyPostDetails: 1,
-    listHashtag: null,
-  });
+
   const handleContentPost = (value: string) => {
     setPostData((prevData) => ({
       ...prevData,
       content: value,
     }));
   };
+
+  const handleHashtagPost = (
+    event: React.ChangeEvent<{}>,
+    newValue: string[] | null
+  ) => {
+    const formattedValues = newValue
+      ? newValue.map((tag) => formatHashtagText(tag))
+      : [];
+    console.log(formattedValues);
+
+    setPostData((prevData) => ({
+      ...prevData,
+      listHashtag: formattedValues,
+    }));
+  };
+
+  const formatHashtagText = (hashtagText: any) => {
+    if (hashtagText && typeof hashtagText === "string") {
+      return hashtagText.trim().replace(/\s/g, "-");
+    } else {
+      return hashtagText.hashtagText;
+    }
+  };
+
+  const handleTextFieldChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { value } = event.target;
+    console.log(value);
+    if (value == " ") {
+      setHashtagData([]);
+      setSearchValueHashtag("");
+    }
+    const formattedValue = value.replace(/\s/g, "-");
+    event.target.value = formattedValue;
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      console.log("Stop typing");
+      if (value != " ") {
+        setSearchValueHashtag(event.target.value);
+      }
+    }, 1500);
+
+    setTimer(newTimer);
+  };
+
+  const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
+    console.log();
+
+    setPostData((prevData) => ({
+      ...prevData,
+      privacyPostDetails: event.target.value as unknown as number,
+    }));
+    console.log(await postData);
+  };
+
+  const handleChangePicturePost = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const fileInput = event.target as HTMLInputElement;
+    const selected = fileInput.files;
+    console.log(selected);
+    setPostData((prevData) => ({
+      ...prevData,
+      listImageofPost: [
+        ...(prevData.listImageofPost || []),
+        ...(selected ? Array.from(selected) : []),
+      ] as File[],
+    }));
+  };
+
   const handlePost = async () => {
+    setOpenBackdrop(true);
     setPostData((prevData) => ({
       ...prevData,
       postId: generateUniqueId(),
     }));
-    const response = await sendRequest({
-      // url: "https://artdevs-server.azurewebsites.net/api/register",
-      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-      url: GLOBAL_URL + "/api/comment",
+    console.log(">>> check postid: ", postData.postId);
+    const formData = new FormData();
+    formData.append(
+      "postDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: postData.content,
+            listHashtag: postData.listHashtag,
+            timelineUserId: postData.timelineUserId,
+            time: postData.time,
+            privacyPostDetails: postData.privacyPostDetails,
+            postId: postData.postId,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (postData.listImageofPost) {
+      postData.listImageofPost.forEach((file: any, index: any) => {
+        formData.append("listImageofPost", file);
+      });
+    } else {
+      formData.append("listImageofPost", "");
+    }
+    const response = await fetch(GLOBAL_URL + "/api/post", {
       method: "POST",
       headers: { authorization: `Bearer ${user?.access_token}` },
-      body: { ...postData },
+      body: formData,
     });
-    console.log(">>> check post data: ", response);
+    console.log(">>> check post data: ", response.status);
+    if (response.status == 200) {
+      const data = await response.json();
+      console.log(data);
+      setPosts((prevData) => [data, ...prevData]);
+      setOpenPost(false);
+      setOpenBackdrop(false);
+      setPostData({
+        postId: "",
+        content: "",
+        time: new Date(),
+        timelineUserId: new Date(),
+        userId: user ? user?.user?.userId : "",
+        listImageofPost: null,
+        privacyPostDetails: 1,
+        listHashtag: [],
+      });
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_UPLOAD_POST_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
   };
+
+  const fetchImageAsFile = async (imageUrl: string): Promise<File | null> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], imageUrl, { type: "image/png" });
+      return file;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
+
+  const handleEditPost = async (post: Post, index: number) => {
+    setHashtagData([]);
+    setSearchValueHashtag("");
+    setIsEditPost(true);
+    handleClose(index);
+    console.log(post);
+    setOpenPost(true);
+    const selectedPrivacy = post.privacyPostDetails.find(
+      (privacy) => privacy.status
+    );
+    console.log(post.listImageofPost);
+    const editedPostData: AddPost = {
+      postId: post.postId,
+      content: post.content,
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: post.userPost.userId,
+      listImageofPost: (await Promise.all(
+        post.listImageofPost?.map(async (image) => {
+          const file = await fetchImageAsFile(image.imageUrl);
+          return file;
+        })
+      )) as File[],
+      privacyPostDetails: selectedPrivacy?.privacyPostId as number,
+      listHashtag: post.listHashtag.map((hashtag) => hashtag.hashtagDetailName),
+    };
+    setPostData(editedPostData);
+  };
+
+  const handleSaveEditPost = async () => {
+    console.log(postData);
+    const formData = new FormData();
+    formData.append(
+      "postDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            postId: postData.postId,
+            content: postData.content,
+            listHashtag: postData.listHashtag,
+            timelineUserId: postData.timelineUserId,
+            time: postData.time,
+            privacyPostDetails: postData.privacyPostDetails,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (postData.listImageofPost) {
+      postData.listImageofPost.forEach((file: any, index: any) => {
+        formData.append("listImageofPost", file);
+      });
+    } else {
+      formData.append("listImageofPost", "");
+    }
+    const response = await fetch(
+      GLOBAL_URL + "/api/update-post/" + postData.postId,
+      {
+        method: "PUT",
+        headers: { authorization: `Bearer ${user?.access_token}` },
+        body: formData,
+      }
+    );
+    console.log(">>> check post update: ", response.status);
+    if (response.status == 200) {
+      const data: Post = await response.json();
+      console.log(data);
+      
+      setPosts((prev) =>
+        prev.map((p) => (p.postId === data.postId ? { ...p, ...data } : p))
+      );
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    const response = await sendRequest<boolean>({
+      url: GLOBAL_URL + `/api/delete-post/${postId}`,
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      method: "PUT",
+    });
+    console.log(response);
+    if (response) {
+      setPosts((prevData) => prevData.filter((c) => c.postId !== postId));
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_DELETE_POST_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
+  };
+
   const handleChangeContentComment = (value: string) => {
     if (isComment) {
       setFormDataComment((prevFormData) => ({
@@ -958,6 +1369,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
+
   const handleChangePic = (event: React.ChangeEvent<HTMLInputElement>) => {
     const fileInput = event.target as HTMLInputElement;
     console.log(fileInput.files);
@@ -980,6 +1392,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
+
   const handleRemoveImage = (index: number, isComment: boolean) => {
     const newSelectedFiles = isComment
       ? [...formDataComment.listImageofComment]
@@ -1000,6 +1413,18 @@ const Post = ({ user, post }: IPros, props: Props) => {
       }));
     }
   };
+
+  const handleRemoveImageOfPost = (index: number) => {
+    const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    newSelectedFiles.splice(index, 1);
+    setSelectedFiles(newSelectedFiles);
+    console.log(newSelectedFiles);
+    setPostData((prevData) => ({
+      ...prevData,
+      listImageofPost: newSelectedFiles,
+    }));
+  };
+
   const handleRemoveImageEditComment = (nameFile: number) => {
     console.log("close: " + nameFile);
     const newSelectedFiles = [...editedImageComment];
@@ -1010,6 +1435,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setEditedImageComment(newSelectedFiles as any);
     console.log(newSelectedFiles);
   };
+
   const handleRemoveImageEditCommentReply = (nameFile: number) => {
     console.log("close: " + nameFile);
     const newSelectedFiles = [...editedImageReplyComment];
@@ -1017,7 +1443,9 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setEditedImageReplyComment(newSelectedFiles as any);
     console.log(newSelectedFiles);
   };
+
   const handleCancelReplyComment = () => setIsComment(true);
+
   const handlePostComment = async () => {
     if (isComment) {
       console.log(formDataComment);
@@ -1072,6 +1500,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
 
     setIsLoadingComment(false);
   };
+
   const handleSharePost = async (postId: string, isDataLoading: boolean) => {
     console.log(postId);
     const response: any = await sendRequest({
@@ -1172,7 +1601,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 },
               }}
               aria-label="recipe"
-              alt="Profile Picture"
+              alt={user?.user?.lastName}
               src={user?.user?.profileImageUrl}
             ></Avatar>
           }
@@ -1239,19 +1668,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
             </Button>
           }
         />
-
-        {/* <CardActions disableSpacing>
-          <IconButton aria-label="add to favorites">
-            <FavoriteIcon />
-          </IconButton>
-
-          <IconButton aria-label="share">
-            <CommentIcon />
-          </IconButton>
-          <IconButton aria-label="share">
-            <ShareIcon />
-          </IconButton>
-        </CardActions> */}
       </Card>
       {posts &&
         posts?.map((p, index) => (
@@ -1283,12 +1699,14 @@ const Post = ({ user, post }: IPros, props: Props) => {
               }
               action={
                 <IconButton
-                  onClick={handleClick}
+                  onClick={(event) => handleClick(event, index)}
                   size="small"
                   sx={{ ml: 2 }}
-                  aria-controls={open ? "account-menu" : undefined}
+                  aria-controls={
+                    open[index] ? `account-menu-${index}` : undefined
+                  }
                   aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
+                  aria-expanded={open[index] ? "true" : undefined}
                 >
                   <Avatar sx={{ width: 32, height: 32 }}>
                     <MoreVertIcon />
@@ -1425,72 +1843,124 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 </Box>
                 <CommentIcon />
               </IconButton>
-
-              <IconButton
-                aria-label="share"
-                sx={{
-                  borderRadius: "10px",
-                }}
-                //handleSharePost(p.postId, false)
-                onClick={() =>
-                  handleClickOpenAlerts(p, "share", false, -1, false)
-                }
-              >
-                <Box
+              {p.userPost.userId != user?.user?.userId && (
+                <IconButton
+                  aria-label="share"
                   sx={{
-                    fontWeight: "bold",
-                    marginRight: "0.75rem",
+                    borderRadius: "10px",
                   }}
+                  //handleSharePost(p.postId, false)
+                  onClick={() =>
+                    handleClickOpenAlerts(p, "share", false, -1, false)
+                  }
                 >
-                  {p.totalShare}
-                </Box>
-                <ShareIcon />
-              </IconButton>
+                  <Box
+                    sx={{
+                      fontWeight: "bold",
+                      marginRight: "0.75rem",
+                    }}
+                  >
+                    {p.totalShare}
+                  </Box>
+                  <ShareIcon />
+                </IconButton>
+              )}
             </CardActions>
-            <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={open}
-              onClose={handleClose}
-              onClick={handleClose}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: "visible",
-                  // filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-                  mt: 1.5,
-                  "& .MuiAvatar-root": {
-                    width: 32,
-                    height: 32,
-                    ml: -0.5,
-                    mr: 1,
+            {user?.user.userId == p.userPost.userId ? (
+              <Menu
+                anchorEl={anchorEl[index]}
+                id={`account-menu-${index}`}
+                open={open[index]}
+                onClose={() => handleClose(index)}
+                onClick={() => handleClose(index)}
+                PaperProps={{
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    // filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
                   },
-                  "&::before": {
-                    content: '""',
-                    display: "block",
-                    position: "absolute",
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: "background.paper",
-                    transform: "translateY(-50%) rotate(45deg)",
-                    zIndex: 0,
+                }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem onClick={() => handleEditPost(p, index)}>
+                  Chỉnh sửa bài viết {index}
+                </MenuItem>
+                <MenuItem
+                  onClick={() =>
+                    handleClickOpenAlerts(p, "deletePost", false, -1, false)
+                  }
+                >
+                  Xóa bài viết
+                </MenuItem>
+              </Menu>
+            ) : (
+              <Menu
+                anchorEl={anchorEl[index]}
+                id={`account-menu-${index}`}
+                open={open[index]}
+                onClose={() => handleClose(index)}
+                onClick={() => handleClose(index)}
+                PaperProps={{
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    // filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
                   },
-                },
-              }}
-              transformOrigin={{ horizontal: "right", vertical: "top" }}
-              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-            >
-              <MenuItem onClick={handleClose}>
-                <ReportGmailerrorredOutlinedIcon sx={{ marginRight: "6px" }} />
-                Báo cáo bài viết
-              </MenuItem>
-              <MenuItem onClick={handleClose}>
-                <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
-                Báo cáo vi phạm
-              </MenuItem>
-            </Menu>
+                }}
+                transformOrigin={{ horizontal: "right", vertical: "top" }}
+                anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+              >
+                <MenuItem onClick={handleClose}>
+                  <ReportGmailerrorredOutlinedIcon
+                    sx={{ marginRight: "6px" }}
+                  />
+                  Báo cáo bài viết
+                </MenuItem>
+                <MenuItem onClick={handleClose}>
+                  <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
+                  Báo cáo vi phạm
+                </MenuItem>
+              </Menu>
+            )}
           </Card>
         ))}
       {dataLoading &&
@@ -1523,10 +1993,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
               }
               action={
                 <IconButton
-                  onClick={handleClick}
+                  onClick={(event) => handleClick(event, index)}
                   size="small"
                   sx={{ ml: 2 }}
-                  aria-controls={open ? "account-menu" : undefined}
+                  aria-controls={open ? `account-menu-${index}` : undefined}
                   aria-haspopup="true"
                   aria-expanded={open ? "true" : undefined}
                 >
@@ -1679,11 +2149,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
               </IconButton>
             </CardActions>
             <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={open}
-              onClose={handleClose}
-              onClick={handleClose}
+              anchorEl={anchorEl[index]}
+              id={`account-menu-${index}`}
+              open={open[index]}
+              onClose={() => handleClose(index)}
+              onClick={() => handleClose(index)}
               PaperProps={{
                 elevation: 0,
                 sx: {
@@ -1713,11 +2183,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={() => handleClose(index)}>
                 <ReportGmailerrorredOutlinedIcon sx={{ marginRight: "6px" }} />
                 Báo cáo bài viết
               </MenuItem>
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={() => handleClose(index)}>
                 <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
                 Báo cáo vi phạm
               </MenuItem>
@@ -1727,7 +2197,342 @@ const Post = ({ user, post }: IPros, props: Props) => {
       <Box sx={{ display: "flex", justifyContent: "center" }}>
         {loading ? <div className="loader"></div> : <div>{endTextPost}</div>}
       </Box>
-      <Modal
+
+      <Dialog
+        open={openPost}
+        TransitionComponent={Transition}
+        keepMounted
+        onClose={handleClosePost}
+        aria-describedby="alert-dialog-slide-description"
+        PaperProps={{
+          style: {
+            backgroundColor: "#242526",
+            width: "100%",
+          },
+          component: "form",
+          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const formJson = Object.fromEntries((formData as any).entries());
+            console.log(formJson);
+            handleClosePost();
+          },
+        }}
+      >
+        <Box className="dialog-header">
+          <DialogTitle
+            id="alert-dialog-title"
+            sx={{ color: "white", textAlign: "center", p: "10px" }}
+          >
+            Tạo bài viết
+          </DialogTitle>
+          <IconButton
+            aria-label="close"
+            onClick={handleClosePost}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 5,
+              color: (theme) => theme.palette.grey[500],
+              backgroundColor: "#3a3b3c",
+              "&:hover": {
+                backgroundColor: "#7d7d7d",
+              },
+            }}
+          >
+            <ClearIcon />
+          </IconButton>
+        </Box>
+        <Divider />
+        <DialogContent sx={{ p: "8px" }}>
+          <Card
+            sx={{
+              backgroundColor: "transparent",
+              boxShadow: "none",
+              color: "white",
+              border: "none",
+              width: "100%",
+            }}
+          >
+            <CardHeader
+              sx={{
+                color: "#000000",
+                py: "5px",
+              }}
+              avatar={
+                <Avatar
+                  sx={{ bgcolor: red[500] }}
+                  aria-label="recipe"
+                  alt={user?.user?.lastName}
+                  src={user?.user?.profileImageUrl}
+                ></Avatar>
+              }
+              title={
+                <>
+                  <Typography fontSize={16} color={"white"}>
+                    {user?.user?.firstName +
+                      " " +
+                      user?.user?.middleName +
+                      " " +
+                      user?.user?.lastName}
+                  </Typography>
+                </>
+              }
+              action={
+                <>
+                  <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
+                    <Select
+                      id="demo-simple-select-autowidth"
+                      value={postData.privacyPostDetails + ""}
+                      onChange={handleChangePrivacyPost}
+                      autoWidth
+                      sx={{
+                        color: "white",
+                        "&.MuiSelect-root": {
+                          backgroundColor: "#3a3b3c",
+                          border: "1px solid white",
+                        },
+                        "& fieldset": {
+                          border: "1px solid white",
+                        },
+                        "& fieldset:focus": {
+                          border: "1px solid white",
+                        },
+                        "& svg": {
+                          color: " white",
+                        },
+                      }}
+                    >
+                      <MenuItem value={1}>Công khai</MenuItem>
+                      <MenuItem value={2}>Riêng tư</MenuItem>
+                    </Select>
+                  </FormControl>
+                </>
+              }
+            />
+
+            <CardContent
+              sx={{
+                color: "white",
+                py: "5px",
+              }}
+              className="contentPost"
+            >
+              <Input
+                placeholder={
+                  user?.user?.firstName +
+                  " " +
+                  user?.user?.middleName +
+                  " " +
+                  user?.user?.lastName +
+                  " ơi, Bạn đang nghĩ gì thế ?"
+                }
+                inputProps={ariaLabel}
+                onChange={(e) => handleContentPost(e.target.value)}
+                multiline
+                sx={{
+                  color: "white",
+                  fontSize: "1.5rem",
+                }}
+                fullWidth
+                disableUnderline
+                value={postData.content}
+              />
+            </CardContent>
+            <CardContent
+              sx={{
+                color: "white !important",
+                py: "5px",
+              }}
+            >
+              <Autocomplete
+                size="small"
+                multiple
+                freeSolo
+                id="tags-standard"
+                options={hashtagData as HashtagInfor[]}
+                // value={postData.listHashtag as any}
+                value={
+                  hashtagData.length > 0
+                    ? postData.listHashtag?.map((oldTag) => {
+                        const matchingTag = hashtagData.find(
+                          (newTag) => newTag.hashtagText === oldTag
+                        );
+                        return matchingTag ? matchingTag : oldTag;
+                      }) || postData.listHashtag
+                    : (postData.listHashtag as any)
+                }
+                getOptionLabel={(option: any) => {
+                  return formatHashtagText(
+                    typeof option === "string" ? option : option.hashtagText
+                  );
+                }}
+                onChange={(event, values: any) =>
+                  handleHashtagPost(event, values)
+                }
+                renderOption={(props, option, { selected }) => (
+                  <Box
+                    component="li"
+                    sx={{
+                      backgroundColor: selected
+                        ? "#262B30 !important"
+                        : "#3a3b3c !important",
+                      color: "white !important",
+                      "&:hover": {
+                        backgroundColor: "#262B30 !important",
+                      },
+                      py: "10px !important",
+                    }}
+                    {...props}
+                    key={option.hashtagText}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Typography variant="body1" color="white" mr="10px">
+                        {option.hashtagText}
+                      </Typography>
+                      {selected ? (
+                        <CheckIcon color="success" fontWeight="Bold" />
+                      ) : "" + selected ? (
+                        selected
+                      ) : (
+                        selected
+                      )}
+                      <Chip
+                        label={option.countHashtagOfDetail + " bài viết"}
+                        variant="outlined"
+                        sx={{
+                          color: "white",
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Hashtag"
+                    placeholder="Nhập từ khóa tìm kiếm"
+                    sx={{
+                      backgroundColor: "#242526",
+                      color: "white !important",
+                      borderRadius: "4px",
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": { borderColor: "white" },
+                        "&:hover fieldset": { borderColor: "white" },
+                        "&.Mui-focused fieldset": { borderColor: "white" },
+                        "& .MuiInputBase-input": {
+                          color: "white",
+                        },
+                      },
+                    }}
+                    onChange={handleTextFieldChange}
+                    value={searchValueHashtag}
+                    InputLabelProps={{
+                      style: {
+                        color: "white",
+                      },
+                    }}
+                  />
+                )}
+                ChipProps={{
+                  style: {
+                    color: "white",
+                    backgroundColor: "#4d4d4d",
+                  },
+                }}
+                disableCloseOnSelect
+                fullWidth
+                loading
+                loadingText={
+                  !searchValueHashtag
+                    ? ""
+                    : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                }
+              />
+              {postData.listHashtag?.length == 0 ? (
+                <FormHelperText sx={{ color: "whitesmoke" }}>
+                  Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
+                </FormHelperText>
+              ) : (
+                <></>
+              )}
+
+              {/* <Autocomplete
+                fullWidth
+                disablePortal
+                id="combo-box-demo"
+                options={top100Films}
+                renderInput={(params) => (
+                  <TextField {...params} label="Hash tag" />
+                )}
+              /> */}
+            </CardContent>
+            <CardContent
+              sx={{
+                color: "white !important",
+                py: "5px !important",
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+              }}
+            >
+              <Button
+                component="label"
+                variant="contained"
+                sx={{
+                  p: "8px",
+                  // backgroundColor: "transparent",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "gray",
+                    boxShadow: "none",
+                  },
+                  boxShadow: "none",
+                }}
+              >
+                <AddPhotoAlternate />
+                Thêm ảnh hoặc Video
+                <VisuallyHiddenInput
+                  type="file"
+                  accept=".jpg, .png , .mp4"
+                  onChange={(event) => handleChangePicturePost(event)}
+                  multiple
+                  name="listImageofComment"
+                />
+              </Button>
+            </CardContent>
+            <Grid container rowSpacing={1} mt={1}>
+              {postData.listImageofPost?.map((url: File, index: any) => (
+                <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                  <PreviewImageOfPost
+                    // key={index}
+                    url={url}
+                    index={index}
+                    handleRemoveImageOfPost={handleRemoveImageOfPost}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Card>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleClosePost}
+            sx={{
+              color: "gray",
+            }}
+          >
+            Hủy
+          </Button>
+          {isEditPost ? (
+            <Button onClick={handleSaveEditPost}>Lưu</Button>
+          ) : (
+            <Button onClick={handlePost}>Đăng</Button>
+          )}
+        </DialogActions>
+      </Dialog>
+
+      {/* <Modal //modal-post
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
         open={openPost}
@@ -1746,7 +2551,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
               sx={{
                 borderTopRightRadius: "12px",
                 borderTopLeftRadius: "12px",
-                backgroundColor: "#ffffff",
+                backgroundColor: "#1c1e21",
                 boxShadow:
                   "rgba(0, 0, 0, 0.16) 0px 2px 4px, rgba(0, 0, 0, 0.23) 0px 2px 4px",
                 color: "white",
@@ -1824,9 +2629,9 @@ const Post = ({ user, post }: IPros, props: Props) => {
             </Box>
           </Box>
         </Fade>
-      </Modal>
+      </Modal> */}
 
-      <Modal
+      <Modal //modal-comment
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"
         open={openModalCmt}
@@ -2807,7 +3612,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
           </Box>
         </Fade>
       </Modal>
-      <Dialog
+
+      <Dialog //dialog-share-delete
         TransitionComponent={Transition}
         open={openAlerts}
         onClose={handleCloseAlerts}
@@ -2825,6 +3631,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
         >
           {actionDialog.actionType == "deleteCmt"
             ? "Xóa bình luận?"
+            : actionDialog.actionType == "deletePost"
+            ? "Xóa bài viết"
             : "Chia sẻ bài viết"}
         </DialogTitle>
         <Divider />
@@ -2832,6 +3640,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
           {actionDialog.actionType == "deleteCmt" ? (
             <Typography sx={{ color: "white" }}>
               Bạn có chắc chắn muốn xóa bình luận này không?
+            </Typography>
+          ) : actionDialog.actionType == "deletePost" ? (
+            <Typography sx={{ color: "white" }}>
+              Bạn có chắc chắn muốn xóa bài viết này không?
             </Typography>
           ) : (
             <>
@@ -2960,11 +3772,21 @@ const Post = ({ user, post }: IPros, props: Props) => {
             Không
           </Button>
           <Button onClick={handleAgreeAlerts} autoFocus>
-            {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
+            {actionDialog.actionType == "deleteCmt"
+              ? "Xóa"
+              : actionDialog.actionType == "deletePost"
+              ? "Xóa"
+              : "Chia sẻ"}
           </Button>
         </DialogActions>
       </Dialog>
-
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 99999999 }}
+        open={openBackdrop}
+        // onClick={()=>setOpenBackdrop(false)}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
       <Snackbar
         open={dataSnackbar.openSnackbar}
         autoHideDuration={2000}
@@ -2981,5 +3803,31 @@ const Post = ({ user, post }: IPros, props: Props) => {
 };
 
 export default Post;
-
-const top100Films = [{ label: "", year: 0 }];
+function getRandomInt(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+const top100Films = [
+  {
+    hashtagText: "javascript",
+    id: 1,
+    countHashtagOfDetail: getRandomInt(1, 10),
+  },
+  { hashtagText: "python", id: 2, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "java", id: 3, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "c++", id: 4, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "html", id: 5, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "css", id: 6, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "react", id: 7, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "nodejs", id: 8, countHashtagOfDetail: getRandomInt(1, 10) },
+  {
+    hashtagText: "typescript",
+    id: 9,
+    countHashtagOfDetail: getRandomInt(1, 10),
+  },
+  { hashtagText: "angular", id: 10, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "ruby", id: 11, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "php", id: 12, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "swift", id: 13, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "go", id: 14, countHashtagOfDetail: getRandomInt(1, 10) },
+  { hashtagText: "rust", id: 15, countHashtagOfDetail: getRandomInt(1, 10) },
+];
