@@ -24,6 +24,7 @@ export default async function Home() {
           sx={{
             marginTop: "12px",
             padding: { xs: "0 24px", md: "0 0 0 0" },
+            flexGrow:1
           }}
         >
           <Post user={session} />

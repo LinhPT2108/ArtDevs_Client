@@ -76,6 +76,7 @@ import CustomPaging from "./media.post";
 import { useUser } from "@/lib/custom.content";
 import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
+  GLOBAL_DELETE_POST_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
@@ -447,6 +448,16 @@ const Post = ({ user, post }: IPros, props: Props) => {
           isDataloading: isDataLoading,
         },
       });
+    } else if (actionType == "deletePost") {
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          post: dataId,
+          isComment: isComment,
+          index: index,
+          isDataloading: isDataLoading,
+        },
+      });
     }
     console.log(actionDialog);
     setOpenAlerts(true);
@@ -456,20 +467,23 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setContentSharePost("");
     setOpenAlerts(false);
   };
+
   const handleAgreeAlerts = () => {
     console.log("agree");
     console.log(contentSharePost);
-    if (actionDialog.actionType === "deleteCmt") {
+    if (actionDialog.actionType == "deleteCmt") {
       handleDeleteCommentOrReplyComment(
         actionDialog.data.comment,
         actionDialog.data.isComment,
         actionDialog.data.index
       );
-    } else {
+    } else if (actionDialog.actionType == "share") {
       handleSharePost(
         actionDialog.data.post.postId,
         actionDialog.data.isDataloading
       );
+    } else if (actionDialog.actionType == "deletePost") {
+      handleDeletePost(actionDialog.data.post.postId);
     }
     console.log(dataSnackbar);
     handleCloseAlerts();
@@ -1302,9 +1316,44 @@ const Post = ({ user, post }: IPros, props: Props) => {
         body: formData,
       }
     );
-    console.log(">>> check post data: ", response.status);
-    // const data = await response.json();
-    // console.log(data);
+    console.log(">>> check post update: ", response.status);
+    if (response.status == 200) {
+      const data: Post = await response.json();
+      console.log(data);
+      
+      setPosts((prev) =>
+        prev.map((p) => (p.postId === data.postId ? { ...p, ...data } : p))
+      );
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    const response = await sendRequest<boolean>({
+      url: GLOBAL_URL + `/api/delete-post/${postId}`,
+      headers: { authorization: `Bearer ${user?.access_token}` },
+      method: "PUT",
+    });
+    console.log(response);
+    if (response) {
+      setPosts((prevData) => prevData.filter((c) => c.postId !== postId));
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_DELETE_POST_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
   };
 
   const handleChangeContentComment = (value: string) => {
@@ -1856,7 +1905,13 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 <MenuItem onClick={() => handleEditPost(p, index)}>
                   Chỉnh sửa bài viết {index}
                 </MenuItem>
-                <MenuItem onClick={handleClose}>Xóa bài viết</MenuItem>
+                <MenuItem
+                  onClick={() =>
+                    handleClickOpenAlerts(p, "deletePost", false, -1, false)
+                  }
+                >
+                  Xóa bài viết
+                </MenuItem>
               </Menu>
             ) : (
               <Menu
@@ -2300,12 +2355,13 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 value={
                   hashtagData.length > 0
                     ? postData.listHashtag?.map((oldTag) => {
-                        const matchingTag = hashtagData.find((newTag) => newTag.hashtagText === oldTag);
+                        const matchingTag = hashtagData.find(
+                          (newTag) => newTag.hashtagText === oldTag
+                        );
                         return matchingTag ? matchingTag : oldTag;
                       }) || postData.listHashtag
                     : (postData.listHashtag as any)
                 }
-                
                 getOptionLabel={(option: any) => {
                   return formatHashtagText(
                     typeof option === "string" ? option : option.hashtagText
@@ -3575,6 +3631,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
         >
           {actionDialog.actionType == "deleteCmt"
             ? "Xóa bình luận?"
+            : actionDialog.actionType == "deletePost"
+            ? "Xóa bài viết"
             : "Chia sẻ bài viết"}
         </DialogTitle>
         <Divider />
@@ -3582,6 +3640,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
           {actionDialog.actionType == "deleteCmt" ? (
             <Typography sx={{ color: "white" }}>
               Bạn có chắc chắn muốn xóa bình luận này không?
+            </Typography>
+          ) : actionDialog.actionType == "deletePost" ? (
+            <Typography sx={{ color: "white" }}>
+              Bạn có chắc chắn muốn xóa bài viết này không?
             </Typography>
           ) : (
             <>
@@ -3710,12 +3772,16 @@ const Post = ({ user, post }: IPros, props: Props) => {
             Không
           </Button>
           <Button onClick={handleAgreeAlerts} autoFocus>
-            {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
+            {actionDialog.actionType == "deleteCmt"
+              ? "Xóa"
+              : actionDialog.actionType == "deletePost"
+              ? "Xóa"
+              : "Chia sẻ"}
           </Button>
         </DialogActions>
       </Dialog>
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 99999999 }}
         open={openBackdrop}
         // onClick={()=>setOpenBackdrop(false)}
       >
