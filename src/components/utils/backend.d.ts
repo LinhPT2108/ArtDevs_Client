@@ -67,13 +67,13 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
-    confirmPassword: string;
+    birthday: string;
+    confirmPassword?: string;
     profilePicUrl?: string;
     provider?: string;
     username: string;
     role: Role;
-    dateOfBirth: string;
-    gender: string;
+    gender: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
   }
@@ -119,9 +119,9 @@ declare global {
     provider?: string;
     username: string;
     role: Role;
-    dateOfBirth: string;
+    birthday: string;
     profileImageUrl: string;
-    gender: string;
+    gender: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
     listMethod?: any;
@@ -161,6 +161,11 @@ declare global {
     userdto?: T;
     token: string;
     refeshToken: string;
+  }
+
+  interface ResponseStatus {
+    errorCode: number;
+    message: string;
   }
 
   interface IModelPaginate<T> {

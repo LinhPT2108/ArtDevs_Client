@@ -14,10 +14,10 @@ interface IProps {
   role: Role;
   handleListDemandOfUser: (value: MyLanguageProgram[]) => void;
   handleListSkillOfUser: (value: MyLanguageProgram[]) => void;
-  data: UserRegister;
+  data: UserRegister | UserLogin;
 }
 
-const KnowledgeSign = (props: IProps) => {
+const KnowlegdeSign = (props: IProps) => {
   const {
     programingLanguage,
     role,
@@ -83,32 +83,4 @@ const KnowledgeSign = (props: IProps) => {
   );
 };
 
-export default KnowledgeSign;
-
-// const languagePrograms = [
-//   { languageProgram: "Java", value: "Java" },
-//   { languageProgram: "Java EE", value: "Java" },
-//   { languageProgram: "Java Core", value: "Java" },
-//   {
-//     languageProgram: "Java (Spring MVC – Model View Controller)",
-//     value: "Java",
-//   },
-//   { languageProgram: "Java (Struts)", value: "Java" },
-//   { languageProgram: "Java (Hibernate)", value: "Java" },
-//   { languageProgram: "Java (GWT – Google Web Toolkit)", value: "Java" },
-//   { languageProgram: "Java (Vaadin)", value: "Java" },
-//   { languageProgram: "Java (Wicket)", value: "Java" },
-//   { languageProgram: "Java (Grails)", value: "Java" },
-//   { languageProgram: "Java (Play!)", value: "Java" },
-//   { languageProgram: "Java (Vert.X)", value: "Java" },
-//   { languageProgram: "Java (JSF – JavaServer Faces)", value: "Java" },
-//   { languageProgram: "PHP Basic", value: "Java" },
-//   { languageProgram: "PHP (Lavarel)", value: "Java" },
-//   { languageProgram: "PHP (CodeIgniter)", value: "Java" },
-//   { languageProgram: "PHP (Symfony)", value: "Java" },
-//   { languageProgram: "PHP (Zend)", value: "Java" },
-//   { languageProgram: "PHP (Phalcon)", value: "Java" },
-//   { languageProgram: "PHP (CakePHP)", value: "Java" },
-//   { languageProgram: "PHP (Yii)", value: "Java" },
-//   { languageProgram: "PHP (FuelPHP)", value: "Java" },
-// ];
+export default KnowlegdeSign;

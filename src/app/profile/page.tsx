@@ -2,7 +2,6 @@ import HomeProfile from "@/components/profile/home.profile";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { sendRequest } from "@/components/utils/api";
 const Profile = async () => {
   const session: User | null = await getServerSession(authOptions);
   return (

@@ -3,7 +3,6 @@ import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import EditIcon from "@mui/icons-material/Edit";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
-import VpnLockIcon from "@mui/icons-material/VpnLock";
 import {
   Autocomplete,
   Button,
@@ -12,20 +11,29 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
   Grid,
+  IconButton,
+  Radio,
+  RadioGroup,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import { useEffect, useState } from "react";
-import "../../style/style.css";
-import { deleteSpace } from "../utils/utils";
-import PostProfile from "./post.profile";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { useEffect, useState } from "react";
+import "../../style/style.css";
+import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
+import { deleteSpace, formatBirthDay } from "../utils/utils";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import PostProfile from "./post.profile";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -72,10 +80,10 @@ const HomeProfile = ({ session }: IPros) => {
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-
+  console.log(">>> check session: ", session);
   //xử lý mở modal cập nhật
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [open, setOpen] = useState<boolean>(false);
 
   const handleOpen = () => {
@@ -105,6 +113,12 @@ const HomeProfile = ({ session }: IPros) => {
           method: "GET",
         });
         province && setProvinces(province.results);
+        setCity(
+          province?.results &&
+            province?.results.find(
+              (province) => province?.province_name === data?.city
+            )
+        );
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -121,6 +135,13 @@ const HomeProfile = ({ session }: IPros) => {
             method: "GET",
           });
           district && setDistricts(district.results);
+          setDistrict(
+            district?.results?.length > 0
+              ? district.results?.find(
+                  (district) => district.district_name === data?.district
+                )
+              : undefined
+          );
         } else {
           setDistricts([]);
           setDistrict(undefined);
@@ -154,9 +175,7 @@ const HomeProfile = ({ session }: IPros) => {
     const fetchDataDemand = async () => {
       try {
         const response = await sendRequest<MyLanguageProgram[]>({
-          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-          url: "http://localhost:8080/api/programingLanguage",
+          url: GLOBAL_URL + "/api/programingLanguage",
           method: "GET",
         });
         response && setProgramingLanguage(response);
@@ -168,25 +187,31 @@ const HomeProfile = ({ session }: IPros) => {
     fetchDataDemand();
   }, []);
   //xử lý cập nhật thông tin người dùng
-  const [data, setData] = useState<UserRegister>({
-    lastName: "",
-    middleName: "",
-    firstName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    dateOfBirth: "",
-    gender: "male",
-    city: "",
-    district: "",
-    ward: "",
-    role: { id: 2, roleName: "user" },
-    userId: "",
-    username: "",
-    isOnline: false,
-    listDemandOfUser: [],
-    listSkillOfUser: [],
-  });
+  const [data, setData] = useState<UserLogin>(
+    session?.user
+    // {
+    // lastName: session?.user?.lastName ? session?.user?.lastName : "",
+    // middleName: session?.user?.middleName ? session?.user?.middleName : "",
+    // firstName: session?.user?.firstName ? session?.user?.firstName : "",
+    // email: session?.user?.email ? session?.user?.email : "",
+    // password: session?.user?.password ? session?.user?.password : "",
+    // birthday: session?.user?.birthday ? session?.user?.birthday : "",
+    // gender: session?.user?.gender ? session?.user?.gender : 0,
+    // city: session?.user?.city ? session?.user?.city : "",
+    // district: session?.user?.district ? session?.user?.district : "",
+    // ward: session?.user?.ward ? session?.user?.email : "",
+    // role: session?.user?.role,
+    // userId: session?.user?.userId ? session?.user?.userId : "",
+    // username: session?.user?.username ? session?.user?.username : "",
+    // isOnline: true,
+    // listDemandOfUser: session?.user?.listDemandOfUser
+    //   ? session?.user?.listDemandOfUser
+    //   : [],
+    // listSkillOfUser: session?.user?.listSkillOfUser
+    //   ? session?.user?.listSkillOfUser
+    //   : [],
+    // }
+  );
   const handleLastName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
@@ -208,10 +233,10 @@ const HomeProfile = ({ session }: IPros) => {
   const handleDateOfBirth = (value: string) => {
     setData((prevData) => ({
       ...prevData,
-      dateOfBirth: value,
+      birthday: value,
     }));
   };
-  const handleGender = (value: string) => {
+  const handleGender = (value: number) => {
     setData((prevData) => ({
       ...prevData,
       gender: value,
@@ -284,9 +309,36 @@ const HomeProfile = ({ session }: IPros) => {
     }));
   };
 
-  const handleUpdateProfile = () => {
-    console.log(">>> check data: ", data);
+  // const handleUpdateProfile = () => {
+  //   console.log(">>> check data: ", data);
+  // };
+
+  const handleUpdateProfile = async () => {
+    try {
+      console.log(">>> check data: ", data);
+      const response = await sendRequest<ResponseStatus>({
+        url: GLOBAL_URL + "/api/user/update-profile",
+        method: "PUT",
+        body: { ...data },
+      });
+      console.log(">>> check response: ", response);
+      if (response.errorCode == 200) {
+        const updatedUserData: User = {
+          access_token: session?.access_token,
+          refresh_token: session?.refresh_token,
+          user: {
+            ...data,
+          },
+        };
+        console.log(">>> check local: ", sessionStorage.getItem("userdto"));
+        handleClose();
+        // localStorage.setItem("user", JSON.stringify(updatedUserData));
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
+
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
       <Box
@@ -596,7 +648,7 @@ const HomeProfile = ({ session }: IPros) => {
                           fontSize: { xs: "16px", sm: "12px", md: "16px" },
                         }}
                       >
-                        {session?.user?.city ? session?.user?.city : ""}
+                        {session?.user?.district ? session?.user?.district : ""}
                       </Typography>
                     </Box>
                     <Box
@@ -621,7 +673,7 @@ const HomeProfile = ({ session }: IPros) => {
                           fontSize: { xs: "16px", sm: "12px", md: "16px" },
                         }}
                       >
-                        {session?.user?.city ? session?.user?.city : ""}
+                        {session?.user?.ward ? session?.user?.ward : ""}
                       </Typography>
                     </Box>
                   </Box>
@@ -686,23 +738,240 @@ const HomeProfile = ({ session }: IPros) => {
                   >
                     <DialogTitle
                       id="responsive-dialog-title"
-                      sx={{ color: "#293145", fontWeight: "bold" }}
+                      sx={{
+                        color: "#293145",
+                        fontSize: { xs: 18, sm: 24 },
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
                     >
-                      Cập nhật thông tin cá nhân
+                      <Typography
+                        sx={{
+                          color: "#293145",
+                          fontWeight: "bold",
+                          fontSize: { xs: 18, sm: 24 },
+                        }}
+                      >
+                        Cập nhật thông tin cá nhân
+                      </Typography>
+                      <IconButton
+                        aria-label="close"
+                        onClick={handleClose}
+                        sx={{
+                          // position: "absolute",
+                          // right: 8,
+                          // top: 8,
+                          color: (theme) => theme.palette.grey[500],
+                        }}
+                      >
+                        <CloseIcon />
+                      </IconButton>
                     </DialogTitle>
+
                     <Box sx={{ padding: "0 24px" }}>
                       <Divider />
                     </Box>
-                    <DialogContent>
+                    <DialogContent sx={{ paddingY: "12px" }}>
+                      <Box
+                        sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}
+                      >
+                        Thông tin chung
+                      </Box>
+                      <Grid
+                        columns={24}
+                        container
+                        spacing={2}
+                        sx={{
+                          paddingLeft: "0 !important",
+                        }}
+                      >
+                        <Grid
+                          item
+                          xs={24}
+                          md={8}
+                          sx={{
+                            paddingTop: {
+                              xs: "0 !important",
+                              md: "16px !important",
+                            },
+                          }}
+                        >
+                          <TextField
+                            onChange={(e) => handleFirstName(e.target.value)}
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="first-name"
+                            label="Họ"
+                            name="first-name"
+                            autoComplete="new-first-name"
+                            autoFocus
+                            value={data?.firstName}
+                            sx={{
+                              marginBottom: "0",
+                            }}
+                          />
+                        </Grid>
+                        <Grid
+                          item
+                          xs={24}
+                          md={8}
+                          sx={{
+                            paddingTop: {
+                              xs: "0 !important",
+                              md: "16px !important",
+                            },
+                          }}
+                        >
+                          <TextField
+                            onChange={(e) => handleMiddleName(e.target.value)}
+                            variant="outlined"
+                            margin="normal"
+                            fullWidth
+                            id="middle-name"
+                            label="Tên đệm"
+                            name="middle-name"
+                            autoComplete="new-middle-name"
+                            autoFocus
+                            value={data?.middleName}
+                            sx={{ marginBottom: "0" }}
+                          />
+                        </Grid>
+                        <Grid
+                          item
+                          xs={24}
+                          md={8}
+                          sx={{
+                            paddingTop: {
+                              xs: "0 !important",
+                              md: "16px !important",
+                            },
+                          }}
+                        >
+                          <TextField
+                            onChange={(e) => handleLastName(e.target.value)}
+                            variant="outlined"
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="last-name"
+                            label="Tên"
+                            name="last-name"
+                            autoComplete="new-last-name"
+                            autoFocus
+                            value={data?.lastName}
+                            sx={{ marginBottom: "0" }}
+                          />
+                        </Grid>
+                      </Grid>
+                      <Grid
+                        columns={24}
+                        container
+                        spacing={2}
+                        sx={{
+                          marginTop: "auto",
+                          // paddingLeft: "0 !important",
+                          // paddingTop: "0 !important",
+                        }}
+                      >
+                        <Grid
+                          item
+                          xs={24}
+                          md={12}
+                          sx={{
+                            paddingTop: {
+                              xs: "16px !important",
+                              md: "0 !important",
+                            },
+                          }}
+                        >
+                          <TextField
+                            onChange={(e) => handleDateOfBirth(e.target.value)}
+                            variant="outlined"
+                            margin="normal"
+                            fullWidth
+                            type="date"
+                            id="date-of-birth"
+                            label="Ngày sinh"
+                            name="date-of-birth"
+                            autoComplete="new-date-of-birth"
+                            autoFocus
+                            value={formatBirthDay(data?.birthday)}
+                            sx={{
+                              marginBottom: "0",
+                              "& input": {
+                                paddingLeft: `${
+                                  data?.birthday ? "14px" : "100px"
+                                }`,
+                                "&:focus": {
+                                  paddingLeft: "14px",
+                                },
+                              },
+                            }}
+                          />
+                        </Grid>
+                        <Grid item xs={24} md={12}>
+                          <FormControl>
+                            <FormLabel id="demo-row-radio-buttons-group-label">
+                              Gender
+                            </FormLabel>
+                            <RadioGroup
+                              row
+                              aria-labelledby="demo-row-radio-buttons-group-label"
+                              name="row-radio-buttons-group"
+                              value={data?.gender}
+                              onChange={(e) => {
+                                handleGender(+e.target.value);
+                              }}
+                            >
+                              <FormControlLabel
+                                value="1"
+                                control={<Radio />}
+                                label="Nam"
+                              />
+                              <FormControlLabel
+                                value="2"
+                                control={<Radio />}
+                                label="Nữ"
+                              />
+                              <FormControlLabel
+                                value="3"
+                                control={<Radio />}
+                                label="Khác"
+                              />
+                            </RadioGroup>
+                          </FormControl>
+                        </Grid>
+                      </Grid>
+                      <Box sx={{ padding: "12px 0" }}>
+                        <Divider />
+                      </Box>
+                      <KnowledgeSign
+                        programingLanguage={programingLanguage}
+                        role={data.role}
+                        handleListDemandOfUser={handleListDemandOfUser}
+                        handleListSkillOfUser={handleListSkillOfUser}
+                        data={data}
+                      />
+                      <Box sx={{ padding: "16px 0" }}>
+                        <Divider />
+                      </Box>
+                      <Box
+                        sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}
+                      >
+                        Địa chỉ
+                      </Box>
                       <Grid
                         container
                         spacing={2}
-                        sx={{ paddingLeft: "0 !important" }}
+                        sx={{ paddingLeft: "0 !important", marginTop: "auto" }}
                       >
-                        <Grid item xs={24} md={8}>
+                        <Grid item xs={24}>
                           <Autocomplete
                             id="country-select-demo"
-                            sx={{ width: 300 }}
+                            // sx={{ width: 300 }}
                             options={provinces || []}
                             autoHighlight
                             getOptionLabel={(province) =>
@@ -733,10 +1002,10 @@ const HomeProfile = ({ session }: IPros) => {
                             )}
                           />
                         </Grid>
-                        <Grid item xs={24} md={8}>
+                        <Grid item xs={24}>
                           <Autocomplete
                             id="district-select-demo"
-                            sx={{ width: 300 }}
+                            // sx={{ width: 300 }}
                             options={districts || []}
                             autoHighlight
                             getOptionLabel={(district) =>
@@ -771,10 +1040,10 @@ const HomeProfile = ({ session }: IPros) => {
                             )}
                           />
                         </Grid>
-                        <Grid item xs={24} md={8}>
+                        <Grid item xs={24}>
                           <Autocomplete
                             id="district-select-demo"
-                            sx={{ width: 300 }}
+                            // sx={{ width: 300 }}
                             options={wards || []}
                             autoHighlight
                             getOptionLabel={(ward) => ward.ward_name}
@@ -806,12 +1075,25 @@ const HomeProfile = ({ session }: IPros) => {
                           />
                         </Grid>
                       </Grid>
+                      <Box sx={{ paddingTop: " 16px" }}>
+                        <Divider />
+                      </Box>
                     </DialogContent>
                     <DialogActions>
-                      <Button autoFocus onClick={handleClose}>
+                      <Button
+                        autoFocus
+                        variant="outlined"
+                        color="error"
+                        onClick={handleClose}
+                      >
                         Hủy bỏ
                       </Button>
-                      <Button onClick={handleUpdateProfile} autoFocus>
+                      <Button
+                        variant="outlined"
+                        color="success"
+                        onClick={handleUpdateProfile}
+                        autoFocus
+                      >
                         Lưu lại
                       </Button>
                     </DialogActions>

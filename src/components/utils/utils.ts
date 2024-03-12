@@ -110,6 +110,16 @@ export const formatDateString = (input: string | null | undefined): string => {
   }
 };
 
+export const formatBirthDay = (input: string | null | undefined): string => {
+  if (input) {
+    const dateObject = parseISO(input);
+    const formattedDate = format(dateObject, "yyyy-MM-dd");
+    return formattedDate;
+  } else {
+    return "";
+  }
+};
+
 export function deleteSpace(value: string): string {
   const char: string[] = value.split(" ");
 

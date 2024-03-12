@@ -87,8 +87,8 @@ const SignUp = (props: MyData) => {
     email: "",
     password: "",
     confirmPassword: "",
-    dateOfBirth: "",
-    gender: "male",
+    birthday: "",
+    gender: 1,
     city: "",
     district: "",
     ward: "",
@@ -154,10 +154,10 @@ const SignUp = (props: MyData) => {
   const handleDateOfBirth = (value: string) => {
     setData((prevData) => ({
       ...prevData,
-      dateOfBirth: value,
+      birthday: value,
     }));
   };
-  const handleGender = (value: string) => {
+  const handleGender = (value: number) => {
     setData((prevData) => ({
       ...prevData,
       gender: value,
