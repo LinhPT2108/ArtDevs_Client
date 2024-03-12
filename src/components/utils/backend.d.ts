@@ -304,4 +304,5 @@ declare global {
     fullname: string;
     userReceiveDto: UserPost;
   }
+
 }

@@ -21,11 +21,12 @@ import {
 import Box from "@mui/material/Box";
 import { useEffect, useState } from "react";
 import "../../style/style.css";
-import { deleteSpace } from "../utils/utils";
+import { deleteSpace, isFile } from "../utils/utils";
 import PostProfile from "./post.profile";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { sendRequest } from "../utils/api";
+import { GLOBAL_URL } from "../utils/veriable.global";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -64,6 +65,7 @@ interface IPros {
 
 const HomeProfile = ({ session }: IPros) => {
   const [value, setValue] = useState(0);
+  const [openFileInput, setOpenFileInput] = useState(false);
   let firstName = session?.user?.firstName ? session?.user?.firstName : "";
   let middleName = session?.user?.middleName ? session?.user?.middleName : "";
   let lastName = session?.user?.lastName ? session?.user?.lastName : "";
@@ -111,7 +113,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataProvince();
   }, []);
-
+  console.log(" check session", session);
   useEffect(() => {
     const fetchDataDistrict = async () => {
       try {
@@ -187,6 +189,95 @@ const HomeProfile = ({ session }: IPros) => {
     listDemandOfUser: [],
     listSkillOfUser: [],
   });
+  const formData = new FormData();
+
+  const handlepProfileImgChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      if (!(event.target instanceof HTMLInputElement)) {
+        console.log("Unexpected event target type");
+      }
+
+      const file = event.target.files?.[0];
+      console.log("check file:", file);
+
+      if (!file) {
+        console.log("No file selected!");
+        return;
+      }
+
+      formData.append("imageUrl", file);
+      formData.append("positionOfPic", "true");
+      console.log("check form data", formData);
+
+      const response = await fetch(GLOBAL_URL + "/api/add-picture", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+
+      // Handle API response successfully
+      if (response.ok) {
+        const data = await response.json();
+        // Process successful response data
+        session.user.profileImageUrl === data.imageUrl;
+        console.log("API response:", data);
+      } else {
+        // Handle error response
+        const error = await response.text();
+        console.error("API error:", error);
+      }
+    } catch (error) {
+      // Handle errors during file selection or API call
+      console.error("Error:", error);
+      // Provide user-friendly feedback
+    }
+  };
+  const handlepBackgroundImgChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      if (!(event.target instanceof HTMLInputElement)) {
+        console.log("Unexpected event target type");
+      }
+
+      const file = event.target.files?.[0];
+      console.log("check file:", file);
+
+      if (!file) {
+        console.log("No file selected!");
+        return;
+      }
+
+      formData.append("imageUrl", file);
+      formData.append("positionOfPic", "false");
+      console.log("check form data", formData);
+
+      const response = await fetch(GLOBAL_URL + "/api/add-picture", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+
+      // Handle API response successfully
+      if (response.ok) {
+        const data = await response.json();
+        // Process successful response data
+        session.user.profileImageUrl === data.imageUrl;
+        console.log("API response:", data);
+      } else {
+        // Handle error response
+        const error = await response.text();
+        console.error("API error:", error);
+      }
+    } catch (error) {
+      // Handle errors during file selection or API call
+      console.error("Error:", error);
+      // Provide user-friendly feedback
+    }
+  };
+
   const handleLastName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
@@ -283,6 +374,10 @@ const HomeProfile = ({ session }: IPros) => {
       listSkillOfUser: arrayOfValues,
     }));
   };
+  const handleFileInputClick = () => {
+    setOpenFileInput(true);
+    // You can optionally focus the input element programmatically here
+  };
 
   const handleUpdateProfile = () => {
     console.log(">>> check data: ", data);
@@ -310,7 +405,13 @@ const HomeProfile = ({ session }: IPros) => {
             },
           }}
         >
-          <img src="/profile/cover-image.jpg" />
+          <img
+            src={`${
+              session?.user?.backgroundImageUrl
+                ? session?.user?.backgroundImageUrl
+                : "/profile/user.jpg"
+            }`}
+          />
 
           <Box
             sx={{
@@ -334,11 +435,20 @@ const HomeProfile = ({ session }: IPros) => {
                   border: "none",
                 },
               }}
+              onClick={handleFileInputClick}
             >
               <EditIcon />
               <Typography component={"p"} sx={{ marginLeft: "6px" }}>
                 Edit Covar Photo
               </Typography>
+              <input
+                type="file"
+                id="profile-image-input"
+                accept="image/*"
+                multiple={false}
+                onChange={handlepBackgroundImgChange}
+                style={{ display: openFileInput ? "block" : "none" }}
+              />
             </Button>
           </Box>
         </Box>
@@ -370,13 +480,39 @@ const HomeProfile = ({ session }: IPros) => {
             "& img": { width: "125px", height: "125px", borderRadius: "50%" },
           }}
         >
-          <img
+          {/* <img
             id="Profile_images"
             src={`${
               session?.user?.profileImageUrl
                 ? session?.user?.profileImageUrl
                 : "/profile/user.jpg"
             }`}
+            
+          /> */}
+
+          <Box
+            component="img"
+            sx={{
+              height: 233,
+              width: 350,
+              maxHeight: { xs: 233, md: 167 },
+              maxWidth: { xs: 350, md: 250 },
+            }}
+            alt="The house from the offer."
+            src={`${
+              session?.user?.profileImageUrl
+                ? session?.user?.profileImageUrl
+                : "/profile/user.jpg"
+            }`}
+            onClick={handleFileInputClick}
+          />
+          <input
+            type="file"
+            id="profile-image-input"
+            accept="image/*"
+            multiple={false}
+            onChange={handlepProfileImgChange}
+            style={{ display: openFileInput ? "block" : "none" }}
           />
           <Box
             sx={{
