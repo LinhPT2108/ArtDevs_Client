@@ -217,6 +217,17 @@ declare global {
     listHashtag: string[] | null;
   }
 
+  interface UpdatePost {
+    postId: string;
+    content: string;
+    time: Date;
+    timelineUserId: Date;
+    userId: string;
+    listImageofPost: File[] | null;
+    privacyPostDetails: number;
+    listHashtag: HashtagInfor[];
+  }
+
   interface MentorInfor {
     userID: string;
     content: string;

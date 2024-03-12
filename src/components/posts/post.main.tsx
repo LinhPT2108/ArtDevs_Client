@@ -322,12 +322,29 @@ interface IPros {
 
 const Post = ({ user, post }: IPros, props: Props) => {
   // const { user, setUser } = useUser();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  const [anchorEl, setAnchorEl] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [open, setOpen] = useState([]);
   const [openAlerts, setOpenAlerts] = useState(false);
   const [openPost, setOpenPost] = useState(false);
-  const handleOpenPost = () => setOpenPost(true);
+  const handleOpenPost = () => {
+    setPostData({
+      postId: "",
+      content: "",
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: user ? user?.user?.userId : "",
+      listImageofPost: null,
+      privacyPostDetails: 1,
+      listHashtag: [],
+    });
+    setIsEditPost(false);
+    setOpenPost(true);
+  };
   const handleClosePost = () => setOpenPost(false);
+  const [isEditPost, setIsEditPost] = useState(false);
+
   const [dataLoading, setDataLoading] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [endPost, setEndPost] = useState<boolean>(false);
@@ -343,6 +360,16 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [isLoadingComment, setIsLoadingComment] = useState(false);
   const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
   const [isComment, setIsComment] = useState<boolean>(false);
+  const [postData, setPostData] = useState<AddPost>({
+    postId: "",
+    content: "",
+    time: new Date(),
+    timelineUserId: new Date(),
+    userId: user ? user?.user?.userId : "",
+    listImageofPost: null,
+    privacyPostDetails: 1,
+    listHashtag: [],
+  });
   const [anchorElArray, setAnchorElArray] = useState<
     ((EventTarget & HTMLElement) | null)[]
   >([]);
@@ -354,10 +381,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
   const [editingIndexComment, setEditingIndexComment] = useState<string>("");
   const [editedContentComment, setEditedContentComment] = useState("");
   const [editedImageComment, setEditedImageComment] = useState<any>();
-
   const [editingIndexReplyComment, setEditingIndexReplyComment] =
     useState<string>("");
-
   const [editedContentReplyComment, setEditedContentReplyComment] =
     useState("");
   const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
@@ -369,7 +394,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
   });
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
   const [hashtagData, setHashtagData] = useState<HashtagInfor[]>([]);
-
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [dataSnackbar, setDataSnackbar] = useState<any>({
     openSnackbar: false,
@@ -794,7 +818,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
   };
 
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    "http://localhost:8080/api/news-feed",
+    "http://localhost:8080/api/post-by-user-logged",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -1031,23 +1055,28 @@ const Post = ({ user, post }: IPros, props: Props) => {
     });
   };
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleClick = (event: React.MouseEvent<HTMLElement>, index: number) => {
+    const newOpenArray = [...open] as boolean[];
+    newOpenArray[index] = true;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = event.currentTarget;
+
+    setOpen(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
   };
 
-  const [postData, setPostData] = useState<AddPost>({
-    postId: "",
-    content: "",
-    time: new Date(),
-    timelineUserId: new Date(),
-    userId: user ? user?.user?.userId : "",
-    listImageofPost: null,
-    privacyPostDetails: 1,
-    listHashtag: [],
-  });
+  const handleClose = (index: any) => {
+    console.log(index);
+    const newOpenArray = [...open] as boolean[];
+    newOpenArray[index] = false;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = null;
+
+    setOpen(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
+  };
 
   const handleContentPost = (value: string) => {
     setPostData((prevData) => ({
@@ -1072,7 +1101,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
   };
 
   const formatHashtagText = (hashtagText: any) => {
-    console.log(hashtagText);
     if (hashtagText && typeof hashtagText === "string") {
       return hashtagText.trim().replace(/\s/g, "-");
     } else {
@@ -1196,6 +1224,87 @@ const Post = ({ user, post }: IPros, props: Props) => {
         type: "error",
       });
     }
+  };
+
+  const fetchImageAsFile = async (imageUrl: string): Promise<File | null> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], imageUrl, { type: "image/png" });
+      return file;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
+
+  const handleEditPost = async (post: Post, index: number) => {
+    setHashtagData([]);
+    setSearchValueHashtag("");
+    setIsEditPost(true);
+    handleClose(index);
+    console.log(post);
+    setOpenPost(true);
+    const selectedPrivacy = post.privacyPostDetails.find(
+      (privacy) => privacy.status
+    );
+    console.log(post.listImageofPost);
+    const editedPostData: AddPost = {
+      postId: post.postId,
+      content: post.content,
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: post.userPost.userId,
+      listImageofPost: (await Promise.all(
+        post.listImageofPost?.map(async (image) => {
+          const file = await fetchImageAsFile(image.imageUrl);
+          return file;
+        })
+      )) as File[],
+      privacyPostDetails: selectedPrivacy?.privacyPostId as number,
+      listHashtag: post.listHashtag.map((hashtag) => hashtag.hashtagDetailName),
+    };
+    setPostData(editedPostData);
+  };
+
+  const handleSaveEditPost = async () => {
+    console.log(postData);
+    const formData = new FormData();
+    formData.append(
+      "postDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            postId: postData.postId,
+            content: postData.content,
+            listHashtag: postData.listHashtag,
+            timelineUserId: postData.timelineUserId,
+            time: postData.time,
+            privacyPostDetails: postData.privacyPostDetails,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (postData.listImageofPost) {
+      postData.listImageofPost.forEach((file: any, index: any) => {
+        formData.append("listImageofPost", file);
+      });
+    } else {
+      formData.append("listImageofPost", "");
+    }
+    const response = await fetch(
+      GLOBAL_URL + "/api/update-post/" + postData.postId,
+      {
+        method: "PUT",
+        headers: { authorization: `Bearer ${user?.access_token}` },
+        body: formData,
+      }
+    );
+    console.log(">>> check post data: ", response.status);
+    // const data = await response.json();
+    // console.log(data);
   };
 
   const handleChangeContentComment = (value: string) => {
@@ -1541,12 +1650,14 @@ const Post = ({ user, post }: IPros, props: Props) => {
               }
               action={
                 <IconButton
-                  onClick={handleClick}
+                  onClick={(event) => handleClick(event, index)}
                   size="small"
                   sx={{ ml: 2 }}
-                  aria-controls={open ? "account-menu" : undefined}
+                  aria-controls={
+                    open[index] ? `account-menu-${index}` : undefined
+                  }
                   aria-haspopup="true"
-                  aria-expanded={open ? "true" : undefined}
+                  aria-expanded={open[index] ? "true" : undefined}
                 >
                   <Avatar sx={{ width: 32, height: 32 }}>
                     <MoreVertIcon />
@@ -1708,11 +1819,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
             </CardActions>
             {user?.user.userId == p.userPost.userId ? (
               <Menu
-                anchorEl={anchorEl}
-                id="account-menu"
-                open={open}
-                onClose={handleClose}
-                onClick={handleClose}
+                anchorEl={anchorEl[index]}
+                id={`account-menu-${index}`}
+                open={open[index]}
+                onClose={() => handleClose(index)}
+                onClick={() => handleClose(index)}
                 PaperProps={{
                   elevation: 0,
                   sx: {
@@ -1742,16 +1853,18 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
-                <MenuItem onClick={handleClose}>Chỉnh sửa bài viết</MenuItem>
+                <MenuItem onClick={() => handleEditPost(p, index)}>
+                  Chỉnh sửa bài viết {index}
+                </MenuItem>
                 <MenuItem onClick={handleClose}>Xóa bài viết</MenuItem>
               </Menu>
             ) : (
               <Menu
-                anchorEl={anchorEl}
-                id="account-menu"
-                open={open}
-                onClose={handleClose}
-                onClick={handleClose}
+                anchorEl={anchorEl[index]}
+                id={`account-menu-${index}`}
+                open={open[index]}
+                onClose={() => handleClose(index)}
+                onClick={() => handleClose(index)}
                 PaperProps={{
                   elevation: 0,
                   sx: {
@@ -1825,10 +1938,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
               }
               action={
                 <IconButton
-                  onClick={handleClick}
+                  onClick={(event) => handleClick(event, index)}
                   size="small"
                   sx={{ ml: 2 }}
-                  aria-controls={open ? "account-menu" : undefined}
+                  aria-controls={open ? `account-menu-${index}` : undefined}
                   aria-haspopup="true"
                   aria-expanded={open ? "true" : undefined}
                 >
@@ -1981,11 +2094,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
               </IconButton>
             </CardActions>
             <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={open}
-              onClose={handleClose}
-              onClick={handleClose}
+              anchorEl={anchorEl[index]}
+              id={`account-menu-${index}`}
+              open={open[index]}
+              onClose={() => handleClose(index)}
+              onClick={() => handleClose(index)}
               PaperProps={{
                 elevation: 0,
                 sx: {
@@ -2015,11 +2128,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={() => handleClose(index)}>
                 <ReportGmailerrorredOutlinedIcon sx={{ marginRight: "6px" }} />
                 Báo cáo bài viết
               </MenuItem>
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={() => handleClose(index)}>
                 <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
                 Báo cáo vi phạm
               </MenuItem>
@@ -2168,6 +2281,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 }}
                 fullWidth
                 disableUnderline
+                value={postData.content}
               />
             </CardContent>
             <CardContent
@@ -2182,6 +2296,16 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 freeSolo
                 id="tags-standard"
                 options={hashtagData as HashtagInfor[]}
+                // value={postData.listHashtag as any}
+                value={
+                  hashtagData.length > 0
+                    ? postData.listHashtag?.map((oldTag) => {
+                        const matchingTag = hashtagData.find((newTag) => newTag.hashtagText === oldTag);
+                        return matchingTag ? matchingTag : oldTag;
+                      }) || postData.listHashtag
+                    : (postData.listHashtag as any)
+                }
+                
                 getOptionLabel={(option: any) => {
                   return formatHashtagText(
                     typeof option === "string" ? option : option.hashtagText
@@ -2212,8 +2336,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
                       </Typography>
                       {selected ? (
                         <CheckIcon color="success" fontWeight="Bold" />
+                      ) : "" + selected ? (
+                        selected
                       ) : (
-                        ""
+                        selected
                       )}
                       <Chip
                         label={option.countHashtagOfDetail + " bài viết"}
@@ -2244,6 +2370,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                       },
                     }}
                     onChange={handleTextFieldChange}
+                    value={searchValueHashtag}
                     InputLabelProps={{
                       style: {
                         color: "white",
@@ -2341,7 +2468,11 @@ const Post = ({ user, post }: IPros, props: Props) => {
           >
             Hủy
           </Button>
-          <Button onClick={handlePost}>Đăng</Button>
+          {isEditPost ? (
+            <Button onClick={handleSaveEditPost}>Lưu</Button>
+          ) : (
+            <Button onClick={handlePost}>Đăng</Button>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -3584,7 +3715,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
         </DialogActions>
       </Dialog>
       <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={openBackdrop}
         // onClick={()=>setOpenBackdrop(false)}
       >
