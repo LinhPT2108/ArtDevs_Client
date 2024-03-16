@@ -13,6 +13,7 @@ import {
   IconButton,
   InputAdornment,
   Link,
+  Modal,
   TextField,
   Typography,
 } from "@mui/material";
@@ -24,11 +25,14 @@ import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
 
+import ForgotPassword from "./sign.forgotpasswork";
+
 interface State extends SnackbarOrigin {
   open: boolean;
 }
 
 const SignIn = () => {
+  const [showForgotPassword, setForgotPassword] = useState(false);
   const { setUser } = useUser();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -130,7 +134,15 @@ const SignIn = () => {
       // setLoading(false);
     }
   };
-
+  const handleForgotPasswordLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
+    e.preventDefault();
+    setForgotPassword(true);
+  };
+  const handleForgotPasswordModalClose = () => {
+    setForgotPassword(false);
+  };
   return (
     <Box
       sx={{
@@ -329,9 +341,19 @@ const SignIn = () => {
                   textDecoration: "none",
                   "&:hover": { color: "#283593" },
                 }}
+                onClick={handleForgotPasswordLinkClick}
               >
                 Quên mật khẩu?
               </Link>
+              <Modal
+                open={showForgotPassword}
+                onClose={handleForgotPasswordModalClose}
+              >
+                <ForgotPassword
+                  openModal={showForgotPassword}
+                  onClose={handleForgotPasswordModalClose}
+                />
+              </Modal>
               <Divider sx={{ width: "100%", margin: " 20px 16px" }} />
               <Button
                 variant="contained"

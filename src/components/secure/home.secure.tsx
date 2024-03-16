@@ -29,6 +29,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import { compare } from "bcryptjs";
 import bcrypt from "bcryptjs";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import { sendRequest } from "../utils/api";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
 interface PasswordForm {
@@ -40,8 +41,10 @@ interface IPros {
   session: User;
 }
 export default function HomeSecure({ session }: IPros) {
-  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+  // localStorage.setItem("vericode", session);
+  const [changePassword, setChangePassword] = React.useState<ReponseError>();
 
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
 
   const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
     Array(options.length).fill(null)
@@ -103,16 +106,17 @@ export default function HomeSecure({ session }: IPros) {
     // Handle the form submission with the entered data
     console.log("Form Data:", formData);
     console.log("sesstion:", session);
-
-    const response = await fetch(GLOBAL_URL + "/api/changepass", {
-      method: "POST",
+    const response = await sendRequest<ReponseError>({
+      url: GLOBAL_URL + "/api/changepass",
       headers: {
-        "Content-Type": "application/json", // Đảm bảo rằng bạn đã đặt đúng Content-Type
         authorization: `Bearer ${session?.access_token}`,
       },
-      body: JSON.stringify(formData),
+      body: { ...formData },
+      method: "POST",
     });
-    console.log(" check API", response);
+
+    console.log(" check API changpass", response.message);
+    setChangePassword(response);
     showSnackbar();
     // Reset the form after successful submission
     setFormData({
@@ -125,8 +129,6 @@ export default function HomeSecure({ session }: IPros) {
     setSnackbarOpen(true);
     setTimeout(() => setSnackbarOpen(false), 10000);
   };
-
-
 
   return (
     <React.Fragment>
@@ -344,7 +346,7 @@ export default function HomeSecure({ session }: IPros) {
       </Container>
       <Snackbar
         open={snackbarOpen}
-        message="Đổi mật khẩu thành công !"
+        message={changePassword?.message}
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         sx={{
@@ -352,7 +354,6 @@ export default function HomeSecure({ session }: IPros) {
           backgroundColor: "#4CAF50",
         }}
       />
-     
     </React.Fragment>
   );
 }

@@ -304,5 +304,19 @@ declare global {
     fullname: string;
     userReceiveDto: UserPost;
   }
+  interface ReponseError {
+    errorCode: number;
+    message: string;
+  }
 
+  interface ReponseSendCode{
+    statusCode: number;
+    message: string;
+    model: Verification;
+  }
+
+  interface Verification{
+    email : string;
+    verificationCode : number;
+  }
 }
