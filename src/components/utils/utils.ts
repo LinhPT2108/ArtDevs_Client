@@ -267,3 +267,20 @@ export const postReplyCommentApi = async (
     throw error;
   }
 };
+
+export function calculateHoursDifference(
+  existingTime: string
+): number | string {
+  const existingDate = new Date(existingTime);
+  const currentDate = new Date();
+
+  const timeDifference = currentDate.getTime() - existingDate.getTime();
+  const hoursDifference = timeDifference / (1000 * 60 * 60);
+
+  if (hoursDifference > 24) {
+    const daysDifference = Math.round(hoursDifference / 24);
+    return `${daysDifference} ngày trước`;
+  } else {
+    return `${Math.round(hoursDifference)} giờ trước`;
+  }
+}

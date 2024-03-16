@@ -166,7 +166,7 @@ const AppMenu = ({ session }: { session: User }) => {
       <Box
         sx={{
           position: "fixed",
-          top: { xs: "58px", sm: "85px" },
+          top: { xs: "58px", sm: "108px" },
           left: { xs: "0", sm: "12px" },
           overflow: "auto",
           maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },

@@ -1,5 +1,21 @@
 "use client";
+import { sendRequest } from "@/components/utils/api";
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import { AddPhotoAlternate } from "@mui/icons-material";
+import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
+import CommentIcon from "@mui/icons-material/Comment";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
+import SendIcon from "@mui/icons-material/Send";
+import ShareIcon from "@mui/icons-material/Share";
+import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
+import VideoFileIcon from "@mui/icons-material/VideoFile";
 import {
+  Alert,
   Autocomplete,
   Avatar,
   Backdrop,
@@ -10,98 +26,64 @@ import {
   CardContent,
   CardHeader,
   CardMedia,
+  Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   Fade,
+  FormControl,
+  FormHelperText,
+  Grid,
   IconButton,
+  LinearProgress,
   Menu,
   MenuItem,
   Modal,
   Paper,
-  TextField,
-  Typography,
-  Tooltip,
-  Zoom,
-  IconButtonProps,
-  styled,
-  ToggleButton,
-  imageListItemBarClasses,
-  Grid,
-  Chip,
-  LinearProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Slide,
-  Divider,
-  Snackbar,
-  Alert,
-  DialogContentText,
-  FormControl,
   Select,
   SelectChangeEvent,
-  FormHelperText,
-  ImageList,
-  ImageListItem,
+  Slide,
+  Snackbar,
+  TextField,
+  Tooltip,
+  Typography,
+  Zoom,
+  styled,
 } from "@mui/material";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
-import CommentIcon from "@mui/icons-material/Comment";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
-import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import Stack from "@mui/material/Stack";
+import AppBar from "@mui/material/AppBar";
+import Container from "@mui/material/Container";
+import CssBaseline from "@mui/material/CssBaseline";
+import Input from "@mui/material/Input";
+import Toolbar from "@mui/material/Toolbar";
 import { red } from "@mui/material/colors";
-import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import React, {
-  HtmlHTMLAttributes,
-  SetStateAction,
-  useEffect,
-  useId,
-  useState,
-} from "react";
-import Link from "next/link";
+import { TransitionProps } from "@mui/material/transitions";
+import useScrollTrigger from "@mui/material/useScrollTrigger";
 import { format, parseISO } from "date-fns";
-import ClearIcon from "@mui/icons-material/Clear";
-import { sendRequest } from "../utils/api";
-import uploadContentAndFiles, {
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import useSWR, { SWRResponse } from "swr";
+import "../../style/post-loading.css";
+import {
+  ImageReplyViewerEdit,
+  ImageViewer,
+  ImageViewerEdit,
+} from "../utils/component.global";
+import postCommentApi, {
   generateUniqueId,
   isFile,
   isImage,
   postReplyCommentApi,
 } from "../utils/utils";
-import "../../style/post-loading.css";
-import Slider from "react-slick";
-import CustomPaging from "./media.post";
-import { useUser } from "@/lib/custom.content";
 import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_DELETE_POST_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
-  GLOBAL_URL,
 } from "../utils/veriable.global";
-import useSWR, { SWRResponse } from "swr";
-import SendIcon from "@mui/icons-material/Send";
-import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import CssBaseline from "@mui/material/CssBaseline";
-import useScrollTrigger from "@mui/material/useScrollTrigger";
-import Container from "@mui/material/Container";
-import CheckIcon from "@mui/icons-material/Check";
-import Fab from "@mui/material/Fab";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import { AddPhotoAlternate } from "@mui/icons-material";
-import {
-  ImageViewerEdit,
-  ImageViewer,
-  ImageReplyViewerEdit,
-} from "../utils/component.global";
-import postCommentApi from "../utils/utils";
-import { TransitionProps } from "@mui/material/transitions";
-import Input from "@mui/material/Input";
 const ariaLabel = { "aria-label": "description" };
 
 interface Props {
@@ -1320,7 +1302,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     if (response.status == 200) {
       const data: Post = await response.json();
       console.log(data);
-      
+
       setPosts((prev) =>
         prev.map((p) => (p.postId === data.postId ? { ...p, ...data } : p))
       );
@@ -1572,103 +1554,156 @@ const Post = ({ user, post }: IPros, props: Props) => {
 
   return (
     <Box sx={{ height: "100%" }}>
-      <Card
+      <Box
         sx={{
-          borderRadius: "12px",
-          backgroundColor: "#bdc0c7",
-          margin: `0 0 24px 0`,
-          boxShadow:
-            "rgba(0, 0, 0, 0.16) 0px 2px 4px, rgba(0, 0, 0, 0.23) 0px 2px 4px",
-          color: "white",
-          "& p": {
-            color: "white",
-          },
+          borderRadius: "5px",
+          boxShadow: "0px 1px 2px #3335",
+          backgroundColor: "#fff",
+          padding: "10px",
+          marginBottom: "15px",
         }}
       >
-        <CardHeader
+        <Box
           sx={{
-            color: "#000000",
+            display: "flex",
+            // justifyContent:'center',
+            alignItems: "center",
+            borderBottom: "1px solid #3333",
+            paddingBottom: "10px",
           }}
-          avatar={
-            <Avatar
-              sx={{
-                bgcolor: red[500],
-                color: "#000000",
-                display: "flex",
-                alignItems: "center",
-                "& .MuiButton-root": {
-                  flex: 1,
-                },
-              }}
-              aria-label="recipe"
-              alt={user?.user?.lastName}
-              src={user?.user?.profileImageUrl}
-            ></Avatar>
-          }
-          title={
-            <Button
-              onClick={handleOpenPost}
-              sx={{
+        >
+          <Box
+            sx={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              marginRight: "12px",
+              "& img": {
                 width: "100%",
-                textAlign: "start",
-                appearance: "none",
-                backgroundColor: "#FAFBFC",
-                border: "1px solid rgba(27, 31, 35, 0.15)",
-                borderRadius: "30px",
-                boxShadow:
-                  "rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset",
-                boxSizing: "border-box",
-                color: "#757575",
-                cursor: "default",
-                display: "inline-block",
-                fontFamily:
-                  '-apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-                fontSize: "14px",
-                fontWeight: 500,
-                lineHeight: "20px",
-                listStyle: "none",
-                padding: "6px 16px 6px 24px",
-                position: "relative",
-                transition:
-                  "background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1)",
-                userSelect: "none",
-                WebkitUserSelect: "none",
-                touchAction: "manipulation",
-                verticalAlign: "middle",
-                whiteSpace: "nowrap",
-                wordWrap: "break-word",
-                "&:hover": {
-                  backgroundColor: "#F3F4F6",
-                  textDecoration: "none",
-                  transitionDuration: "0.1s",
-                },
-                "&:disabled": {
-                  backgroundColor: "#FAFBFC",
-                  borderColor: "rgba(27, 31, 35, 0.15)",
-                  color: "#959DA5",
-                  cursor: "default",
-                },
-                "&:active": {
-                  backgroundColor: "#EDEFF2",
-                  boxShadow: "rgba(225, 228, 232, 0.2) 0 1px 0 inset",
-                  transition: "none 0s",
-                },
-                "&:focus": {
-                  outline: "1px transparent",
-                },
-                "&:before": {
-                  display: "none",
-                },
-                "&:-webkit-details-marker": {
-                  display: "none",
-                },
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "50%",
+                cursor: "pointer",
+              },
+            }}
+          >
+            <a href="#">
+              <img
+                src={`${
+                  user?.user?.profileImageUrl
+                    ? user?.user?.profileImageUrl
+                    : "/profile/user.jpg"
+                }`}
+              />
+            </a>
+          </Box>
+          <Box
+            onClick={handleOpenPost}
+            sx={{
+              position: "relative",
+              width: "100%",
+              padding: "7px 10px",
+              height: "36px",
+              boxSizing: "border-box",
+              borderRadius: "25px",
+              backgroundColor: "#E4E6EB",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#D8DADF",
+              },
+            }}
+          >
+            <Typography
+              component={"span"}
+              sx={{
+                position: "absolute",
+                left: "15px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: "15px",
+                color: "#333",
               }}
             >
-              {user?.user?.lastName + " ơi, Bạn đang nghĩ gì thế ?"}
-            </Button>
-          }
-        />
-      </Card>
+              Bạn đang nghĩ gì ?
+            </Typography>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            padding: "10px 0px 0px 0px",
+          }}
+        >
+          <Box
+            sx={{
+              width: "50%",
+              maxWidth: "160px",
+              padding: "5px",
+              boxSizing: "border-box",
+              backgroundColor: "#fff",
+              filter: "drop-shadow(0 0 0.1rem crimson)",
+              marginRight: "8px",
+              borderRadius: "20px",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#E4E6EB",
+              },
+            }}
+          >
+            <Typography
+              component={"p"}
+              sx={{
+                padding: "5px 0px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#333",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <VideoFileIcon sx={{ color: "#E42645" }} />
+              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                Video
+              </Typography>
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              width: "50%",
+              padding: "5px",
+              maxWidth: "160px",
+              boxSizing: "border-box",
+              backgroundColor: "#fff",
+              filter: "drop-shadow(0 0 0.1rem green)",
+              borderRadius: "20px",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#E4E6EB",
+              },
+            }}
+          >
+            <Typography
+              component={"p"}
+              sx={{
+                padding: "5px 0px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#333",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <AddAPhotoIcon sx={{ color: "#41B35D" }} />
+              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                Photo
+              </Typography>
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
       {posts &&
         posts?.map((p, index) => (
           <Card
@@ -1683,7 +1718,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 color: "white",
               },
             }}
-            key={index + p.userPost.userId}
+            key={index + p?.userPost?.userId}
           >
             <CardHeader
               sx={{
@@ -1843,7 +1878,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 </Box>
                 <CommentIcon />
               </IconButton>
-              {p.userPost.userId != user?.user?.userId && (
+              {p?.userPost?.userId != user?.user?.userId && (
                 <IconButton
                   aria-label="share"
                   sx={{
@@ -1866,7 +1901,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 </IconButton>
               )}
             </CardActions>
-            {user?.user.userId == p.userPost.userId ? (
+            {user?.user?.userId == p?.userPost?.userId ? (
               <Menu
                 anchorEl={anchorEl[index]}
                 id={`account-menu-${index}`}
@@ -1977,7 +2012,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 color: "white",
               },
             }}
-            key={index + p.userPost.userId}
+            key={index + p?.userPost?.userId}
           >
             <CardHeader
               sx={{
@@ -2456,16 +2491,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
               ) : (
                 <></>
               )}
-
-              {/* <Autocomplete
-                fullWidth
-                disablePortal
-                id="combo-box-demo"
-                options={top100Films}
-                renderInput={(params) => (
-                  <TextField {...params} label="Hash tag" />
-                )}
-              /> */}
             </CardContent>
             <CardContent
               sx={{
@@ -2531,105 +2556,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
           )}
         </DialogActions>
       </Dialog>
-
-      {/* <Modal //modal-post
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        open={openPost}
-        onClose={handleClosePost}
-        closeAfterTransition
-        slots={{ backdrop: Backdrop }}
-        slotProps={{
-          backdrop: {
-            timeout: 500,
-          },
-        }}
-      >
-        <Fade in={openPost}>
-          <Box sx={style}>
-            <Card
-              sx={{
-                borderTopRightRadius: "12px",
-                borderTopLeftRadius: "12px",
-                backgroundColor: "#1c1e21",
-                boxShadow:
-                  "rgba(0, 0, 0, 0.16) 0px 2px 4px, rgba(0, 0, 0, 0.23) 0px 2px 4px",
-                color: "white",
-                "& p": {
-                  color: "white",
-                },
-              }}
-            >
-              <CardHeader
-                sx={{
-                  color: "#000000",
-                }}
-                avatar={
-                  <Avatar
-                    sx={{ bgcolor: red[500] }}
-                    aria-label="recipe"
-                    alt="Profile Picture"
-                    src={user?.user?.profileImageUrl}
-                  ></Avatar>
-                }
-                action={
-                  <IconButton
-                    onClick={handleClosePost}
-                    size="small"
-                    sx={{ ml: 2 }}
-                    aria-controls={openPost ? "account-menu" : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={openPost ? "true" : undefined}
-                  >
-                    <Avatar sx={{ width: 32, height: 32 }}>
-                      <ClearIcon />
-                    </Avatar>
-                  </IconButton>
-                }
-                title={user?.user?.username}
-              />
-
-              <CardContent
-                sx={{
-                  color: "black",
-                }}
-                className="123"
-              >
-                <TextField
-                  onChange={(e) => handleContentPost(e.target.value)}
-                  multiline
-                  rows={4}
-                  label={`${user?.user?.username} ơi, bạn đang nghĩ gì thế?`}
-                  variant="outlined"
-                  fullWidth
-                  sx={{ outline: "none", border: "none", borderWidth: 0 }}
-                />
-              </CardContent>
-              <CardContent>
-                <Autocomplete
-                  fullWidth
-                  disablePortal
-                  id="combo-box-demo"
-                  options={top100Films}
-                  renderInput={(params) => (
-                    <TextField {...params} label="Hash tag" />
-                  )}
-                />
-              </CardContent>
-            </Card>
-            <Box sx={{ width: "100%", padding: " 6px 16px" }}>
-              <Button
-                variant="contained"
-                fullWidth
-                sx={{}}
-                onClick={() => handlePost()}
-              >
-                Đăng
-              </Button>
-            </Box>
-          </Box>
-        </Fade>
-      </Modal> */}
 
       <Modal //modal-comment
         aria-labelledby="transition-modal-title"
@@ -3781,7 +3707,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
         </DialogActions>
       </Dialog>
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 99999999 }}
+        sx={{
+          color: "#fff",
+          zIndex: (theme) => theme.zIndex.drawer + 99999999,
+        }}
         open={openBackdrop}
         // onClick={()=>setOpenBackdrop(false)}
       >
@@ -3806,28 +3735,3 @@ export default Post;
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-const top100Films = [
-  {
-    hashtagText: "javascript",
-    id: 1,
-    countHashtagOfDetail: getRandomInt(1, 10),
-  },
-  { hashtagText: "python", id: 2, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "java", id: 3, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "c++", id: 4, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "html", id: 5, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "css", id: 6, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "react", id: 7, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "nodejs", id: 8, countHashtagOfDetail: getRandomInt(1, 10) },
-  {
-    hashtagText: "typescript",
-    id: 9,
-    countHashtagOfDetail: getRandomInt(1, 10),
-  },
-  { hashtagText: "angular", id: 10, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "ruby", id: 11, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "php", id: 12, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "swift", id: 13, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "go", id: 14, countHashtagOfDetail: getRandomInt(1, 10) },
-  { hashtagText: "rust", id: 15, countHashtagOfDetail: getRandomInt(1, 10) },
-];

@@ -221,13 +221,20 @@ declare global {
     time: string;
   }
   interface PostDetails {
+    createDate: string;
     id: number;
-    namePrivacy: string;
+    postId: string;
+    privacyPostId: number;
+    namePrivacy?: string;
+    status: boolean;
   }
 
   interface AddPost {
+    postId: string;
     content: string;
     userId: string;
+    time: Date;
+    timelineUserId: Date;
     listImageofPost: File[] | null;
     privacyPostDetails: number;
     listHashtag: string[] | null;

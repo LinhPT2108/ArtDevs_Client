@@ -1,17 +1,23 @@
 "use client";
+import { AddPhotoAlternate } from "@mui/icons-material";
+import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import CommentIcon from "@mui/icons-material/Comment";
 import DeleteIcon from "@mui/icons-material/Delete";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import LockIcon from "@mui/icons-material/Lock";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import SendIcon from "@mui/icons-material/Send";
 import ShareIcon from "@mui/icons-material/Share";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
-import ClearIcon from "@mui/icons-material/Clear";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
-import SendIcon from "@mui/icons-material/Send";
+import VideoFileIcon from "@mui/icons-material/VideoFile";
 import {
   Alert,
   AppBar,
+  Autocomplete,
   Avatar,
   Backdrop,
   Button,
@@ -28,13 +34,16 @@ import {
   DialogTitle,
   Divider,
   Fade,
+  FormControl,
+  FormHelperText,
   Grid,
   IconButton,
   LinearProgress,
   ListItemIcon,
-  ListItemText,
   Modal,
   Paper,
+  Select,
+  SelectChangeEvent,
   Slide,
   Snackbar,
   TextField,
@@ -45,10 +54,13 @@ import {
   styled,
 } from "@mui/material";
 import Box from "@mui/material/Box";
+import Input from "@mui/material/Input";
 import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+import { red } from "@mui/material/colors";
+import { TransitionProps } from "@mui/material/transitions";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
@@ -60,6 +72,7 @@ import {
   ImageViewerEdit,
 } from "../utils/component.global";
 import postCommentApi, {
+  calculateHoursDifference,
   formatDateString,
   generateUniqueId,
   isFile,
@@ -70,28 +83,12 @@ import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_SHARE_MESSAGE,
+  GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
 } from "../utils/veriable.global";
-import { red } from "@mui/material/colors";
-import { AddPhotoAlternate } from "@mui/icons-material";
-import { TransitionProps } from "@mui/material/transitions";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
 
-function calculateHoursDifference(existingTime: string): number | string {
-  const existingDate = new Date(existingTime);
-  const currentDate = new Date();
-
-  const timeDifference = currentDate.getTime() - existingDate.getTime();
-  const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-  if (hoursDifference > 24) {
-    const daysDifference = Math.round(hoursDifference / 24);
-    return `${daysDifference} ngày trước`;
-  } else {
-    return `${Math.round(hoursDifference)} giờ trước`;
-  }
-}
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
   "@keyframes fadeIn": {
@@ -99,12 +96,48 @@ const FadeInImage = styled("img")({
     to: { opacity: 1 },
   },
 });
+interface PreviewImageOfPostProps {
+  url: File;
+  index: number;
+  handleRemoveImageOfPost: (index: number) => void;
+}
+
+const PreviewImageOfPost: React.FC<PreviewImageOfPostProps> = ({
+  url,
+  index,
+  handleRemoveImageOfPost,
+}) => {
+  const imageUrl = URL.createObjectURL(url);
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-block",
+        mr: "8px",
+      }}
+    >
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="100%"
+        height="100%"
+        loading="lazy"
+      />
+
+      <RemoveButton onClick={() => handleRemoveImageOfPost(index)}>
+        <ClearIcon />
+      </RemoveButton>
+    </Box>
+  );
+};
+
 interface PreviewImageProps {
   url: File;
   index: number;
   handleRemoveImage: (index: number, isComment: boolean) => void;
   isComment: boolean;
 }
+
 const RemoveButton = styled(Button)({
   position: "absolute",
   top: 0,
@@ -116,6 +149,7 @@ const RemoveButton = styled(Button)({
   backgroundColor: "#30363d",
   padding: "0px !important",
 });
+
 const PreviewImage: React.FC<PreviewImageProps> = ({
   url,
   index,
@@ -123,7 +157,6 @@ const PreviewImage: React.FC<PreviewImageProps> = ({
   handleRemoveImage,
 }) => {
   const imageUrl = URL.createObjectURL(url);
-
   return (
     <Box
       sx={{
@@ -138,13 +171,13 @@ const PreviewImage: React.FC<PreviewImageProps> = ({
         width="68"
         height="68"
       />
-
       <RemoveButton onClick={() => handleRemoveImage(index, isComment)}>
         <ClearIcon />
       </RemoveButton>
     </Box>
   );
 };
+
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -153,6 +186,7 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
+
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -164,12 +198,15 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
+
+const ariaLabel = { "aria-label": "description" };
+
 interface IPros {
   session: User;
-  // fullname?: string;
   hashTagText?: string;
   profile?: string;
 }
+
 const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -200,12 +237,18 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     });
 
   //xử lý thao tác xóa modal report
-  const handleClick = (event: React.MouseEvent<HTMLElement>, id: string) => {
+  const handleClick = (
+    event: React.MouseEvent<HTMLElement>,
+    id: string,
+    postModal: ResPost | null
+  ) => {
     setAnchorEl(event.currentTarget);
     setSelectedItemId(id);
+    setPostModal(postModal);
   };
   const handleCloses = () => {
     setAnchorEl(null);
+    setPostModal(null);
     setSelectedItemId(null);
   };
   const handleDeletePost = async (postId: string | null) => {
@@ -259,17 +302,92 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       });
       setAnchorEls(Array(options.length).fill(null));
     };
-  const handleClose = (index: number) => () => {
-    const newAnchorEls = [...anchorEls];
-    newAnchorEls[index] = null;
-    setAnchorEls(newAnchorEls);
+  const handleClose = () => () => {
+    // const newAnchorEls = [...anchorEls];
+    // newAnchorEls[index] = null;
+    // setAnchorEls(newAnchorEls);
+    setAnchorEl(null);
+    setSelectedItemId(null);
+    setPostModal(null);
   };
 
   //copy post.main
   // const { user, setUser } = useUser();
+  const fetchImageAsFile = async (imageUrl: string): Promise<File | null> => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const file = new File([blob], imageUrl, { type: "image/png" });
+      return file;
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      return null;
+    }
+  };
+
   const [openAlerts, setOpenAlerts] = useState(false);
   const [openPost, setOpenPost] = useState(false);
-  const handleOpenPost = () => setOpenPost(true);
+  const [isEditPost, setIsEditPost] = useState(false);
+  const [searchValueHashtag, setSearchValueHashtag] = useState("");
+  const [openBackdrop, setOpenBackdrop] = React.useState(false);
+  const [hashtagData, setHashtagData] = useState<HashtagInfor[]>([]);
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [postModal, setPostModal] = useState<ResPost | null>(null);
+  const [postData, setPostData] = useState<AddPost>({
+    postId: "",
+    content: "",
+    time: new Date(),
+    timelineUserId: new Date(),
+    userId: session ? session?.user?.userId : "",
+    listImageofPost: null,
+    privacyPostDetails: 1,
+    listHashtag: [],
+  });
+  const handleOpenPost = () => {
+    setPostData({
+      postId: "",
+      content: "",
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: session ? session?.user?.userId : "",
+      listImageofPost: null,
+      privacyPostDetails: 1,
+      listHashtag: [],
+    });
+    setIsEditPost(false);
+    setOpenPost(true);
+  };
+  const handleEditPost = async (post: ResPost) => {
+    setHashtagData([]);
+    setSearchValueHashtag("");
+    setIsEditPost(true);
+    handleClose();
+    console.log(post);
+    setOpenPost(true);
+    const selectedPrivacy = post?.postId?.privacyPostDetails.find(
+      (privacy) => privacy?.status == true
+    );
+    console.log(post?.postId?.listImageofPost);
+    const editedPostData: AddPost = {
+      postId: post?.postId?.postId,
+      content: post?.postId?.content,
+      time: new Date(),
+      timelineUserId: new Date(),
+      userId: post?.postId?.userPost?.userId,
+      listImageofPost: (await Promise.all(
+        post?.postId?.listImageofPost?.map(async (image) => {
+          const file = await fetchImageAsFile(image.imageUrl);
+          return file;
+        })
+      )) as File[],
+      privacyPostDetails: selectedPrivacy?.privacyPostId as number,
+      listHashtag: post?.postId?.listHashtag.map(
+        (hashtag) => hashtag.hashtagDetailName
+      ),
+    };
+    console.log(">>> check editedPostData: ", selectedPrivacy);
+    setPostData(editedPostData);
+  };
   const handleClosePost = () => setOpenPost(false);
   const [dataLoading, setDataLoading] = useState<ResPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -312,6 +430,212 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     contentSnackbar: "",
     type: "",
   });
+
+  const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
+    console.log();
+
+    setPostData((prevData) => ({
+      ...prevData,
+      privacyPostDetails: event.target.value as unknown as number,
+    }));
+    console.log(await postData);
+  };
+
+  const handleContentPost = (value: string) => {
+    setPostData((prevData) => ({
+      ...prevData,
+      content: value,
+    }));
+  };
+  const formatHashtagText = (hashtagText: any) => {
+    if (hashtagText && typeof hashtagText === "string") {
+      return hashtagText.trim().replace(/\s/g, "-");
+    } else {
+      return hashtagText.hashtagText;
+    }
+  };
+  const handleHashtagPost = (
+    event: React.ChangeEvent<{}>,
+    newValue: string[] | null
+  ) => {
+    const formattedValues = newValue
+      ? newValue.map((tag) => formatHashtagText(tag))
+      : [];
+    console.log(formattedValues);
+
+    setPostData((prevData) => ({
+      ...prevData,
+      listHashtag: formattedValues,
+    }));
+  };
+  const handleTextFieldChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { value } = event.target;
+    console.log(value);
+    if (value == " ") {
+      setHashtagData([]);
+      setSearchValueHashtag("");
+    }
+    const formattedValue = value.replace(/\s/g, "-");
+    event.target.value = formattedValue;
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      console.log("Stop typing");
+      if (value != " ") {
+        setSearchValueHashtag(event.target.value);
+      }
+    }, 1500);
+
+    setTimer(newTimer);
+  };
+  const handleChangePicturePost = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const fileInput = event.target as HTMLInputElement;
+    const selected = fileInput.files;
+    console.log(selected);
+    setPostData((prevData) => ({
+      ...prevData,
+      listImageofPost: [
+        ...(prevData.listImageofPost || []),
+        ...(selected ? Array.from(selected) : []),
+      ] as File[],
+    }));
+  };
+  const handleSaveEditPost = async () => {
+    console.log(postData);
+    const formData = new FormData();
+    formData.append(
+      "postDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            postId: postData.postId,
+            content: postData.content,
+            listHashtag: postData.listHashtag,
+            timelineUserId: postData.timelineUserId,
+            time: postData.time,
+            privacyPostDetails: postData.privacyPostDetails,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (postData.listImageofPost) {
+      postData.listImageofPost.forEach((file: any, index: any) => {
+        formData.append("listImageofPost", file);
+      });
+    } else {
+      formData.append("listImageofPost", "");
+    }
+    const response = await fetch(
+      GLOBAL_URL + "/api/update-post/" + postData.postId,
+      {
+        method: "PUT",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      }
+    );
+    console.log(">>> check post update: ", response.status);
+    if (response.status == 200) {
+      const data: ResPost = await response.json();
+      console.log(data);
+
+      setPosts((prev) =>
+        prev.map((p) =>
+          p?.postId?.postId === data?.postId?.postId ? { ...p, ...data } : p
+        )
+      );
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
+  };
+  const handlePost = async () => {
+    setOpenBackdrop(true);
+    setPostData((prevData) => ({
+      ...prevData,
+      postId: generateUniqueId(),
+    }));
+    console.log(">>> check postid: ", postData.postId);
+    const formData = new FormData();
+    formData.append(
+      "postDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: postData.content,
+            listHashtag: postData.listHashtag,
+            timelineUserId: postData.timelineUserId,
+            time: postData.time,
+            privacyPostDetails: postData.privacyPostDetails,
+            postId: postData.postId,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (postData.listImageofPost) {
+      postData.listImageofPost.forEach((file: any, index: any) => {
+        formData.append("listImageofPost", file);
+      });
+    } else {
+      formData.append("listImageofPost", "");
+    }
+    const response = await fetch(GLOBAL_URL + "/api/post", {
+      method: "POST",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      body: formData,
+    });
+    console.log(">>> check post data: ", response.status);
+    if (response.status == 200) {
+      const data = await response.json();
+      console.log(data);
+      setPosts((prevData) => [data, ...prevData]);
+      setOpenPost(false);
+      setOpenBackdrop(false);
+      setPostData({
+        postId: "",
+        content: "",
+        time: new Date(),
+        timelineUserId: new Date(),
+        userId: session ? session?.user?.userId : "",
+        listImageofPost: null,
+        privacyPostDetails: 1,
+        listHashtag: [],
+      });
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_UPLOAD_POST_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+    }
+  };
+  const handleRemoveImageOfPost = (index: number) => {
+    const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    newSelectedFiles.splice(index, 1);
+    setSelectedFiles(newSelectedFiles);
+    console.log(newSelectedFiles);
+    setPostData((prevData) => ({
+      ...prevData,
+      listImageofPost: newSelectedFiles,
+    }));
+  };
 
   // ham copy post.main
   const handleCloseSnackbar = (
@@ -841,34 +1165,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       };
     });
   };
-  const [postData, setPostData] = useState<AddPost>({
-    content: "",
-    userId: session ? session?.user?.userId : "",
-    // listImageofPost: null,
-    privacyPostDetails: 1,
-    listHashtag: null,
-  });
-  const handleContentPost = (value: string) => {
-    setPostData((prevData) => ({
-      ...prevData,
-      content: value,
-    }));
-  };
-  const handlePost = async () => {
-    setPostData((prevData) => ({
-      ...prevData,
-      postId: generateUniqueId(),
-    }));
-    const response = await sendRequest({
-      // url: "https://artdevs-server.azurewebsites.net/api/register",
-      // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
-      url: GLOBAL_URL + "/api/comment",
-      method: "POST",
-      headers: { authorization: `Bearer ${session?.access_token}` },
-      body: { ...postData },
-    });
-    console.log(">>> check post data: ", response);
-  };
+
   const handleChangeContentComment = (value: string) => {
     if (isComment) {
       setFormDataComment((prevFormData) => ({
@@ -1089,6 +1386,474 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   }
   return (
     <>
+      <Box
+        sx={{
+          borderRadius: "5px",
+          boxShadow: "0px 1px 2px #3335",
+          backgroundColor: "#fff",
+          padding: "10px",
+          marginBottom: "15px",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            borderBottom: "1px solid #3333",
+            paddingBottom: "10px",
+          }}
+        >
+          <Box
+            sx={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "50%",
+              marginRight: "6px",
+              "& img": {
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: "50%",
+                cursor: "pointer",
+              },
+            }}
+          >
+            <img
+              src={`${
+                session?.user?.profileImageUrl
+                  ? session?.user?.profileImageUrl
+                  : "/profile/user.jpg"
+              }`}
+            />
+          </Box>
+          <Box
+            onClick={handleOpenPost}
+            sx={{
+              position: "relative",
+              width: "100%",
+              padding: "7px 10px",
+              boxSizing: "border-box",
+              borderRadius: "25px",
+              backgroundColor: "#E4E6EB",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#D8DADF",
+              },
+            }}
+          >
+            <Typography
+              component={"span"}
+              sx={{
+                position: "absolute",
+                left: "15px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                fontSize: "15px",
+                color: "#333",
+              }}
+            >
+              Bạn đang nghĩ gì ?
+            </Typography>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            padding: "10px 0px 0px 0px",
+          }}
+        >
+          <Box
+            sx={{
+              width: "50%",
+              maxWidth: "160px",
+              padding: "5px",
+              boxSizing: "border-box",
+              backgroundColor: "#fff",
+              borderRadius: "20px",
+              marginRight: "8px",
+              filter: "drop-shadow(0 0 0.1rem crimson)",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#E4E6EB",
+              },
+            }}
+          >
+            <Typography
+              component={"p"}
+              sx={{
+                padding: "5px 0px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#333",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <VideoFileIcon sx={{ color: "#E42645" }} />
+              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                Video
+              </Typography>
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              width: "50%",
+              padding: "5px",
+              maxWidth: "160px",
+              boxSizing: "border-box",
+              backgroundColor: "#fff",
+              borderRadius: "20px",
+              filter: "drop-shadow(0 0 0.1rem green)",
+              cursor: "pointer",
+              "&:hover": {
+                backgroundColor: "#E4E6EB",
+              },
+            }}
+          >
+            <Typography
+              component={"p"}
+              sx={{
+                padding: "5px 0px",
+                textAlign: "center",
+                fontSize: "14px",
+                color: "#333",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <AddAPhotoIcon sx={{ color: "#41B35D" }} />
+              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                Photo
+              </Typography>
+            </Typography>
+          </Box>
+        </Box>
+        <Dialog
+          open={openPost}
+          TransitionComponent={Transition}
+          keepMounted
+          onClose={handleClosePost}
+          aria-describedby="alert-dialog-slide-description"
+          PaperProps={{
+            style: {
+              backgroundColor: "#242526",
+              width: "100%",
+            },
+            component: "form",
+            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              const formJson = Object.fromEntries((formData as any).entries());
+              console.log(formJson);
+              handleClosePost();
+            },
+          }}
+        >
+          <Box className="dialog-header">
+            <DialogTitle
+              id="alert-dialog-title"
+              sx={{ color: "white", textAlign: "center", p: "10px" }}
+            >
+              Tạo bài viết
+            </DialogTitle>
+            <IconButton
+              aria-label="close"
+              onClick={handleClosePost}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 5,
+                color: (theme) => theme.palette.grey[500],
+                backgroundColor: "#3a3b3c",
+                "&:hover": {
+                  backgroundColor: "#7d7d7d",
+                },
+              }}
+            >
+              <ClearIcon />
+            </IconButton>
+          </Box>
+          <Divider />
+          <DialogContent sx={{ p: "8px" }}>
+            <Card
+              sx={{
+                backgroundColor: "transparent",
+                boxShadow: "none",
+                color: "white",
+                border: "none",
+                width: "100%",
+              }}
+            >
+              <CardHeader
+                sx={{
+                  color: "#000000",
+                  py: "5px",
+                }}
+                avatar={
+                  <Avatar
+                    sx={{ bgcolor: red[500] }}
+                    aria-label="recipe"
+                    alt={session?.user?.lastName}
+                    src={session?.user?.profileImageUrl}
+                  ></Avatar>
+                }
+                title={
+                  <>
+                    <Typography fontSize={16} color={"white"}>
+                      {session?.user?.firstName +
+                        " " +
+                        session?.user?.middleName +
+                        " " +
+                        session?.user?.lastName}
+                    </Typography>
+                  </>
+                }
+                action={
+                  <>
+                    <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
+                      <Select
+                        id="demo-simple-select-autowidth"
+                        value={postData.privacyPostDetails + ""}
+                        onChange={handleChangePrivacyPost}
+                        autoWidth
+                        sx={{
+                          color: "white",
+                          "&.MuiSelect-root": {
+                            backgroundColor: "#3a3b3c",
+                            border: "1px solid white",
+                          },
+                          "& fieldset": {
+                            border: "1px solid white",
+                          },
+                          "& fieldset:focus": {
+                            border: "1px solid white",
+                          },
+                          "& svg": {
+                            color: " white",
+                          },
+                        }}
+                      >
+                        <MenuItem value={1}>Công khai</MenuItem>
+                        <MenuItem value={2}>Riêng tư</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </>
+                }
+              />
+
+              <CardContent
+                sx={{
+                  color: "white",
+                  py: "5px",
+                }}
+                className="contentPost"
+              >
+                <Input
+                  placeholder={
+                    session?.user?.firstName +
+                    " " +
+                    session?.user?.middleName +
+                    " " +
+                    session?.user?.lastName +
+                    " ơi, Bạn đang nghĩ gì thế ?"
+                  }
+                  inputProps={ariaLabel}
+                  onChange={(e) => handleContentPost(e.target.value)}
+                  multiline
+                  sx={{
+                    color: "white",
+                    fontSize: "1.5rem",
+                  }}
+                  fullWidth
+                  disableUnderline
+                  value={postData.content}
+                />
+              </CardContent>
+              <CardContent
+                sx={{
+                  color: "white !important",
+                  py: "5px",
+                }}
+              >
+                <Autocomplete
+                  size="small"
+                  multiple
+                  freeSolo
+                  id="tags-standard"
+                  options={hashtagData as HashtagInfor[]}
+                  // value={postData.listHashtag as any}
+                  value={
+                    hashtagData.length > 0
+                      ? postData.listHashtag?.map((oldTag) => {
+                          const matchingTag = hashtagData.find(
+                            (newTag) => newTag.hashtagText === oldTag
+                          );
+                          return matchingTag ? matchingTag : oldTag;
+                        }) || postData.listHashtag
+                      : (postData.listHashtag as any)
+                  }
+                  getOptionLabel={(option: any) => {
+                    return formatHashtagText(
+                      typeof option === "string" ? option : option.hashtagText
+                    );
+                  }}
+                  onChange={(event, values: any) =>
+                    handleHashtagPost(event, values)
+                  }
+                  renderOption={(props, option, { selected }) => (
+                    <Box
+                      component="li"
+                      sx={{
+                        backgroundColor: selected
+                          ? "#262B30 !important"
+                          : "#3a3b3c !important",
+                        color: "white !important",
+                        "&:hover": {
+                          backgroundColor: "#262B30 !important",
+                        },
+                        py: "10px !important",
+                      }}
+                      {...props}
+                      key={option.hashtagText}
+                    >
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <Typography variant="body1" color="white" mr="10px">
+                          {option.hashtagText}
+                        </Typography>
+                        {selected ? (
+                          <CheckIcon color="success" fontWeight="Bold" />
+                        ) : "" + selected ? (
+                          selected
+                        ) : (
+                          selected
+                        )}
+                        <Chip
+                          label={option.countHashtagOfDetail + " bài viết"}
+                          variant="outlined"
+                          sx={{
+                            color: "white",
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  )}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Hashtag"
+                      placeholder="Nhập từ khóa tìm kiếm"
+                      sx={{
+                        backgroundColor: "#242526",
+                        color: "white !important",
+                        borderRadius: "4px",
+                        "& .MuiOutlinedInput-root": {
+                          "& fieldset": { borderColor: "white" },
+                          "&:hover fieldset": { borderColor: "white" },
+                          "&.Mui-focused fieldset": { borderColor: "white" },
+                          "& .MuiInputBase-input": {
+                            color: "white",
+                          },
+                        },
+                      }}
+                      onChange={handleTextFieldChange}
+                      value={searchValueHashtag}
+                      InputLabelProps={{
+                        style: {
+                          color: "white",
+                        },
+                      }}
+                    />
+                  )}
+                  ChipProps={{
+                    style: {
+                      color: "white",
+                      backgroundColor: "#4d4d4d",
+                    },
+                  }}
+                  disableCloseOnSelect
+                  fullWidth
+                  loading
+                  loadingText={
+                    !searchValueHashtag
+                      ? ""
+                      : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                  }
+                />
+                {postData.listHashtag?.length == 0 ? (
+                  <FormHelperText sx={{ color: "whitesmoke" }}>
+                    Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
+                  </FormHelperText>
+                ) : (
+                  <></>
+                )}
+              </CardContent>
+              <CardContent
+                sx={{
+                  color: "white !important",
+                  py: "5px !important",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  display: "flex",
+                }}
+              >
+                <Button
+                  component="label"
+                  variant="contained"
+                  sx={{
+                    p: "8px",
+                    // backgroundColor: "transparent",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "gray",
+                      boxShadow: "none",
+                    },
+                    boxShadow: "none",
+                  }}
+                >
+                  <AddPhotoAlternate />
+                  Thêm ảnh hoặc Video
+                  <VisuallyHiddenInput
+                    type="file"
+                    accept=".jpg, .png , .mp4"
+                    onChange={(event) => handleChangePicturePost(event)}
+                    multiple
+                    name="listImageofComment"
+                  />
+                </Button>
+              </CardContent>
+              <Grid container rowSpacing={1} mt={1}>
+                {postData.listImageofPost?.map((url: File, index: any) => (
+                  <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                    <PreviewImageOfPost
+                      // key={index}
+                      url={url}
+                      index={index}
+                      handleRemoveImageOfPost={handleRemoveImageOfPost}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </Card>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleClosePost}
+              sx={{
+                color: "gray",
+              }}
+            >
+              Hủy
+            </Button>
+            {isEditPost ? (
+              <Button onClick={handleSaveEditPost}>Lưu</Button>
+            ) : (
+              <Button onClick={handlePost}>Đăng</Button>
+            )}
+          </DialogActions>
+        </Dialog>
+      </Box>
       {
         //@ts-ignore
         posts &&
@@ -1238,7 +2003,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                             id={`lock-menu-${index}`}
                             anchorEl={anchorEls[index]}
                             open={Boolean(anchorEls[index])}
-                            onClose={handleClose(index)}
+                            onClose={handleClose}
                             MenuListProps={{
                               "aria-labelledby": `lock-button-${index}`,
                               role: "listbox",
@@ -1289,7 +2054,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       },
                     }}
                     onClick={(event) =>
-                      handleClick(event, item?.postId?.postId)
+                      handleClick(event, item?.postId?.postId, item)
                     }
                   >
                     <Box
@@ -1305,9 +2070,10 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                   </Box>
                   <Menu
                     anchorEl={anchorEl}
-                    id="account-menu"
+                    id={`account-menu-${index}`}
                     open={Boolean(anchorEl)}
                     onClose={handleCloses}
+                    onClick={handleCloses}
                     PaperProps={{
                       elevation: 0,
                       sx: {
@@ -1342,6 +2108,12 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                         <DeleteIcon fontSize="small" />
                       </ListItemIcon>
                       Xóa bài viết
+                    </MenuItem>
+                    <MenuItem onClick={() => handleEditPost(postModal!)}>
+                      <ListItemIcon>
+                        <EditIcon fontSize="small" />
+                      </ListItemIcon>
+                      Chỉnh sửa bài viết
                     </MenuItem>
                   </Menu>
                 </Box>
