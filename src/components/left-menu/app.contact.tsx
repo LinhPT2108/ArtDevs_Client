@@ -216,7 +216,7 @@ const ContactMenu = (pros: IPros) => {
                   </ListSubheader>
                 }
               >
-                {rightMenu[0]?.length > 0 && rightMenu[1]?.length > 0 ? (
+                {rightMenu[0]?.length > 0 || rightMenu[1]?.length > 0 ? (
                   (["right"] as const).map((anchor) => (
                     <React.Fragment key={anchor}>
                       {items?.map((item: UserMessage, index: number) => {

@@ -82,10 +82,13 @@ import postCommentApi, {
 import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
+  GLOBAL_NOTIFI,
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
 } from "../utils/veriable.global";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
 
@@ -1010,7 +1013,32 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //     revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
   //   }
   // );
+
+  const socket = new SockJS("http://localhost:8080/ws");
+  const stompClient = Stomp.over(socket);
+
   useEffect(() => {
+    const fetchDataHashtag = async () => {
+      console.log("Fetching data for:", searchValueHashtag);
+      try {
+        const getHashtag = await sendRequest<HashtagInfor[]>({
+          url: GLOBAL_URL + "/api/search-detailhashtag",
+          method: "GET",
+          queryParams: {
+            keyword: searchValueHashtag,
+          },
+        });
+        console.log(getHashtag);
+
+        setHashtagData(getHashtag);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    if (searchValueHashtag) {
+      fetchDataHashtag();
+    }
+
     if (data && !error) {
       setPosts(data);
     }
@@ -1022,7 +1050,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
         const fetchData = async () => {
           !endPost ? setLoading(true) : setEndTextPost("Bạn đã xem hết !");
           const newData = await sendRequest<ResPost[]>({
-            url: GLOBAL_URL + "/api/post-by-user-logged",
+            url: GLOBAL_URL + "/api/friend-posts",
             method: "GET",
             headers: { authorization: `Bearer ${session?.access_token}` },
             queryParams: {
@@ -1046,9 +1074,13 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [loading, data, dataLoading]);
+  }, [loading, data, dataLoading, searchValueHashtag]);
 
-  const handleLike = async (postId: string, isDataLoading: boolean) => {
+  const handleLike = async (
+    postId: string,
+    post: ResPost,
+    isDataLoading: boolean
+  ) => {
     await setPosts(
       posts.map((resPost) => {
         if (resPost?.postId?.postId === postId) {
@@ -1089,6 +1121,21 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
           )
         );
         console.log(data);
+        if (session?.user?.userId !== post?.postId?.userPost?.userId) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "like",
+            receiverId: `${post?.postId?.userPost.userId}`,
+            senderId: session?.user?.userId,
+            postId: post?.postId?.postId,
+            shareId: "",
+            type: "post",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${post?.postId?.userPost?.userId}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
       } else {
         console.log("something wrong");
       }
@@ -1253,6 +1300,21 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
           postToPost: "",
         } as CommentToPostDTO);
         setIsLoadingComment(false);
+        if (session?.user?.userId !== formDataComment?.userReceive) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "comment",
+            receiverId: `${formDataComment?.userReceive}`,
+            senderId: session?.user?.userId,
+            postId: formDataComment?.postToPost,
+            shareId: "",
+            type: "comment",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
       }
       setIsComment(true);
     } else {
@@ -1285,6 +1347,23 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
             return comment;
           });
         });
+        if (
+          session?.user?.userId !== formDataReplyComment?.userReceive?.userId
+        ) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "replyComment",
+            receiverId: `${formDataComment?.userReceive}`,
+            senderId: session?.user?.userId,
+            postId: formDataComment?.postToPost,
+            shareId: "",
+            type: "replyComment",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
 
         setIsLoadingComment(false);
         setIsComment(true);
@@ -1341,7 +1420,22 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
         contentSnackbar: GLOBAL_SHARE_MESSAGE,
         type: "success",
       });
-      console.log(dataSnackbar);
+
+      if (session?.user?.userId !== response?.postId?.userPost?.userId) {
+        const notificationToPostDTO: notificationToPostDTO = {
+          message: "share",
+          receiverId: response.userPostDto.userId,
+          senderId: session?.user?.userId,
+          postId: "",
+          shareId: response?.id,
+          type: "share",
+        };
+        stompClient.send(
+          `${GLOBAL_NOTIFI}/${response?.postId?.userPost?.userId}`,
+          {},
+          JSON.stringify(notificationToPostDTO)
+        );
+      }
     }
   };
 
@@ -2444,7 +2538,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                     onClick={() =>
                       item?.postId?.likeByUserLogged
                         ? handleUnlike(item?.postId?.postId, false)
-                        : handleLike(item?.postId?.postId, false)
+                        : handleLike(item?.postId?.postId, item, false)
                     }
                     disabled={item?.postId?.isProcessingLike}
                   >
