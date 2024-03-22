@@ -7,8 +7,12 @@ import Post from "@/components/posts/post.main";
 import { sendRequest } from "@/components/utils/api";
 import { GLOBAL_URL } from "@/components/utils/veriable.global";
 
+
+
+
 export default async function Home() {
   const session: User | null = await getServerSession(authOptions);
+
   // const post = await sendRequest<Post[]>({
   //   url: GLOBAL_URL + "/api/post/page",
   //   method: "GET",

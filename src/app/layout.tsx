@@ -1,3 +1,4 @@
+
 import HeaderWrapper from "@/components/header/header.wrapper";
 import BodyWrapper from "@/components/home/body.wrapper";
 import {
@@ -13,10 +14,12 @@ import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Inter } from "next/font/google";
-import React from "react";
+import React, { useEffect } from "react";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 import "./globals.css";
 import "@/style/loading.css";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,8 +33,26 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session: User | null = await getServerSession(authOptions);
 
+    const connectAndSubscribe = () => {
+      const socket = new SockJS('http://localhost:8080/ws');
+      const stompClient = Stomp.over(socket);
+      console.log('connect socket');
+      
+      stompClient.connect({}, () => {
+          console.log('Connected to WebSocket server');
+          
+          // Đăng ký để nhận tin nhắn từ máy chủ
+          stompClient.subscribe('/chat', (message) => {
+              console.log('Received message:', message.body);
+              // Xử lý tin nhắn nhận được ở đây
+          });
+      }, (error) => {
+          console.error('Error connecting to WebSocket server:', error);
+      });
+    };
+    connectAndSubscribe();
+  const session: User | null = await getServerSession(authOptions);
   console.log("Children component:");
   return (
     <html lang="en">
