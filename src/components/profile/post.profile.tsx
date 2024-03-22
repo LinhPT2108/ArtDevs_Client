@@ -1288,7 +1288,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const handleCancelReplyComment = () => setIsComment(true);
   const handlePostComment = async () => {
     if (isComment) {
-      console.log( formDataComment);
+      console.log(formDataComment);
       setIsLoadingComment(true);
       const response = await postCommentApi(formDataComment, session);
 
@@ -1478,6 +1478,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       </Box>
     );
   }
+  console.log(">>> check posts: ", posts);
   return (
     <>
       <Box
@@ -1997,10 +1998,13 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       component={"p"}
                       sx={{ fontWeight: "bold", marginRight: "6px" }}
                     >
-                      {item?.fullname}
+                      {
+                        //@ts-ignore
+                        item?.userPostDto?.fullname
+                      }
                     </Typography>
                     <Typography component={"p"}>
-                      {`đã chi sẻ bài viết`}
+                      {`đã chia sẻ bài viết`}
                     </Typography>
                   </Box>
                   <Typography component={"p"}>{item?.content}</Typography>

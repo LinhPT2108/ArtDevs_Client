@@ -2,11 +2,14 @@
 import { useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, Button, InputBase } from "@mui/material";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const SearchComponent = () => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>("");
+  const router = useRouter();
 
   const handleFocus = () => {
     if (svgRef.current) {
@@ -23,7 +26,7 @@ const SearchComponent = () => {
   };
 
   const handleSearch = () => {
-    console.log(">>> check data search: ", search);
+    router.push(`/search?params=${search}`);
   };
 
   return (
@@ -46,6 +49,11 @@ const SearchComponent = () => {
         type="search"
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleSearch();
+          }
+        }}
         value={search}
         onChange={(e) => {
           setSearch(e.target.value);
@@ -101,7 +109,7 @@ const SearchComponent = () => {
             border: "none",
           },
         }}
-        onClick={() => handleSearch()}
+        onClick={handleSearch}
       >
         <SearchIcon />
       </Button>
