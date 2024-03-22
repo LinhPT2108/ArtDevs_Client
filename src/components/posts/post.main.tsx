@@ -81,9 +81,13 @@ import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_DELETE_POST_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
+  GLOBAL_NOTIFI,
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
 } from "../utils/veriable.global";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+
 const ariaLabel = { "aria-label": "description" };
 
 interface Props {
@@ -775,7 +779,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
     setFormDataComment({
       content: "",
       listImageofComment: null,
-      postToPost: "",
+      postToPost: post.postId,
+      userReceive: post.userPost.userId,
     } as CommentToPostDTO);
     setOpenModalCmt(true);
     console.log(post.postId);
@@ -814,14 +819,17 @@ const Post = ({ user, post }: IPros, props: Props) => {
   };
 
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    "http://localhost:8080/api/post-by-user-logged",
+    "http://localhost:8080/api/friend-posts",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
+  const socket = new SockJS("http://localhost:8080/ws");
+  const stompClient = Stomp.over(socket);
   useEffect(() => {
+    console.log(user.user);
     const fetchDataHashtag = async () => {
       console.log("Fetching data for:", searchValueHashtag);
       try {
@@ -855,7 +863,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
         const fetchData = async () => {
           !endPost ? setLoading(true) : setEndTextPost("Bạn đã xem hết !");
           const newData = await sendRequest<Post[]>({
-            url: GLOBAL_URL + "/api/news-feed",
+            url: GLOBAL_URL + "/api/friend-posts",
             method: "GET",
             headers: { authorization: `Bearer ${user?.access_token}` },
             queryParams: {
@@ -866,7 +874,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
           if (error || isLoading) {
             setEndPost(true);
           } else {
-            data && setDataLoading((prevData) => [...prevData, ...data]);
+            data && setDataLoading((prevData) => [...prevData, ...newData]);
             setPage((prevPage) => prevPage + 1);
             setLoading(false);
           }
@@ -881,14 +889,14 @@ const Post = ({ user, post }: IPros, props: Props) => {
     };
   }, [loading, data, dataLoading, searchValueHashtag]);
 
-  const handleLike = async (postId: string, isDataLoading: boolean) => {
-    console.log("like: " + postId);
+  const handleLike = async (post: Post, isDataLoading: boolean) => {
+    console.log("like: " + post);
 
     if (isDataLoading) {
       console.log(isDataLoading);
       setDataLoading(
         dataLoading.map((post) =>
-          post.postId === postId
+          post.postId === post.postId
             ? {
                 ...post,
                 likeByUserLogged: true,
@@ -901,7 +909,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
     } else {
       setPosts(
         posts.map((post) =>
-          post.postId === postId
+          post.postId === post.postId
             ? {
                 ...post,
                 likeByUserLogged: true,
@@ -914,19 +922,18 @@ const Post = ({ user, post }: IPros, props: Props) => {
     }
     try {
       const response = await sendRequest<Post[]>({
-        url: GLOBAL_URL + "/api/like/" + postId,
+        url: GLOBAL_URL + "/api/like/" + post.postId,
         method: "POST",
         headers: { authorization: `Bearer ${user?.access_token}` },
       });
 
       console.log(response);
       if (response) {
-        // Kết thúc xử lý API cho bài viết này
         if (isDataLoading) {
           console.log(isDataLoading);
           setDataLoading(
             dataLoading.map((post) =>
-              post.postId === postId
+              post.postId === post.postId
                 ? {
                     ...post,
                     likeByUserLogged: true,
@@ -939,7 +946,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
         } else {
           setPosts(
             posts.map((post) =>
-              post.postId === postId
+              post.postId === post.postId
                 ? {
                     ...post,
                     likeByUserLogged: true,
@@ -951,6 +958,21 @@ const Post = ({ user, post }: IPros, props: Props) => {
           );
         }
         console.log(data);
+        if (user?.user.userId !== post.userPost.userId) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "like",
+            receiverId: `${post.userPost.userId}`,
+            senderId: user?.user.userId,
+            postId: post.postId,
+            shareId: "",
+            type: "post",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${post.userPost.userId}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
       } else {
         console.log("something wrong");
       }
@@ -1038,9 +1060,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
 
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
     console.log(cmt);
-
     console.log(user);
-
     setIsComment(false);
     setFormDataReplyComment((prevData) => {
       return {
@@ -1442,6 +1462,21 @@ const Post = ({ user, post }: IPros, props: Props) => {
           postToPost: "",
         } as CommentToPostDTO);
         setIsLoadingComment(false);
+        if (user?.user.userId !== formDataComment.userReceive) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "comment",
+            receiverId: `${formDataComment.userReceive}`,
+            senderId: user?.user.userId,
+            postId: formDataComment.postToPost,
+            shareId: "",
+            type: "comment",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${formDataComment.userReceive}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
       }
       setIsComment(true);
     } else {
@@ -1474,7 +1509,21 @@ const Post = ({ user, post }: IPros, props: Props) => {
             return comment;
           });
         });
-
+        if (user?.user.userId !== formDataReplyComment.userReceive.userId) {
+          const notificationToPostDTO: notificationToPostDTO = {
+            message: "replyComment",
+            receiverId: `${formDataComment.userReceive}`,
+            senderId: user?.user.userId,
+            postId: formDataComment.postToPost,
+            shareId: "",
+            type: "replyComment",
+          };
+          stompClient.send(
+            `${GLOBAL_NOTIFI}/${formDataComment.userReceive}`,
+            {},
+            JSON.stringify(notificationToPostDTO)
+          );
+        }
         setIsLoadingComment(false);
         setIsComment(true);
       }
@@ -1493,7 +1542,6 @@ const Post = ({ user, post }: IPros, props: Props) => {
         content: contentSharePost,
       },
     });
-    console.log(response);
     if (response.statusCode == 400) {
       setDataSnackbar({
         openSnackbar: true,
@@ -1532,6 +1580,24 @@ const Post = ({ user, post }: IPros, props: Props) => {
         type: "success",
       });
       console.log(dataSnackbar);
+      console.log(user?.user.userId);
+
+      console.log(response.postId.userPost.userId);
+      if (user?.user.userId !== response.postId.userPost.userId) {
+        const notificationToPostDTO: notificationToPostDTO = {
+          message: "share",
+          receiverId: response.userPostDto.userId,
+          senderId: user?.user.userId,
+          postId: "",
+          shareId: response.id,
+          type: "share",
+        };
+        stompClient.send(
+          `${GLOBAL_NOTIFI}/${response.postId.userPost.userId}`,
+          {},
+          JSON.stringify(notificationToPostDTO)
+        );
+      }
     }
   };
 
@@ -1842,7 +1908,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 onClick={() =>
                   p.likeByUserLogged
                     ? handleUnlike(p?.postId, false)
-                    : handleLike(p?.postId, false)
+                    : handleLike(p, false)
                 }
                 disabled={p.isProcessingLike}
               >
@@ -1938,7 +2004,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
                 <MenuItem onClick={() => handleEditPost(p, index)}>
-                  Chỉnh sửa bài viết {index}
+                  Chỉnh sửa bài viết
                 </MenuItem>
                 <MenuItem
                   onClick={() =>
@@ -2134,7 +2200,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 onClick={() =>
                   p.likeByUserLogged
                     ? handleUnlike(p?.postId, true)
-                    : handleLike(p?.postId, true)
+                    : handleLike(p, true)
                 }
               >
                 <Box
@@ -3090,7 +3156,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                         >
                                           <Tooltip
                                             title={formatDateString(
-                                              c.timeComment
+                                              rl.timeComment
                                             )}
                                             TransitionComponent={Zoom}
                                             slotProps={{
@@ -3117,7 +3183,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                                               }}
                                             >
                                               {calculateHoursDifference(
-                                                c.timeComment
+                                                rl.timeComment
                                               )}
                                             </Typography>
                                           </Tooltip>
@@ -3732,6 +3798,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
 };
 
 export default Post;
+
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }

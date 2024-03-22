@@ -23,6 +23,8 @@ import React, { useEffect, useState } from "react";
 import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs"
 
 interface State extends SnackbarOrigin {
   open: boolean;

@@ -327,4 +327,24 @@ declare global {
     fullname: string;
     userReceiveDto: UserPost;
   }
+  interface notificationToPostDTO {
+    message: string;
+    receiverId: string;
+    senderId: string;
+    type: string;
+    postId: string;
+    shareId: string;
+  }
+
+  interface notificationToGetDTO {
+    id: number;
+    message: string;
+    receiverId: UserPost;
+    senderId: UserPost;
+    type: string;
+    postId: string;
+    shareId: string;
+    createDate: Date;
+    read: boolean;
+  }
 }
