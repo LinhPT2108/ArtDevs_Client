@@ -327,6 +327,7 @@ declare global {
     fullname: string;
     userReceiveDto: UserPost;
   }
+
   interface notificationToPostDTO {
     message: string;
     receiverId: string;
@@ -346,5 +347,20 @@ declare global {
     shareId: string;
     createDate: Date;
     read: boolean;
+  }
+  interface ReponseError {
+    errorCode: number;
+    message: string;
+  }
+
+  interface ReponseSendCode {
+    statusCode: number;
+    message: string;
+    model: Verification;
+  }
+
+  interface Verification {
+    email: string;
+    verificationCode: number;
   }
 }

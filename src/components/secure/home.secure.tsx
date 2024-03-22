@@ -16,6 +16,7 @@ import {
   ListItemButton,
   Menu,
   MenuItem,
+  Snackbar,
   TextField,
 } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -25,15 +26,38 @@ import Typography from "@mui/material/Typography";
 import Image from "next/image";
 import * as React from "react";
 import LockIcon from "@mui/icons-material/Lock";
+import { compare } from "bcryptjs";
+import bcrypt from "bcryptjs";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import { sendRequest } from "../utils/api";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
-export default function HomeSecure() {
+interface PasswordForm {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+interface IPros {
+  session: User;
+}
+export default function HomeSecure({ session }: IPros) {
+  // localStorage.setItem("vericode", session);
+  const [changePassword, setChangePassword] = React.useState<ReponseError>();
+
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+
   const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
     Array(options.length).fill(null)
   );
   const [selectedIndexes, setSelectedIndexes] = React.useState<Array<number>>(
     Array(options.length).fill(1)
   );
+  const [formData, setFormData] = React.useState<PasswordForm>({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
   let listActivity = [
     "Ai có thể xem các bài viết của bạn trong tương lai?",
     "Giới hạn đối tượng cho các bài viết bạn đã chia sẻ với Bạn của bạn bè hoặc chia sẻ Công khai?",
@@ -57,6 +81,53 @@ export default function HomeSecure() {
     const newAnchorEls = [...anchorEls];
     newAnchorEls[index] = null;
     setAnchorEls(newAnchorEls);
+  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    // Check if newPassword and confirmPassword match
+    if (formData.newPassword !== formData.confirmPassword) {
+      alert("Mật khẩu mới và xác nhận mật khẩu không khớp.");
+      return;
+    }
+
+    // Check if oldPassword is not empty (you can add more validation logic)
+    if (!formData.oldPassword) {
+      alert("Vui lòng nhập mật khẩu cũ.");
+      return;
+    }
+
+    // Handle the form submission with the entered data
+    console.log("Form Data:", formData);
+    console.log("sesstion:", session);
+    const response = await sendRequest<ReponseError>({
+      url: GLOBAL_URL + "/api/changepass",
+      headers: {
+        authorization: `Bearer ${session?.access_token}`,
+      },
+      body: { ...formData },
+      method: "POST",
+    });
+
+    console.log(" check API changpass", response.message);
+    setChangePassword(response);
+    showSnackbar();
+    // Reset the form after successful submission
+    setFormData({
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+  };
+  const showSnackbar = () => {
+    setSnackbarOpen(true);
+    setTimeout(() => setSnackbarOpen(false), 10000);
   };
 
   return (
@@ -109,6 +180,9 @@ export default function HomeSecure() {
                         type="password"
                         variant="filled"
                         fullWidth
+                        name="oldPassword"
+                        value={formData.oldPassword}
+                        onChange={handleChange}
                       />
                     </Grid>
                     <Grid item xs={3}>
@@ -118,6 +192,9 @@ export default function HomeSecure() {
                         type="password"
                         variant="filled"
                         fullWidth
+                        name="newPassword"
+                        value={formData.newPassword}
+                        onChange={handleChange}
                       />
                     </Grid>
                     <Grid item xs={3}>
@@ -127,6 +204,9 @@ export default function HomeSecure() {
                         type="password"
                         variant="filled"
                         fullWidth
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
                       />
                     </Grid>
                     <Grid
@@ -141,7 +221,9 @@ export default function HomeSecure() {
                       >
                         Hủy bỏ
                       </Button>
-                      <Button variant="contained">Lưu lại</Button>
+                      <Button variant="contained" onClick={handleSubmit}>
+                        Lưu lại
+                      </Button>
                     </Grid>
                   </Grid>
                   <Grid
@@ -262,6 +344,16 @@ export default function HomeSecure() {
           </Box>
         </Card>
       </Container>
+      <Snackbar
+        open={snackbarOpen}
+        message={changePassword?.message}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        sx={{
+          color: "white",
+          backgroundColor: "#4CAF50",
+        }}
+      />
     </React.Fragment>
   );
 }

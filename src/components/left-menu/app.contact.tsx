@@ -88,10 +88,11 @@ const ContactMenu = (pros: IPros) => {
   rightMenu.push(ListFriend?.statusCode ? [] : ListFriend);
   //@ts-ignore
   rightMenu.push(ListMentor?.statusCode ? [] : ListMentor);
-  console.log(">>> check rightMenu: ", rightMenu[0]?.length);
+  console.log(">>> check rightMenu: ", rightMenu[1]?.length);
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-
+  console.log("check list mentor", ListMentor);
+  console.log("check list if friend", ListFriend);
   function formatTimeDifference(startTime: Date, endTime: Date): string {
     const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 

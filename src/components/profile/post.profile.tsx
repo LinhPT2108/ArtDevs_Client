@@ -1288,10 +1288,10 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const handleCancelReplyComment = () => setIsComment(true);
   const handlePostComment = async () => {
     if (isComment) {
-      console.log(formDataComment);
+      console.log( formDataComment);
       setIsLoadingComment(true);
       const response = await postCommentApi(formDataComment, session);
-      console.log(response);
+
       if (response != false) {
         setComment((preData) => [response, ...preData]);
         setFormDataComment({
