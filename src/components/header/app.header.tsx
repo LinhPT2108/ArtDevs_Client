@@ -60,6 +60,7 @@ import {
   GLOBAL_URL,
   getDrawerOpen,
   getGlobalUser,
+  stompClient
 } from "../utils/veriable.global";
 import { useUser, useWidthScreen } from "@/lib/custom.content";
 import { getServerSession } from "next-auth";
@@ -111,6 +112,8 @@ interface IPros {
   pageUrl: string;
   session: User | null;
 }
+
+
 export default function AppHeader(pros: IPros) {
   const [openNoti, setOpenNoti] = React.useState(false);
   const [dataNotification, setDatanotification] =
@@ -326,8 +329,6 @@ export default function AppHeader(pros: IPros) {
     typeof window !== "undefined" ? window.innerWidth : 900
   );
 
-  const socket = new SockJS("http://localhost:8080/ws");
-  const stompClient = Stomp.over(socket);
   const connectAndSubscribe = () => {
     console.log("connect socket: ");
     stompClient.connect(
@@ -1034,13 +1035,13 @@ export default function AppHeader(pros: IPros) {
                                   style={{ textDecoration: "none" }}
                                   href={
                                     e.type == "post"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : e.type == "share"
                                       ? "/post/share/" + e.shareId
                                       : e.type == "comment"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : e.type == "replyComment"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : "#"
                                   }
                                 >

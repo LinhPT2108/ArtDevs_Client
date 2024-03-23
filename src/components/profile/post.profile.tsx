@@ -88,6 +88,7 @@ import {
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
+  stompClient,
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
@@ -223,7 +224,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     ? profile
     : hashTagText
     ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
-    : "/news-feed";
+    : "/friend-posts";
 
   //get data bài đăng
   const fetchData = async (url: string) => {
@@ -433,7 +434,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const [dataSnackbar, setDataSnackbar] = useState<any>({
     openSnackbar: false,
     contentSnackbar: "",
-    type: "",
+    type: "success",
   });
 
   const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
@@ -663,6 +664,8 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     index: number,
     isDataLoading: boolean
   ) => {
+    console.log(dataId);
+    
     if (actionType == "deleteCmt") {
       setActionDialog({
         actionType: actionType,
@@ -1016,8 +1019,6 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //   }
   // );
 
-  const socket = new SockJS("http://localhost:8080/ws");
-  const stompClient = Stomp.over(socket);
 
   useEffect(() => {
     const fetchDataHashtag = async () => {
@@ -1354,14 +1355,14 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
         ) {
           const notificationToPostDTO: notificationToPostDTO = {
             message: "replyComment",
-            receiverId: `${formDataComment?.userReceive}`,
+            receiverId: `${formDataReplyComment?.userReceive.userId}`,
             senderId: session?.user?.userId,
             postId: formDataComment?.postToPost,
             shareId: "",
             type: "replyComment",
           };
           stompClient.send(
-            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+            `${GLOBAL_NOTIFI}/${formDataReplyComment?.userReceive.userId}`,
             {},
             JSON.stringify(notificationToPostDTO)
           );
@@ -1480,7 +1481,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       </Box>
     );
   }
-  console.log(">>> check posts: ", posts);
+  // console.log(">>> check posts: ", posts);
   return (
     <>
       <Box
@@ -2205,7 +2206,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                   >
                     {session?.user?.userId ===
                     item?.postId?.userPost?.userId ? (
-                      <>
+                      <Box>
                         <MenuItem
                           onClick={() => handleDeletePost(selectedItemId)}
                         >
@@ -2220,9 +2221,9 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                           </ListItemIcon>
                           Chỉnh sửa bài viết
                         </MenuItem>
-                      </>
+                      </Box>
                     ) : (
-                      <>
+                      <Box>
                         <MenuItem onClick={handleClose}>
                           <ReportGmailerrorredOutlinedIcon
                             sx={{ marginRight: "6px" }}
@@ -2233,7 +2234,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                           <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
                           Báo cáo vi phạm
                         </MenuItem>
-                      </>
+                      </Box>
                     )}
                   </Menu>
                 </Box>
@@ -2449,28 +2450,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       display: "flex",
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: "22px",
-                        height: "22px",
-                        boxSizing: "border-box",
-                        borderRadius: "50%",
-                        border: "1px solid #fff",
-                        display: "flex",
-                        backgroundImage:
-                          "linear-gradient(to bottom, #FD5976, #E81E44)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <FavoriteBorderIcon
-                        sx={{
-                          color: "white",
-                          fontSize: "12px",
-                          margin: "auto",
-                        }}
-                      />
-                    </Box>
+                    
                     <Box
                       sx={{
                         width: "22px",
@@ -2505,7 +2485,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                         color: "#3339",
                       }}
                     >
-                      {item?.postId?.totalComment} Comments
+                      {item?.postId?.totalComment} Bình luận
                     </Typography>
                     <Typography
                       component={"p"}
@@ -2514,7 +2494,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                         marginLeft: "12px",
                       }}
                     >
-                      1 Share
+                      {item?.postId?.totalShare} Chia sẻ
                     </Typography>
                   </Box>
                 </Box>
@@ -2577,7 +2557,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                           component={"span"}
                           sx={{ marginLeft: "5px" }}
                         >
-                          Like
+                          Thích
                         </Typography>
                       </>
                     )}
@@ -2611,7 +2591,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                   >
                     <CommentIcon />
                     <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Comment
+                      Bình luận
                     </Typography>
                   </IconButton>
                 </Grid>
@@ -2632,10 +2612,13 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       backgroundColor: "#E4E6E9",
                     },
                   }}
+                  onClick={() =>
+                    handleClickOpenAlerts(item?.postId, "share", false, -1, false)
+                  }
                 >
                   <ShareIcon />
                   <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                    Share
+                    Chia sẻ
                   </Typography>
                 </Grid>
               </Grid>

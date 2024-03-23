@@ -1,3 +1,7 @@
+
+import Stomp from "stompjs";
+import SockJS from "sockjs-client";
+
 // witdh of menu
 export const DRAWER_WIDTH: number = 200;
 export const GLOBAL_URL: string = "http://localhost:8080";
@@ -10,6 +14,9 @@ export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công
 export const GLOBAL_ERROR_MESSAGE: string = "Có lỗi xảy ra !";
 //open menu
 let drawerOpen: boolean = true;
+
+const socket = new SockJS("http://localhost:8080/ws");
+export const stompClient = Stomp.over(socket);
 
 export const getDrawerOpen = (): boolean => {
   return drawerOpen;
