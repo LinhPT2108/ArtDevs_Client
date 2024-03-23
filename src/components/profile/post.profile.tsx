@@ -65,6 +65,8 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
 import {
   CubeSpan,
   ImageReplyViewerEdit,
@@ -90,7 +92,7 @@ import {
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 
-const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
+const options = ["Chỉ mình tôi", "Công khai"];
 
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
@@ -2201,18 +2203,38 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    <MenuItem onClick={() => handleDeletePost(selectedItemId)}>
-                      <ListItemIcon>
-                        <DeleteIcon fontSize="small" />
-                      </ListItemIcon>
-                      Xóa bài viết
-                    </MenuItem>
-                    <MenuItem onClick={() => handleEditPost(postModal!)}>
-                      <ListItemIcon>
-                        <EditIcon fontSize="small" />
-                      </ListItemIcon>
-                      Chỉnh sửa bài viết
-                    </MenuItem>
+                    {session?.user?.userId ===
+                    item?.postId?.userPost?.userId ? (
+                      <>
+                        <MenuItem
+                          onClick={() => handleDeletePost(selectedItemId)}
+                        >
+                          <ListItemIcon>
+                            <DeleteIcon fontSize="small" />
+                          </ListItemIcon>
+                          Xóa bài viết
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                          <ListItemIcon>
+                            <EditIcon fontSize="small" />
+                          </ListItemIcon>
+                          Chỉnh sửa bài viết
+                        </MenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <MenuItem onClick={handleClose}>
+                          <ReportGmailerrorredOutlinedIcon
+                            sx={{ marginRight: "6px" }}
+                          />
+                          Báo cáo bài viết
+                        </MenuItem>
+                        <MenuItem onClick={handleClose}>
+                          <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
+                          Báo cáo vi phạm
+                        </MenuItem>
+                      </>
+                    )}
                   </Menu>
                 </Box>
               </Box>
