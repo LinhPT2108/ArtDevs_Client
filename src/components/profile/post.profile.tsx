@@ -435,7 +435,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     openSnackbar: false,
     contentSnackbar: "",
     type: "success",
-  });
+  }); 
 
   const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
     console.log();

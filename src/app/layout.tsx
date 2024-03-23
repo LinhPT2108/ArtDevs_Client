@@ -34,24 +34,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
 
-    const connectAndSubscribe = () => {
-      const socket = new SockJS('http://localhost:8080/ws');
-      const stompClient = Stomp.over(socket);
-      console.log('connect socket');
+    // const connectAndSubscribe = () => {
+    //   const socket = new SockJS('http://localhost:8080/ws');
+    //   const stompClient = Stomp.over(socket);
+    //   console.log('connect socket');
       
-      stompClient.connect({}, () => {
-          console.log('Connected to WebSocket server');
+    //   stompClient.connect({}, () => {
+    //       console.log('Connected to WebSocket server');
           
-          // Đăng ký để nhận tin nhắn từ máy chủ
-          stompClient.subscribe('/chat', (message) => {
-              console.log('Received message:', message.body);
-              // Xử lý tin nhắn nhận được ở đây
-          });
-      }, (error) => {
-          console.error('Error connecting to WebSocket server:', error);
-      });
-    };
-    connectAndSubscribe();
+    //       // Đăng ký để nhận tin nhắn từ máy chủ
+    //       stompClient.subscribe('/chat', (message) => {
+    //           console.log('Received message:', message.body);
+    //           // Xử lý tin nhắn nhận được ở đây
+    //       });
+    //   }, (error) => {
+    //       console.error('Error connecting to WebSocket server:', error);
+    //   });
+    // };
+    // connectAndSubscribe();
   const session: User | null = await getServerSession(authOptions);
   console.log("Children component:");
   return (
