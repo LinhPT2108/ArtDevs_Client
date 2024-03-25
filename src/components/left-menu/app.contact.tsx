@@ -88,11 +88,11 @@ const ContactMenu = (pros: IPros) => {
   rightMenu.push(ListFriend?.statusCode ? [] : ListFriend);
   //@ts-ignore
   rightMenu.push(ListMentor?.statusCode ? [] : ListMentor);
-  console.log(">>> check rightMenu: ", rightMenu[1]?.length);
+  // console.log(">>> check rightMenu: ", rightMenu[1]?.length);
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  console.log("check list mentor", ListMentor);
-  console.log("check list if friend", ListFriend);
+  // console.log("check list mentor", ListMentor);
+  // console.log("check list if friend", ListFriend);
   function formatTimeDifference(startTime: Date, endTime: Date): string {
     const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 
@@ -120,7 +120,9 @@ const ContactMenu = (pros: IPros) => {
     right: false,
   });
   const [user, setUser] = React.useState<UserMessage | undefined>();
-  const toggleDrawer = (
+  const [dataMessage, setDataMessage] = React.useState<MessageContent[] | null>(null);
+
+  const toggleDrawer = async (
     anchor: Anchor,
     open: boolean,
     item: UserMessage | undefined
@@ -132,23 +134,39 @@ const ContactMenu = (pros: IPros) => {
       open ? openDrawer() : closeDrawer();
     }
     setUser(item);
+
+    const fetchDataMessage = await sendRequest<MessageContent[]|null>({
+      url: GLOBAL_URL + `/api/message/${item?.userId}`,
+      method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+    });
+    
+    console.table(fetchDataMessage);
+    setDataMessage(fetchDataMessage)
     console.log(">>> check user:P ", item);
 
     setState({ ...state, [anchor]: open });
   };
+
+  const handleSetNewMessage = (newMessageContent: MessageContent)=>{
+    dataMessage?.push(newMessageContent);
+  }
+
   const list = (anchor: Anchor) => (
     <Box
       sx={{
         width: anchor === "top" || anchor === "bottom" ? "auto" : 320,
         backgroundColor: "#293145",
       }}
-      role="presentation"
+      role="presentation" 
     >
       <ChatMessagesForm
         toggleDrawer={toggleDrawer}
         data={user}
         formatTimeDifference={formatTimeDifference}
         pageUrl={pageUrl}
+        session={session}
+        dataMessage={dataMessage}
       />
     </Box>
   );

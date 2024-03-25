@@ -9,7 +9,6 @@ const DetailHashTag = ({ session }: { session: User }) => {
   const params = useParams<{ hashTagText: string }>();
   return (
     <Box>
-      <Box>{params.hashTagText}</Box>
       <Divider></Divider>
       <PostProfile session={session} hashTagText={params.hashTagText} />
     </Box>

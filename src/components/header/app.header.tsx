@@ -60,7 +60,7 @@ import {
   GLOBAL_URL,
   getDrawerOpen,
   getGlobalUser,
-  stompClient
+  // stompClient
 } from "../utils/veriable.global";
 import { useUser, useWidthScreen } from "@/lib/custom.content";
 import { getServerSession } from "next-auth";
@@ -79,6 +79,9 @@ type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
+
+const socket = new SockJS("http://localhost:8080/wss");
+ const stompClient = Stomp.over(socket);
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -331,7 +334,11 @@ export default function AppHeader(pros: IPros) {
 
   const connectAndSubscribe = () => {
     console.log("connect socket: ");
-    stompClient.connect(
+    stompClient.disconnect();
+   const stompClient2=Stomp.over(socket);
+    // console.log();
+    
+    stompClient2.connect(
       {},
       () => {
         console.log("Connected to WebSocket server");

@@ -6,6 +6,7 @@ import SockJS from "sockjs-client";
 export const DRAWER_WIDTH: number = 200;
 export const GLOBAL_URL: string = "http://localhost:8080";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";
+export const GLOBAL_SEND_MESSAGE: string = "/app/send-message";
 
 export const GLOBAL_UPLOAD_POST_MESSAGE: string = "Đăng bài viết thành công";
 export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
@@ -15,8 +16,8 @@ export const GLOBAL_ERROR_MESSAGE: string = "Có lỗi xảy ra !";
 //open menu
 let drawerOpen: boolean = true;
 
-const socket = new SockJS("http://localhost:8080/ws");
-export const stompClient = Stomp.over(socket);
+// const socket = new SockJS("http://localhost:8080/ws");
+// export const stompClient = Stomp.over(socket);
 
 export const getDrawerOpen = (): boolean => {
   return drawerOpen;

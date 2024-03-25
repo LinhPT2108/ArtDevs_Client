@@ -4,20 +4,33 @@ import SendIcon from "@mui/icons-material/Send";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Translate } from "@mui/icons-material";
-
+import { GLOBAL_SEND_MESSAGE, 
+  // stompClient
+ } from "../utils/veriable.global";
+ import Stomp from "stompjs";
+ import SockJS from "sockjs-client";
 interface IPros {
-  handleContent: (messageContent: MessageContent) => void;
+  handleContent: (messageContent: MessageContentToPost) => void;
   handelPreview: (isPre: boolean) => void;
   pageUrl: string;
 }
 
+interface FileData {
+  name: string;
+  base64: string;
+}
+
+const socket = new SockJS("http://localhost:8080/wss");
+ const stompClient = Stomp.over(socket);
+
 const MessageBox = (pros: IPros) => {
   const { handleContent, handelPreview, pageUrl } = pros;
-  const [formData, setFormData] = React.useState<MessageContent>({
-    content: "",
-    image: null,
-    from: "",
-    to: "",
+  const [formData, setFormData] = React.useState<MessageContentToPost>({
+    subject: "",
+    message: "",
+    pictureOfMessages: null,
+    formUserId: "",
+    toUserId: "",
   });
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [previewURLs, setPreviewURLs] = React.useState<string[]>([]);
@@ -31,7 +44,9 @@ const MessageBox = (pros: IPros) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]:
-        name === "image" && fileInput.type === "file" ? fileInput.files : value,
+        name === "pictureOfMessages" && fileInput.type === "file"
+          ? fileInput.files
+          : value,
     }));
 
     const selected = fileInput.files;
@@ -69,13 +84,19 @@ const MessageBox = (pros: IPros) => {
     setPreviewURLs(newPreviewURLs);
     newPreviewURLs.length == 0 ? handelPreview(false) : "";
   };
-
   const handleClickSendMess = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
-    formData.image = selectedFiles;
     event.preventDefault();
+
+    formData.pictureOfMessages = selectedFiles;
     handleContent(formData);
+
+    stompClient.send(
+      `${GLOBAL_SEND_MESSAGE}/${formData.toUserId}`,
+      {},
+      JSON.stringify(formData)
+    );
     handleClearAll();
   };
 
@@ -83,10 +104,11 @@ const MessageBox = (pros: IPros) => {
     setSelectedFiles([]);
     setPreviewURLs([]);
     setFormData({
-      content: "",
-      image: null,
-      from: "",
-      to: "",
+      subject: "",
+      message: "",
+      pictureOfMessages: null,
+      formUserId: "",
+      toUserId: "",
     });
     handelPreview(false);
   };
@@ -193,7 +215,7 @@ const MessageBox = (pros: IPros) => {
               multiple
               type="file"
               id="file"
-              name="image"
+              name="pictureOfMessages"
               onChange={handleChange}
             />
           </Box>
@@ -202,8 +224,8 @@ const MessageBox = (pros: IPros) => {
             autoComplete="off"
             type="text"
             onChange={handleChange}
-            name="content"
-            value={formData.content}
+            name="message"
+            value={formData.message}
             sx={{
               width: `${pageUrl === "home" ? "200px" : "100%"}`,
               height: "100%",

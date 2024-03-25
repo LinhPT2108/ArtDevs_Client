@@ -1,3 +1,5 @@
+import { DateValues } from "date-fns";
+
 export {};
 // https://bobbyhadz.com/blog/typescript-make-types-global#declare-global-types-in-typescript
 
@@ -41,11 +43,23 @@ declare global {
   //   totalComment: number;
   // }
   interface MessageContent {
-    content: String;
-    image?: any;
-    from: String;
-    to: String;
+    relationShipId: boolean;
+    pictureOfMessages: any[]|null;
+    timeMessage: string;
+    subject: string
+    message: string;
+    formUserId: string;
+    toUserId: string;
   }
+
+  interface MessageContentToPost {
+    pictureOfMessages: any;
+    subject: string
+    message: string;
+    formUserId: string;
+    toUserId: string;
+  }
+
   interface IColor {
     bgColor: string;
     textColor: string;

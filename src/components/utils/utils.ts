@@ -110,6 +110,8 @@ export const formatDateString = (input: string | null | undefined): string => {
   }
 };
 
+
+
 export const formatBirthDay = (input: string | null | undefined): string => {
   if (input) {
     const dateObject = parseISO(input);

@@ -88,11 +88,10 @@ import {
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
-  stompClient,
+  // stompClient,
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
-
 const options = ["Chỉ mình tôi", "Công khai"];
 
 const FadeInImage = styled("img")({
@@ -212,7 +211,8 @@ interface IPros {
   hashTagText?: string;
   profile?: string;
 }
-
+const socket = new SockJS("http://localhost:8080/wss");
+ const stompClient = Stomp.over(socket);
 const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -224,7 +224,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     ? profile
     : hashTagText
     ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
-    : "/friend-posts";
+    : "/news-feed";
 
   //get data bài đăng
   const fetchData = async (url: string) => {
@@ -2673,9 +2673,9 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                   <IconButton
                     onClick={handleCloseModalCmt}
                     size="small"
-                    aria-controls={openPost ? "account-menu" : undefined}
+                    aria-controls={openModalCmt ? "account-menu" : undefined}
                     aria-haspopup="true"
-                    aria-expanded={openPost ? "true" : undefined}
+                    aria-expanded={openModalCmt ? "true" : undefined}
                   >
                     <Avatar
                       sx={{ width: 32, height: 32, backgroundColor: "gray" }}

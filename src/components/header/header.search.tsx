@@ -26,7 +26,7 @@ const SearchComponent = () => {
   };
 
   const handleSearch = () => {
-    router.push(`/search?params=${search}`);
+    router.push(`/search?keyword=${search}`);
   };
 
   return (
@@ -58,7 +58,7 @@ const SearchComponent = () => {
         onChange={(e) => {
           setSearch(e.target.value);
         }}
-        placeholder="Start typing to start..."
+        placeholder="Tìm kiếm..."
         sx={{
           color: "black",
           borderRadius: "16px",

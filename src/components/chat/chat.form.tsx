@@ -16,7 +16,8 @@ import MessageBox from "./chat.input";
 type Anchor = "top" | "left" | "bottom" | "right";
 
 interface IPros {
-  data?: UserMessage;
+  data: UserMessage|undefined;
+  dataMessage: MessageContent[]|null;
   formatTimeDifference: (startTime: Date, endTime: Date) => string;
   toggleDrawer?: (
     anchor: Anchor,
@@ -24,15 +25,16 @@ interface IPros {
     item: UserMessage | undefined
   ) => void;
   pageUrl: string;
+  session: User 
 }
 
 const ChatMessagesForm = (pros: IPros) => {
-  const { data, formatTimeDifference, toggleDrawer, pageUrl } = pros;
-  const [content, setContent] = React.useState<MessageContent>();
+  const { data, formatTimeDifference, toggleDrawer, pageUrl, session, dataMessage } = pros;
+  const [content, setContent] = React.useState<MessageContentToPost>();
   const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
-  const handleContent = (messageContent: MessageContent) => {
-    messageContent.from = "123";
-    messageContent.to = data ? data?.fullname : "";
+  const handleContent = (messageContent: MessageContentToPost) => {
+    messageContent.formUserId = session?.user?.userId;
+    messageContent.toUserId = data?.userId!;
     setContent(messageContent);
   };
 
@@ -40,7 +42,10 @@ const ChatMessagesForm = (pros: IPros) => {
     setPreviewImage(isPre);
   };
   console.log(">>> check content messages: ", content);
-
+  console.table(dataMessage)
+  if(!dataMessage){
+    return 
+  }
   return (
     <Box
       sx={{
@@ -125,7 +130,7 @@ const ChatMessagesForm = (pros: IPros) => {
             )}
           </ListItemButton>
         )}
-        <Messsages preViewImage={preViewImage} pageUrl={pageUrl} />
+        <Messsages preViewImage={preViewImage} pageUrl={pageUrl} dataMessage={dataMessage} session={session}/>
         <MessageBox
           handleContent={handleContent}
           handelPreview={handelPreview}
