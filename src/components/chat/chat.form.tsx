@@ -7,7 +7,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ClearIcon from "@mui/icons-material/Clear";
 import Messsages from "./chat.messages";
@@ -16,8 +16,8 @@ import MessageBox from "./chat.input";
 type Anchor = "top" | "left" | "bottom" | "right";
 
 interface IPros {
-  data: UserMessage|undefined;
-  dataMessage: MessageContent[]|null;
+  data: UserMessage | undefined;
+  dataMessage: MessageContent[] | null;
   formatTimeDifference: (startTime: Date, endTime: Date) => string;
   toggleDrawer?: (
     anchor: Anchor,
@@ -25,26 +25,66 @@ interface IPros {
     item: UserMessage | undefined
   ) => void;
   pageUrl: string;
-  session: User 
+  session: User;
 }
 
 const ChatMessagesForm = (pros: IPros) => {
-  const { data, formatTimeDifference, toggleDrawer, pageUrl, session, dataMessage } = pros;
+  const {
+    data,
+    formatTimeDifference,
+    toggleDrawer,
+    pageUrl,
+    session,
+    dataMessage,
+  } = pros;
+
+  const [newDataMessage, setNewDataMessage] = React.useState<
+    MessageContent[] | null
+  >();
   const [content, setContent] = React.useState<MessageContentToPost>();
   const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
   const handleContent = (messageContent: MessageContentToPost) => {
-    messageContent.formUserId = session?.user?.userId;
-    messageContent.toUserId = data?.userId!;
+    messageContent.formUser = session?.user?.userId;
+    messageContent.toUser = data?.userId!;
     setContent(messageContent);
   };
 
   const handelPreview = (isPre: boolean) => {
     setPreviewImage(isPre);
   };
-  console.log(">>> check content messages: ", content);
-  console.table(dataMessage)
-  if(!dataMessage){
-    return 
+  useEffect(() => {
+    console.log(dataMessage);
+    setNewDataMessage(dataMessage);
+  }, [dataMessage]);
+  useEffect(() => {
+    if (content) {
+      // dataMessage?.push(content as any);
+      const contentNew: MessageContent = {
+        messageId: content.messageId,
+        content: content.content,
+        timeMessage: content.timeMessage.toISOString(),
+        subject: content.subject,
+        formUserId: content.formUser,
+        toUserId: content.toUser,
+        relationShipId: true,
+        pictureOfMessages: content.pictureOfMessages,
+      };
+      console.log(">>> check new content messages: ", contentNew);
+      setNewDataMessage((pre: any) => [...pre, contentNew]);
+      // if (contentNew.pictureOfMessages.length > 0) {
+      //   console.log(contentNew.pictureOfMessages);
+        
+      // } else {
+      //   console.log("khoong co canh");
+      // }
+    }
+  }, [content]);
+  useEffect(() => {
+    console.log(newDataMessage);
+  }, [newDataMessage]);
+
+  if (!dataMessage) {
+    return;
   }
   return (
     <Box
@@ -130,11 +170,17 @@ const ChatMessagesForm = (pros: IPros) => {
             )}
           </ListItemButton>
         )}
-        <Messsages preViewImage={preViewImage} pageUrl={pageUrl} dataMessage={dataMessage} session={session}/>
+        <Messsages
+          preViewImage={preViewImage}
+          pageUrl={pageUrl}
+          dataMessage={newDataMessage!}
+          session={session}
+        />
         <MessageBox
           handleContent={handleContent}
           handelPreview={handelPreview}
           pageUrl={pageUrl}
+          session={session}
         />
       </Box>
     </Box>

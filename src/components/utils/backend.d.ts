@@ -43,22 +43,34 @@ declare global {
   //   totalComment: number;
   // }
   interface MessageContent {
+    messageId:string;
     relationShipId: boolean;
-    pictureOfMessages: any[]|null;
+    pictureOfMessages: any[];
     timeMessage: string;
     subject: string
-    message: string;
+    content: string;
     formUserId: string;
     toUserId: string;
   }
 
   interface MessageContentToPost {
+    messageId:string;
     pictureOfMessages: any;
     subject: string
-    message: string;
-    formUserId: string;
-    toUserId: string;
+    content: string;
+    formUser: string;
+    toUser: string;
+    timeMessage: Date;
   }
+
+  interface pictureOfMessageDTOs{
+    cloudinaryPublicId: string;
+    size: string;
+    url: string;
+    messageId:string;
+    id:number;
+  }
+
 
   interface IColor {
     bgColor: string;

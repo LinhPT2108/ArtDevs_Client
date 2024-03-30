@@ -52,8 +52,28 @@ export const isFile = (url: any) => {
   }
 };
 
+export const checkUrl2 = (url: any): string => {
+  // console.log(url);
+  // console.log(url instanceof File);
+  let imageUrl: string;
+
+  if (url instanceof File) {
+    imageUrl = URL.createObjectURL(url);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      imageUrl = reader.result as string;
+    };
+    console.log(imageUrl)
+  } else if (typeof url === "object") {
+    imageUrl = url.url;
+  } else {
+    return "false";
+  }
+
+  return imageUrl;
+};
 export const checkUrl = (url: any): string => {
-  console.log(url);
+  console.log(typeof url);
 
   let imageUrl: string;
 
@@ -100,8 +120,13 @@ export const formatVND = (value: number): string => {
   return formattedValue;
 };
 
-export const formatDateString = (input: string | null | undefined): string => {
+export const formatDateString = (
+  input: string | null | undefined | Date
+): string => {
   if (input) {
+    if (input instanceof Date) {
+      input = input.toISOString();
+    }
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
     return formattedDate;
@@ -109,8 +134,6 @@ export const formatDateString = (input: string | null | undefined): string => {
     return "";
   }
 };
-
-
 
 export const formatBirthDay = (input: string | null | undefined): string => {
   if (input) {

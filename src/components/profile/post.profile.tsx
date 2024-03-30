@@ -211,9 +211,9 @@ interface IPros {
   hashTagText?: string;
   profile?: string;
 }
-const socket = new SockJS("http://localhost:8080/wss");
- const stompClient = Stomp.over(socket);
 const PostProfile = ({ session, hashTagText, profile }: IPros) => {
+  const socket = new SockJS("http://localhost:8080/wss");
+  const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
@@ -435,7 +435,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     openSnackbar: false,
     contentSnackbar: "",
     type: "success",
-  }); 
+  });
 
   const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
     console.log();
@@ -665,7 +665,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     isDataLoading: boolean
   ) => {
     console.log(dataId);
-    
+
     if (actionType == "deleteCmt") {
       setActionDialog({
         actionType: actionType,
@@ -1018,7 +1018,6 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   //     revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
   //   }
   // );
-
 
   useEffect(() => {
     const fetchDataHashtag = async () => {
@@ -1780,7 +1779,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                   multiple
                   freeSolo
                   id="tags-standard"
-                  options={hashtagData as HashtagInfor[]}
+                  options={hashtagData as any[]}
                   // value={postData.listHashtag as any}
                   value={
                     hashtagData.length > 0
@@ -2450,7 +2449,6 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       display: "flex",
                     }}
                   >
-                    
                     <Box
                       sx={{
                         width: "22px",
@@ -2613,7 +2611,13 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                     },
                   }}
                   onClick={() =>
-                    handleClickOpenAlerts(item?.postId, "share", false, -1, false)
+                    handleClickOpenAlerts(
+                      item?.postId,
+                      "share",
+                      false,
+                      -1,
+                      false
+                    )
                   }
                 >
                   <ShareIcon />
