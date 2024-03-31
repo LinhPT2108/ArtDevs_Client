@@ -363,4 +363,44 @@ declare global {
     email: string;
     verificationCode: number;
   }
+
+  interface ReponseUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: UserFormAdminDTO[];
+  }
+  interface RequestUserUpdateFormAdmin {
+    statusCode: number;
+    message: string;
+    model: UserFormAdminDTO;
+  }
+
+  
+  interface ReponseAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: AccountListDTO;
+  }
+  interface AccountListDTO{
+    listBand: UserFormAdminDTO[];
+    listAllAccount: UserFormAdminDTO[];
+    listMentor: UserFormAdminDTO[];
+    listUser: UserFormAdminDTO[];
+    listNewMentor: UserFormAdminDTO[];
+    listNewUser: UserFormAdminDTO[];
+  }
+
+  interface UserFormAdminDTO {
+    email: string;
+    role: Role;
+    fullname: string;
+    createDate: Date;
+    accountNonLocked: boolean;
+    userPictureAvatar: string;
+    userPictureBackground: string;
+    totalFriend: number;
+    totalPost: number;
+    totalReport: number;
+    userId: string;
+  }
 }

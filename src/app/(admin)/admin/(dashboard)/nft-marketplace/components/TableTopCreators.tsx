@@ -1,26 +1,45 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/admin/card";
 import Progress from "@/components/admin/progress";
+import moment from 'moment';
 import {
+  Row,
   useGlobalFilter,
   usePagination,
   useSortBy,
   useTable,
 } from "react-table";
+import { sendRequest } from "@/components/utils/api";
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import useSWR, { SWRResponse } from "swr";
 
 type Props = {
   columnsData: any[];
-  tableData: any[];
+  tableData: UserFormAdminDTO[];
+  onRowClick: (rowData: UserFormAdminDTO) => void;
 };
+type TableData = UserFormAdminDTO[];
 
 function TopCreatorTable(props: Props) {
-  const { columnsData, tableData } = props;
+  const { columnsData,tableData, onRowClick } = props;
+  const [selectedRow, setSelectedRow] = useState<Row<UserFormAdminDTO> | null>(
+    null
+  ); // Sử dụng state để lưu trữ hàng được chọn
+  // Trong component của bạn:
+ 
+  
+
+  // Hàm callback để truyền dữ liệu khi click vào hàng
+  const handleRowClick = (rowData: UserFormAdminDTO) => {
+    // Gọi prop callback để truyền dữ liệu lên component cha
+    props.onRowClick(rowData);
+  };
 
   const columns = useMemo(() => columnsData, [columnsData]);
   const data = useMemo(() => tableData, [tableData]);
-
+  console.log("check data table",data);
   const tableInstance = useTable(
     {
       columns,
@@ -73,34 +92,58 @@ function TopCreatorTable(props: Props) {
             {page.map((row, index) => {
               prepareRow(row);
               return (
-                <tr {...row.getRowProps()} key={index}>
+                <tr
+                  {...row.getRowProps()}
+                  key={index}
+                  onClick={() => {
+                    setSelectedRow(row);
+                    onRowClick(row.original);
+                  }}
+                  // Đặt lớp CSS để chỉ định hàng được chọn
+                  className={row === selectedRow ? "bg-gray-200" : ""}
+                >
                   {row.cells.map((cell, index) => {
                     let renderData;
-                    if (cell.column.Header === "Name") {
+                    if (cell.column.Header === "UserID") {
                       renderData = (
                         <div className="flex items-center gap-2">
                           <div className="h-[30px] w-[30px] rounded-full">
                             <img
-                              src={cell.value[1]}
+                              src={
+                                row.original.userPictureAvatar
+                                  ? row.original.userPictureAvatar
+                                  : "/OIP.jpg"
+                              }
                               className="h-full w-full rounded-full"
                               alt=""
                             />
                           </div>
                           <p className="text-sm font-medium text-navy-700 dark:text-white">
-                            {cell.value[0]}
+                            {row.original.userId}
                           </p>
                         </div>
                       );
-                    } else if (cell.column.Header === "Artworks") {
+                    } else if (cell.column.Header === "createDate") {
+                      const formattedDate = moment(row.original.createDate).format('MMMM Do YYYY, h:mm:ss a');
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
-                          {cell.value}
+                          {formattedDate}
                         </p>
                       );
-                    } else if (cell.column.Header === "Rating") {
+                    } else if (cell.column.Header === "Email") {
                       renderData = (
                         <div className="mx-2 flex font-bold">
-                          <Progress width="w-16" value={cell.value} />
+                          <p className="text-md font-medium text-gray-600 dark:text-white">
+                            {row.original.email}
+                          </p>
+                        </div>
+                      );
+                    } else if (cell.column.Header === "Role") {
+                      renderData = (
+                        <div className="mx-2 flex font-bold">
+                          <p className="text-md font-medium text-gray-600 dark:text-white">
+                            {row.original.role.roleName}
+                          </p>
                         </div>
                       );
                     }
