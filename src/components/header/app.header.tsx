@@ -60,6 +60,7 @@ import {
   GLOBAL_URL,
   getDrawerOpen,
   getGlobalUser,
+  // stompClient
 } from "../utils/veriable.global";
 import { useUser, useWidthScreen } from "@/lib/custom.content";
 import { getServerSession } from "next-auth";
@@ -78,6 +79,7 @@ type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
   open?: boolean;
 }
+
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -111,6 +113,7 @@ interface IPros {
   pageUrl: string;
   session: User | null;
 }
+
 export default function AppHeader(pros: IPros) {
   const [openNoti, setOpenNoti] = React.useState(false);
   const [dataNotification, setDatanotification] =
@@ -326,10 +329,9 @@ export default function AppHeader(pros: IPros) {
     typeof window !== "undefined" ? window.innerWidth : 900
   );
 
-  const socket = new SockJS("http://localhost:8080/ws");
+  const socket = new SockJS("http://localhost:8080/wss");
   const stompClient = Stomp.over(socket);
   const connectAndSubscribe = () => {
-    console.log("connect socket: ");
     stompClient.connect(
       {},
       () => {
@@ -346,6 +348,18 @@ export default function AppHeader(pros: IPros) {
             }
           }
         );
+        // stompClient.subscribe(
+        //   `/user/${user?.user?.userId}/message`,
+        //   (message) => {
+        //     console.log("Received message content:", JSON.parse(message.body));
+        //     // if (message) {
+        //     //   setOpenNoti(true);
+        //     //   const data: notificationToGetDTO = JSON.parse(message.body);
+        //     //   setDatanotification(data);
+        //     //   GetCountUnRead();
+        //     // }
+        //   }
+        // );
       },
       (error) => {
         console.error("Error connecting to WebSocket server:", error);
@@ -643,8 +657,8 @@ export default function AppHeader(pros: IPros) {
               }
             >
               <Avatar
-                alt={dataNotification?.receiverId.profilePicUrl}
-                src={dataNotification?.receiverId.profilePicUrl}
+                alt={dataNotification?.receiverId?.profilePicUrl}
+                src={dataNotification?.receiverId?.profilePicUrl}
                 sx={{ width: 50, height: 50 }}
               />
             </Badge>
@@ -673,7 +687,7 @@ export default function AppHeader(pros: IPros) {
             : dataNotification?.message == "replyComment"
             ? dataNotification?.senderId?.fullname +
               " đã phản hồi bình luận của bạn"
-            : ""}
+            : " mess"}
         </Alert>
       </Snackbar>
       <CssBaseline />
@@ -1034,13 +1048,13 @@ export default function AppHeader(pros: IPros) {
                                   style={{ textDecoration: "none" }}
                                   href={
                                     e.type == "post"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : e.type == "share"
                                       ? "/post/share/" + e.shareId
                                       : e.type == "comment"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : e.type == "replyComment"
-                                      ? "/post/" + e.postId
+                                      ? "/post/?id=" + e.postId
                                       : "#"
                                   }
                                 >

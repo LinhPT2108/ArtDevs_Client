@@ -58,7 +58,7 @@ const SearchComponent = () => {
         onChange={(e) => {
           setSearch(e.target.value);
         }}
-        placeholder="Start typing to start..."
+        placeholder="Tìm kiếm..."
         sx={{
           color: "black",
           borderRadius: "16px",

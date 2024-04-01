@@ -9,14 +9,15 @@ import {
   ListSubheader,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ChatMessagesForm from "../chat/chat.form";
 import { styled } from "@mui/system";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
 import { GLOBAL_URL } from "../utils/veriable.global";
-
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
 interface IPros {
   openContact: boolean;
   pageUrl: string;
@@ -88,11 +89,11 @@ const ContactMenu = (pros: IPros) => {
   rightMenu.push(ListFriend?.statusCode ? [] : ListFriend);
   //@ts-ignore
   rightMenu.push(ListMentor?.statusCode ? [] : ListMentor);
-  console.log(">>> check rightMenu: ", rightMenu[1]?.length);
+  // console.log(">>> check rightMenu: ", rightMenu[1]?.length);
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  console.log("check list mentor", ListMentor);
-  console.log("check list if friend", ListFriend);
+  // console.log("check list mentor", ListMentor);
+  // console.log("check list if friend", ListFriend);
   function formatTimeDifference(startTime: Date, endTime: Date): string {
     const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 
@@ -120,7 +121,54 @@ const ContactMenu = (pros: IPros) => {
     right: false,
   });
   const [user, setUser] = React.useState<UserMessage | undefined>();
-  const toggleDrawer = (
+  const [dataMessage, setDataMessage] = React.useState<MessageContent[] | null>(
+    null
+  );
+
+  const [newD, setNewD] = React.useState<any>();
+  const socket = new SockJS("http://localhost:8080/wss");
+  const stompClient = Stomp.over(socket);
+  const connectAndSubscribe = () => {
+    stompClient.connect(
+      {},
+      () => {
+        console.log("Connected to WebSocket server");
+        stompClient.subscribe(
+          `/user/${session?.user?.userId}/message`, //
+          async (message) => {
+            console.log("Received message content:", JSON.parse(message.body));
+            const data: MessageContent|pictureOfMessageDTOs = JSON.parse(message.body);
+            console.log(data);
+            if (typeof data === 'object') {
+              if ('content' in data) {
+                const fetchDataMessage =await sendRequest<MessageContent[] | null>({
+                  url: GLOBAL_URL + `/api/message/${data?.formUserId}`,
+                  method: "GET",
+                  headers: { authorization: `Bearer ${session?.access_token}` },
+                });
+                console.log( fetchDataMessage);
+    
+                setDataMessage(fetchDataMessage);
+              } else if ('cloudinaryPublicId' in data) {
+                const fetchDataMessage =await sendRequest<MessageContent[] | null>({
+                  url: GLOBAL_URL + `/api/message/${user?.userId}`,
+                  method: "GET",
+                  headers: { authorization: `Bearer ${session?.access_token}` },
+                });
+                console.log( fetchDataMessage);
+    
+                setDataMessage(fetchDataMessage);
+              }
+            }
+          }
+        );
+      },
+      (error) => {
+        console.error("Error connecting to WebSocket server:", error);
+      }
+    );
+  };
+  const toggleDrawer = async (
     anchor: Anchor,
     open: boolean,
     item: UserMessage | undefined
@@ -132,10 +180,32 @@ const ContactMenu = (pros: IPros) => {
       open ? openDrawer() : closeDrawer();
     }
     setUser(item);
-    console.log(">>> check user:P ", item);
 
+    const fetchDataMessage = await sendRequest<MessageContent[] | null>({
+      url: GLOBAL_URL + `/api/message/${item?.userId}`,
+      method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+    });
+
+    console.table(fetchDataMessage);
+    setDataMessage(fetchDataMessage);
+    console.log(">>> check user:P ", item);
+    connectAndSubscribe();
     setState({ ...state, [anchor]: open });
   };
+
+  useEffect(() => {
+    console.log("new message");
+    console.log(dataMessage);
+    setDataMessage(dataMessage);
+  }, [dataMessage]);
+  useEffect(() => {
+    if (user) {
+      connectAndSubscribe();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const list = (anchor: Anchor) => (
     <Box
       sx={{
@@ -149,6 +219,8 @@ const ContactMenu = (pros: IPros) => {
         data={user}
         formatTimeDifference={formatTimeDifference}
         pageUrl={pageUrl}
+        session={session}
+        dataMessage={dataMessage}
       />
     </Box>
   );

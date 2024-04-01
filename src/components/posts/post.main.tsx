@@ -414,6 +414,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
     index: number,
     isDataLoading: boolean
   ) => {
+  console.log("share");
+  
+    console.log(dataId);
+    
     if (actionType == "deleteCmt") {
       setActionDialog({
         actionType: actionType,
@@ -819,7 +823,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
   };
 
   const { data, error, isLoading }: SWRResponse<Post[], any> = useSWR(
-    "http://localhost:8080/api/friend-posts",
+    "http://localhost:8080/api/news-feed",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -2004,7 +2008,7 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
                 <MenuItem onClick={() => handleEditPost(p, index)}>
-                  Chỉnh sửa bài viết
+                  Chỉnh sửa bài viết {user?.user?.userId+" "+p?.userPost?.userId} 123
                 </MenuItem>
                 <MenuItem
                   onClick={() =>

@@ -27,7 +27,7 @@ import { formatDateString } from "../utils/utils";
 import { GLOBAL_URL } from "../utils/veriable.global";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-const options = ["Bạn bè", "Công khai", "Chỉ mình tôi"];
+const options = ["Công khai", "Chỉ mình tôi"];
 
 const DetailPost = ({ session }: { session: User }) => {
   // lấy id
@@ -214,7 +214,7 @@ const DetailPost = ({ session }: { session: User }) => {
                         >
                           <LockIcon sx={{ fontSize: "18px" }} />
                           {options[selectedIndex] ||
-                            data?.privacyPostDetails?.namePrivacy}
+                            data?.privacyPostDetails[0]?.namePrivacy}
                         </ListItemButton>
                       </List>
                       <Menu

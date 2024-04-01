@@ -186,7 +186,7 @@ const HomeMentor = ({ user }: IPros) => {
           <MentorAccept session={user} />
         ) : (
           data &&
-          data?.map((mentor) => (
+          data?.map((mentor, index) => (
             <Grid item container xs={12} md={6} key={mentor.userId}>
               <Card
                 sx={{
@@ -226,25 +226,25 @@ const HomeMentor = ({ user }: IPros) => {
                       position: "relative",
                     }}
                   >
+                    {/* Nested Box and Typography */}
                     <Box
                       sx={{
                         width: "8px",
                         height: "8px",
                         borderRadius: "50%",
-                        backgroundColor: "white",
+                        backgroundColor: mentor.isOnline.toString()=="true"
+                          ? "#16D6B5"
+                          : "#e60839",
                         marginRight: "8px",
                       }}
                     ></Box>
-                    {/* Nested Box and Typography */}
-
                     <Typography
                       sx={{
                         fontSize: "16px",
                         fontWeight: "500",
                         color: "white",
-                      }}
-                    >
-                      {mentor.isReady ? "Online" : "Offline"}
+                      }}>
+                      {mentor.isOnline.toString()=="true" ? "Online" : "Offline"}
                     </Typography>
                   </Box>
 
@@ -293,8 +293,8 @@ const HomeMentor = ({ user }: IPros) => {
                   >
                     <CardContent>
                       <Typography variant="body2" color="text.secondary">
-                        {mentor?.listSkillOfMentor?.map((skill) => (
-                          <Box>
+                        {mentor?.listSkillOfMentor?.map((skill, index) => (
+                          <Box key={`skill${index}`}>
                             <Typography
                               gutterBottom
                               variant="h6"

@@ -165,7 +165,7 @@ const UserAccept = ({ session }: IPros) => {
   const handleRedirectFriend = () => {
     router.push(`/friend`);
   };
-  console.log("check data>>", data);
+  // console.log("check data>>", data);
   return (
     <Box
       sx={{

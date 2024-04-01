@@ -65,6 +65,8 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
+import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
 import {
   CubeSpan,
   ImageReplyViewerEdit,
@@ -86,11 +88,11 @@ import {
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
+  // stompClient,
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
-
-const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
+const options = ["Chỉ mình tôi", "Công khai"];
 
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
@@ -219,6 +221,9 @@ const PostProfile = ({
   search,
   searchContent,
 }: IPros) => {
+  
+  const socket = new SockJS("http://localhost:8080/wss");
+  const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
@@ -441,7 +446,7 @@ const PostProfile = ({
   const [dataSnackbar, setDataSnackbar] = useState<any>({
     openSnackbar: false,
     contentSnackbar: "",
-    type: "",
+    type: "success",
   });
 
   const handleChangePrivacyPost = async (event: SelectChangeEvent) => {
@@ -671,6 +676,8 @@ const PostProfile = ({
     index: number,
     isDataLoading: boolean
   ) => {
+    console.log(dataId);
+
     if (actionType == "deleteCmt") {
       setActionDialog({
         actionType: actionType,
@@ -1024,9 +1031,6 @@ const PostProfile = ({
   //   }
   // );
 
-  const socket = new SockJS("http://localhost:8080/ws");
-  const stompClient = Stomp.over(socket);
-
   useEffect(() => {
     const fetchDataHashtag = async () => {
       console.log("Fetching data for:", searchValueHashtag);
@@ -1362,14 +1366,14 @@ const PostProfile = ({
         ) {
           const notificationToPostDTO: notificationToPostDTO = {
             message: "replyComment",
-            receiverId: `${formDataComment?.userReceive}`,
+            receiverId: `${formDataReplyComment?.userReceive.userId}`,
             senderId: session?.user?.userId,
             postId: formDataComment?.postToPost,
             shareId: "",
             type: "replyComment",
           };
           stompClient.send(
-            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+            `${GLOBAL_NOTIFI}/${formDataReplyComment?.userReceive.userId}`,
             {},
             JSON.stringify(notificationToPostDTO)
           );
@@ -1488,7 +1492,7 @@ const PostProfile = ({
       </Box>
     );
   }
-  console.log(">>> check posts: ", posts);
+  // console.log(">>> check posts: ", posts);
   return (
     <>
       <Box
@@ -1788,7 +1792,7 @@ const PostProfile = ({
                   multiple
                   freeSolo
                   id="tags-standard"
-                  options={hashtagData as HashtagInfor[]}
+                  options={hashtagData as any[]}
                   // value={postData.listHashtag as any}
                   value={
                     hashtagData.length > 0
@@ -2212,18 +2216,38 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    <MenuItem onClick={() => handleDeletePost(selectedItemId)}>
-                      <ListItemIcon>
-                        <DeleteIcon fontSize="small" />
-                      </ListItemIcon>
-                      Xóa bài viết
-                    </MenuItem>
-                    <MenuItem onClick={() => handleEditPost(postModal!)}>
-                      <ListItemIcon>
-                        <EditIcon fontSize="small" />
-                      </ListItemIcon>
-                      Chỉnh sửa bài viết
-                    </MenuItem>
+                    {session?.user?.userId ===
+                    item?.postId?.userPost?.userId ? (
+                      <Box>
+                        <MenuItem
+                          onClick={() => handleDeletePost(selectedItemId)}
+                        >
+                          <ListItemIcon>
+                            <DeleteIcon fontSize="small" />
+                          </ListItemIcon>
+                          Xóa bài viết
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                          <ListItemIcon>
+                            <EditIcon fontSize="small" />
+                          </ListItemIcon>
+                          Chỉnh sửa bài viết
+                        </MenuItem>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <MenuItem onClick={handleClose}>
+                          <ReportGmailerrorredOutlinedIcon
+                            sx={{ marginRight: "6px" }}
+                          />
+                          Báo cáo bài viết
+                        </MenuItem>
+                        <MenuItem onClick={handleClose}>
+                          <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
+                          Báo cáo vi phạm
+                        </MenuItem>
+                      </Box>
+                    )}
                   </Menu>
                 </Box>
               </Box>
@@ -2447,28 +2471,6 @@ const PostProfile = ({
                         border: "1px solid #fff",
                         display: "flex",
                         backgroundImage:
-                          "linear-gradient(to bottom, #FD5976, #E81E44)",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <FavoriteBorderIcon
-                        sx={{
-                          color: "white",
-                          fontSize: "12px",
-                          margin: "auto",
-                        }}
-                      />
-                    </Box>
-                    <Box
-                      sx={{
-                        width: "22px",
-                        height: "22px",
-                        boxSizing: "border-box",
-                        borderRadius: "50%",
-                        border: "1px solid #fff",
-                        display: "flex",
-                        backgroundImage:
                           "linear-gradient(to bottom, #11A6FC, #036FE4)",
                         justifyContent: "center",
                         alignItems: "center",
@@ -2494,7 +2496,7 @@ const PostProfile = ({
                         color: "#3339",
                       }}
                     >
-                      {item?.postId?.totalComment} Comments
+                      {item?.postId?.totalComment} Bình luận
                     </Typography>
                     <Typography
                       component={"p"}
@@ -2503,7 +2505,7 @@ const PostProfile = ({
                         marginLeft: "12px",
                       }}
                     >
-                      1 Share
+                      {item?.postId?.totalShare} Chia sẻ
                     </Typography>
                   </Box>
                 </Box>
@@ -2566,7 +2568,7 @@ const PostProfile = ({
                           component={"span"}
                           sx={{ marginLeft: "5px" }}
                         >
-                          Like
+                          Thích
                         </Typography>
                       </>
                     )}
@@ -2600,7 +2602,7 @@ const PostProfile = ({
                   >
                     <CommentIcon />
                     <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Comment
+                      Bình luận
                     </Typography>
                   </IconButton>
                 </Grid>
@@ -2621,10 +2623,19 @@ const PostProfile = ({
                       backgroundColor: "#E4E6E9",
                     },
                   }}
+                  onClick={() =>
+                    handleClickOpenAlerts(
+                      item?.postId,
+                      "share",
+                      false,
+                      -1,
+                      false
+                    )
+                  }
                 >
                   <ShareIcon />
                   <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                    Share
+                    Chia sẻ
                   </Typography>
                 </Grid>
               </Grid>
@@ -2679,9 +2690,9 @@ const PostProfile = ({
                   <IconButton
                     onClick={handleCloseModalCmt}
                     size="small"
-                    aria-controls={openPost ? "account-menu" : undefined}
+                    aria-controls={openModalCmt ? "account-menu" : undefined}
                     aria-haspopup="true"
-                    aria-expanded={openPost ? "true" : undefined}
+                    aria-expanded={openModalCmt ? "true" : undefined}
                   >
                     <Avatar
                       sx={{ width: 32, height: 32, backgroundColor: "gray" }}

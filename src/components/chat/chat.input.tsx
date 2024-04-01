@@ -4,21 +4,44 @@ import SendIcon from "@mui/icons-material/Send";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Translate } from "@mui/icons-material";
-
+import {
+  GLOBAL_NOTIFI,
+  GLOBAL_SEND_IMAGE,
+  GLOBAL_SEND_MESSAGE,
+  GLOBAL_URL,
+  // stompClient
+} from "../utils/veriable.global";
+import Stomp from "stompjs";
+import SockJS from "sockjs-client";
+import { format } from "date-fns";
+import { generateUniqueId } from "../utils/utils";
 interface IPros {
-  handleContent: (messageContent: MessageContent) => void;
+  handleContent: (messageContent: MessageContentToPost) => void;
   handelPreview: (isPre: boolean) => void;
   pageUrl: string;
+  session: User;
 }
 
+const socket = new SockJS("http://localhost:8080/wss");
+const stompClient = Stomp.over(socket);
+
 const MessageBox = (pros: IPros) => {
-  const { handleContent, handelPreview, pageUrl } = pros;
-  const [formData, setFormData] = React.useState<MessageContent>({
+  const { handleContent, handelPreview, pageUrl, session } = pros;
+  const getCurrentTime = (): string => {
+    const now = new Date();
+    return format(now, "yyyy-MM-dd'T'HH:mm:ss.SSSxxx");
+  };
+  const [formData, setFormData] = React.useState<MessageContentToPost>({
+    messageId: generateUniqueId(),
+    subject: "",
     content: "",
-    image: null,
-    from: "",
-    to: "",
+    pictureOfMessages: null,
+    formUser: "",
+    toUser: "",
+    timeMessage: new Date(),
   });
+
+  const [imgReturn, setImgReturn] = React.useState<pictureOfMessageDTOs[]>([]);
   const [selectedFiles, setSelectedFiles] = React.useState<File[]>([]);
   const [previewURLs, setPreviewURLs] = React.useState<string[]>([]);
   const handleChange = (
@@ -31,7 +54,9 @@ const MessageBox = (pros: IPros) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]:
-        name === "image" && fileInput.type === "file" ? fileInput.files : value,
+        name === "pictureOfMessages" && fileInput.type === "file"
+          ? fileInput.files
+          : value,
     }));
 
     const selected = fileInput.files;
@@ -69,13 +94,74 @@ const MessageBox = (pros: IPros) => {
     setPreviewURLs(newPreviewURLs);
     newPreviewURLs.length == 0 ? handelPreview(false) : "";
   };
-
   const handleClickSendMess = async (
     event: React.FormEvent<HTMLFormElement>
   ) => {
-    formData.image = selectedFiles;
     event.preventDefault();
+    formData.pictureOfMessages = selectedFiles;
     handleContent(formData);
+
+    const notificationToPostDTO: notificationToPostDTO = {
+      message: "message",
+      receiverId: `${formData?.toUser}`,
+      senderId: `${formData?.formUser}`,
+      postId: "",
+      shareId: "",
+      type: "message",
+    };
+    stompClient.send(
+      `${GLOBAL_NOTIFI}/${formData?.toUser}`,
+      {},
+      JSON.stringify(notificationToPostDTO)
+    );
+
+    await stompClient.send(
+      `${GLOBAL_SEND_MESSAGE}/${formData?.toUser}`,
+      {},
+      JSON.stringify(formData)
+    );
+    if (formData.pictureOfMessages.length > 0) {
+      console.log(formData.pictureOfMessages);
+      const listPicDataFormdata = new FormData();
+      if (formData.pictureOfMessages) {
+        formData.pictureOfMessages.forEach((file: any, index: any) => {
+          listPicDataFormdata.append("pictureOfMessages", file);
+        });
+      } else {
+        listPicDataFormdata.append("pictureOfMessages", "");
+      }
+      const response = await fetch(
+        GLOBAL_URL + `/api/img-message/${formData.messageId}`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          body: listPicDataFormdata,
+        }
+      );
+      console.log(">>> check image data: ", response.status);
+      if (response.status == 200) {
+        const data = await response.json();
+        console.log(data);
+        formData.pictureOfMessages = data;
+        handleContent(formData);
+        // const pictureOfMessageDTO: pictureOfMessageDTOs[] = data;
+        // console.log(JSON.parse(data));
+
+        // setImgReturn(JSON.parse(data));
+        data.forEach((e:any) => {
+          console.log(e);
+          stompClient.send(
+            `${GLOBAL_SEND_IMAGE}/${formData?.toUser}`,
+            {},
+            JSON.stringify(e)
+          );
+        });
+      } else {
+        console.log("error respone");
+      }
+    } else {
+      console.log("khongco anhr");
+    }
     handleClearAll();
   };
 
@@ -83,10 +169,13 @@ const MessageBox = (pros: IPros) => {
     setSelectedFiles([]);
     setPreviewURLs([]);
     setFormData({
+      messageId: generateUniqueId(),
+      subject: "",
       content: "",
-      image: null,
-      from: "",
-      to: "",
+      pictureOfMessages: null,
+      formUser: "",
+      toUser: "",
+      timeMessage: new Date(),
     });
     handelPreview(false);
   };
@@ -193,7 +282,7 @@ const MessageBox = (pros: IPros) => {
               multiple
               type="file"
               id="file"
-              name="image"
+              name="pictureOfMessages"
               onChange={handleChange}
             />
           </Box>
