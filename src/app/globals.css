@@ -63,13 +63,13 @@ input:checked.defaultCheckbox::before {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-    background: #4318FF; 
+    background: #11753e; 
     border-radius: 20px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #868CFF;
+    background: #19a759;
     cursor: pointer;
 }
 /* END SCROLLBAR */

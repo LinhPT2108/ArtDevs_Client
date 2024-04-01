@@ -26,7 +26,7 @@ const SearchComponent = () => {
   };
 
   const handleSearch = () => {
-    router.push(`/search?params=${search}`);
+    router.push(`/search?keyword=${search}`);
   };
 
   return (

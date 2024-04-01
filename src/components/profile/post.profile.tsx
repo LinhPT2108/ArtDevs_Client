@@ -208,9 +208,17 @@ interface IPros {
   session: User;
   hashTagText?: string;
   profile?: string;
+  search?: string;
+  searchContent?: string | null;
 }
 
-const PostProfile = ({ session, hashTagText, profile }: IPros) => {
+const PostProfile = ({
+  session,
+  hashTagText,
+  profile,
+  search,
+  searchContent,
+}: IPros) => {
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
@@ -221,6 +229,8 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     ? profile
     : hashTagText
     ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
+    : search
+    ? search
     : "/news-feed";
 
   //get data bài đăng
@@ -229,7 +239,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       url: url,
       method: "GET",
       headers: { authorization: `Bearer ${session?.access_token}` },
-      queryParams: { page: 0 },
+      queryParams: { page: 0, keyword: searchContent },
     });
   };
 
@@ -1488,6 +1498,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
           backgroundColor: "#fff",
           padding: "10px",
           marginBottom: "15px",
+          display: `${search ? "none" : "block"}`,
         }}
       >
         <Box
