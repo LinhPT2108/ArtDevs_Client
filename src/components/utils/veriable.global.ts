@@ -9,6 +9,7 @@ export const GLOBAL_SEND_MESSAGE: string = "/app/send-message";
 export const GLOBAL_SEND_IMAGE: string = "/app/image";
 
 export const GLOBAL_UPLOAD_POST_MESSAGE: string = "Đăng bài viết thành công";
+export const GLOBAL_REPORT_POST: string = "Báo cáo bài viết thành công";
 export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
 export const GLOBAL_DELETE_COMMENT_MESSAGE: string = "Xóa bình luận thành công";
 export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công";
