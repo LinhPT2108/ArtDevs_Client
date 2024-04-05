@@ -43,34 +43,33 @@ declare global {
   //   totalComment: number;
   // }
   interface MessageContent {
-    messageId:string;
+    messageId: string;
     relationShipId: boolean;
     pictureOfMessages: any[];
     timeMessage: string;
-    subject: string
+    subject: string;
     content: string;
     formUserId: string;
     toUserId: string;
   }
 
   interface MessageContentToPost {
-    messageId:string;
+    messageId: string;
     pictureOfMessages: any;
-    subject: string
+    subject: string;
     content: string;
     formUser: string;
     toUser: string;
     timeMessage: Date;
   }
 
-  interface pictureOfMessageDTOs{
+  interface pictureOfMessageDTOs {
     cloudinaryPublicId: string;
     size: string;
     url: string;
-    messageId:string;
-    id:number;
+    messageId: string;
+    id: number;
   }
-
 
   interface IColor {
     bgColor: string;
@@ -388,5 +387,9 @@ declare global {
   interface Verification {
     email: string;
     verificationCode: number;
+  }
+  interface ReportDTO {
+    reportDetail: string;
+    postId: string;
   }
 }

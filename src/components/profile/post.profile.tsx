@@ -67,8 +67,10 @@ import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   CubeSpan,
+  CustomizedDialogs,
   ImageReplyViewerEdit,
   ImageViewer,
   ImageViewerEdit,
@@ -85,6 +87,7 @@ import {
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_NOTIFI,
+  GLOBAL_REPORT_POST,
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
@@ -93,7 +96,14 @@ import {
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 const options = ["Chỉ mình tôi", "Công khai"];
-
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
   "@keyframes fadeIn": {
@@ -219,7 +229,17 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
     null
   );
-
+  const [openDialogReport, setOpenDialogReport] = React.useState<{
+    openDialog: boolean;
+    resPost: ResPost;
+  }>({
+    openDialog: false as boolean,
+    resPost: null as unknown as ResPost,
+  });
+  const [reportDTO, setReportDTO] = React.useState<ReportDTO>({
+    reportDetail: "",
+    postId: openDialogReport.resPost?.postId?.postId,
+  });
   let url = profile
     ? profile
     : hashTagText
@@ -317,6 +337,49 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
     setPostModal(null);
   };
 
+  const handleOpenDialogReportPost = (post: ResPost) => {
+    console.log(post);
+    setOpenDialogReport({
+      openDialog: true as boolean,
+      resPost: post as unknown as ResPost,
+    });
+    setReportDTO({
+      postId: post.postId.postId,
+      reportDetail: "",
+    });
+  };
+  const handleCloseDialogReportPost = () => {
+    setOpenDialogReport({
+      openDialog: false as boolean,
+      resPost: null as unknown as ResPost,
+    });
+    console.log("close modal report");
+  };
+  const handleSendReport = async () => {
+    console.log(reportDTO);
+    const response = await sendRequest<number>({
+      url: GLOBAL_URL+"/api/report",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      method: "POST",
+      body:reportDTO
+    });
+    console.log(response);
+    if(response==200){
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_REPORT_POST,
+        type: "success",
+      });
+      handleCloseDialogReportPost();
+    }else{
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
+      handleCloseDialogReportPost();
+    }
+  };
   //copy post.main
   // const { user, setUser } = useUser();
   const fetchImageAsFile = async (imageUrl: string): Promise<File | null> => {
@@ -2223,15 +2286,13 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                       </Box>
                     ) : (
                       <Box>
-                        <MenuItem onClick={handleClose}>
+                        <MenuItem
+                          onClick={() => handleOpenDialogReportPost(postModal!)}
+                        >
                           <ReportGmailerrorredOutlinedIcon
                             sx={{ marginRight: "6px" }}
                           />
                           Báo cáo bài viết
-                        </MenuItem>
-                        <MenuItem onClick={handleClose}>
-                          <FlagOutlinedIcon sx={{ marginRight: "6px" }} />
-                          Báo cáo vi phạm
                         </MenuItem>
                       </Box>
                     )}
@@ -3786,7 +3847,68 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
           </Button>
         </DialogActions>
       </Dialog>
-
+      {/* <CustomizedDialogs openDialog={openDialogReport.openDialog} resPost={openDialogReport.resPost}></CustomizedDialogs> */}
+      <BootstrapDialog
+        onClose={handleCloseDialogReportPost}
+        aria-labelledby="customized-dialog-title"
+        open={openDialogReport.openDialog}
+        maxWidth={"sm"}
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2 }}
+          id="customized-dialog-title"
+          fontSize={"18px"}
+        >
+          Báo cáo bài viết của{" "}
+          {openDialogReport.resPost?.postId?.userPost.fullname}
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseDialogReportPost}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <TextField
+            id="standard-basic-report"
+            label="Nội dung báo cáo"
+            variant="standard"
+            autoComplete="off"
+            fullWidth
+            onChange={(e) =>
+              setReportDTO({
+                postId: reportDTO.postId,
+                reportDetail: e.target.value,
+              })
+            }
+          />
+          {!reportDTO.reportDetail && (
+            <FormHelperText sx={{ color: "red" }}>
+              Vui lòng nhập nội dung báo cáo
+            </FormHelperText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseDialogReportPost}
+            sx={{
+              color: "gray",
+            }}
+          >
+            Hủy
+          </Button>
+          <Button autoFocus onClick={handleSendReport} disabled={!reportDTO.reportDetail}>
+            Gửi
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
       <Snackbar
         open={dataSnackbar.openSnackbar}
         autoHideDuration={2000}
