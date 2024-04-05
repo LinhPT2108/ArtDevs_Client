@@ -57,6 +57,7 @@ import Link from "next/link";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import {
   DRAWER_WIDTH,
+  GLOBAL_BG,
   GLOBAL_URL,
   getDrawerOpen,
   getGlobalUser,
@@ -694,7 +695,7 @@ export default function AppHeader(pros: IPros) {
       <AppBar
         position="fixed"
         sx={{
-          bgcolor: "#293145",
+          bgcolor: GLOBAL_BG,
           color: "text.white",
           padding: { xs: "0px", lg: "0 64px" },
           zIndex: "1202",

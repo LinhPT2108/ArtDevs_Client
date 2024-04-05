@@ -1,4 +1,3 @@
-
 import Stomp from "stompjs";
 import SockJS from "sockjs-client";
 
@@ -14,6 +13,7 @@ export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
 export const GLOBAL_DELETE_COMMENT_MESSAGE: string = "Xóa bình luận thành công";
 export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công";
 export const GLOBAL_ERROR_MESSAGE: string = "Có lỗi xảy ra !";
+export const GLOBAL_BG: string = "#f5f5f5";
 //open menu
 let drawerOpen: boolean = true;
 
