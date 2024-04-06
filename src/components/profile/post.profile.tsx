@@ -84,6 +84,12 @@ import postCommentApi, {
   postReplyCommentApi,
 } from "../utils/utils";
 import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_COLOR_MENU,
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_NOTIFI,
@@ -91,6 +97,7 @@ import {
   GLOBAL_SHARE_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
+  GLOBAL_URL_SOCKET,
   // stompClient,
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
@@ -231,8 +238,7 @@ const PostProfile = ({
   search,
   searchContent,
 }: IPros) => {
-  
-  const socket = new SockJS("http://localhost:8080/wss");
+  const socket = new SockJS(GLOBAL_URL + GLOBAL_URL_SOCKET);
   const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -258,6 +264,7 @@ const PostProfile = ({
     ? search
     : "/news-feed";
 
+  console.log(">>> check session: ", session);
   //get data bài đăng
   const fetchData = async (url: string) => {
     return await sendRequest<ResPost[]>({
@@ -370,20 +377,20 @@ const PostProfile = ({
   const handleSendReport = async () => {
     console.log(reportDTO);
     const response = await sendRequest<number>({
-      url: GLOBAL_URL+"/api/report",
+      url: GLOBAL_URL + "/api/report",
       headers: { authorization: `Bearer ${session?.access_token}` },
       method: "POST",
-      body:reportDTO
+      body: reportDTO,
     });
     console.log(response);
-    if(response==200){
+    if (response == 200) {
       setDataSnackbar({
         openSnackbar: true,
         contentSnackbar: GLOBAL_REPORT_POST,
         type: "success",
       });
       handleCloseDialogReportPost();
-    }else{
+    } else {
       setDataSnackbar({
         openSnackbar: true,
         contentSnackbar: GLOBAL_ERROR_MESSAGE,
@@ -718,6 +725,7 @@ const PostProfile = ({
     }));
   };
 
+  console.log(">>> check posts: ", posts);
   // ham copy post.main
   const handleCloseSnackbar = (
     event: React.SyntheticEvent | Event,
@@ -1711,8 +1719,9 @@ const PostProfile = ({
           aria-describedby="alert-dialog-slide-description"
           PaperProps={{
             style: {
-              backgroundColor: "#242526",
+              backgroundColor: GLOBAL_BG_NOTIFY,
               width: "100%",
+              borderRadius: "12px",
             },
             component: "form",
             onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
@@ -1727,7 +1736,11 @@ const PostProfile = ({
           <Box className="dialog-header">
             <DialogTitle
               id="alert-dialog-title"
-              sx={{ color: "white", textAlign: "center", p: "10px" }}
+              sx={{
+                color: GLOBAL_COLOR_MENU,
+                textAlign: "center",
+                p: "10px",
+              }}
             >
               Tạo bài viết
             </DialogTitle>
@@ -1738,7 +1751,7 @@ const PostProfile = ({
                 position: "absolute",
                 right: 8,
                 top: 5,
-                color: (theme) => theme.palette.grey[500],
+                color: (theme) => theme.palette.grey[900],
                 backgroundColor: "#3a3b3c",
                 "&:hover": {
                   backgroundColor: "#7d7d7d",
@@ -1774,7 +1787,12 @@ const PostProfile = ({
                 }
                 title={
                   <>
-                    <Typography fontSize={16} color={"white"}>
+                    <Typography
+                      fontSize={16}
+                      sx={{
+                        color: GLOBAL_COLOR_MENU,
+                      }}
+                    >
                       {session?.user?.firstName +
                         " " +
                         session?.user?.middleName +
@@ -1792,19 +1810,19 @@ const PostProfile = ({
                         onChange={handleChangePrivacyPost}
                         autoWidth
                         sx={{
-                          color: "white",
+                          color: GLOBAL_COLOR_MENU,
                           "&.MuiSelect-root": {
                             backgroundColor: "#3a3b3c",
                             border: "1px solid white",
                           },
                           "& fieldset": {
-                            border: "1px solid white",
+                            border: "1px solid #323235",
                           },
                           "& fieldset:focus": {
                             border: "1px solid white",
                           },
                           "& svg": {
-                            color: " white",
+                            color: "#323235",
                           },
                         }}
                       >
@@ -1836,7 +1854,7 @@ const PostProfile = ({
                   onChange={(e) => handleContentPost(e.target.value)}
                   multiline
                   sx={{
-                    color: "white",
+                    color: GLOBAL_COLOR_MENU,
                     fontSize: "1.5rem",
                   }}
                   fullWidth
@@ -1846,7 +1864,7 @@ const PostProfile = ({
               </CardContent>
               <CardContent
                 sx={{
-                  color: "white !important",
+                  color: GLOBAL_COLOR_MENU,
                   py: "5px",
                 }}
               >
@@ -1880,11 +1898,11 @@ const PostProfile = ({
                       component="li"
                       sx={{
                         backgroundColor: selected
-                          ? "#262B30 !important"
-                          : "#3a3b3c !important",
+                          ? "#f5f5f5 !important"
+                          : "#fff !important",
                         color: "white !important",
                         "&:hover": {
-                          backgroundColor: "#262B30 !important",
+                          backgroundColor: "#f5f5f5 !important",
                         },
                         py: "10px !important",
                       }}
@@ -1892,7 +1910,13 @@ const PostProfile = ({
                       key={option.hashtagText}
                     >
                       <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography variant="body1" color="white" mr="10px">
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: GLOBAL_COLOR_MENU,
+                          }}
+                          mr="10px"
+                        >
                           {option.hashtagText}
                         </Typography>
                         {selected ? (
@@ -1906,7 +1930,7 @@ const PostProfile = ({
                           label={option.countHashtagOfDetail + " bài viết"}
                           variant="outlined"
                           sx={{
-                            color: "white",
+                            color: GLOBAL_COLOR_MENU,
                           }}
                         />
                       </Box>
@@ -1918,15 +1942,15 @@ const PostProfile = ({
                       label="Hashtag"
                       placeholder="Nhập từ khóa tìm kiếm"
                       sx={{
-                        backgroundColor: "#242526",
-                        color: "white !important",
+                        backgroundColor: GLOBAL_BG,
+                        color: GLOBAL_COLOR_MENU,
                         borderRadius: "4px",
                         "& .MuiOutlinedInput-root": {
                           "& fieldset": { borderColor: "white" },
                           "&:hover fieldset": { borderColor: "white" },
                           "&.Mui-focused fieldset": { borderColor: "white" },
                           "& .MuiInputBase-input": {
-                            color: "white",
+                            color: GLOBAL_COLOR_MENU,
                           },
                         },
                       }}
@@ -1934,15 +1958,15 @@ const PostProfile = ({
                       value={searchValueHashtag}
                       InputLabelProps={{
                         style: {
-                          color: "white",
+                          color: GLOBAL_COLOR_MENU,
                         },
                       }}
                     />
                   )}
                   ChipProps={{
                     style: {
-                      color: "white",
-                      backgroundColor: "#4d4d4d",
+                      color: GLOBAL_COLOR_MENU,
+                      backgroundColor: GLOBAL_BG_NAV,
                     },
                   }}
                   disableCloseOnSelect
@@ -1955,7 +1979,11 @@ const PostProfile = ({
                   }
                 />
                 {postData.listHashtag?.length == 0 ? (
-                  <FormHelperText sx={{ color: "whitesmoke" }}>
+                  <FormHelperText
+                    sx={{
+                      color: GLOBAL_COLOR_MENU,
+                    }}
+                  >
                     Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
                   </FormHelperText>
                 ) : (
@@ -1979,8 +2007,7 @@ const PostProfile = ({
                     // backgroundColor: "transparent",
                     color: "white",
                     "&:hover": {
-                      backgroundColor: "gray",
-                      boxShadow: "none",
+                      boxShadow: GLOBAL_BOXSHADOW,
                     },
                     boxShadow: "none",
                   }}
@@ -2279,8 +2306,9 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {session?.user?.userId ===
-                    item?.postId?.userPost?.userId ? (
+                    {session?.user?.userId == item?.postId?.userPost?.userId ||
+                    //@ts-ignore
+                    session?.user?.userId == item?.userPostDto?.userId ? (
                       <Box>
                         <MenuItem
                           onClick={() => handleDeletePost(selectedItemId)}
@@ -3917,7 +3945,11 @@ const PostProfile = ({
           >
             Hủy
           </Button>
-          <Button autoFocus onClick={handleSendReport} disabled={!reportDTO.reportDetail}>
+          <Button
+            autoFocus
+            onClick={handleSendReport}
+            disabled={!reportDTO.reportDetail}
+          >
             Gửi
           </Button>
         </DialogActions>

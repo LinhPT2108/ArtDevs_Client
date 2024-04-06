@@ -28,7 +28,17 @@ import * as React from "react";
 import LockIcon from "@mui/icons-material/Lock";
 import { compare } from "bcryptjs";
 import bcrypt from "bcryptjs";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BG_RED_300,
+  GLOBAL_BG_RED_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import { sendRequest } from "../utils/api";
 
 const options = ["Chỉ mình tôi", "Công khai", "Bạn bè"];
@@ -214,16 +224,48 @@ export default function HomeSecure({ session }: IPros) {
                       xs={3}
                       sx={{ display: "flex", justifyContent: "flex-end" }}
                     >
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        sx={{ marginX: "6px" }}
+                      <Box
+                        sx={{
+                          minWidth: "90px",
+                          textAlign: "center",
+                          borderRadius: "30px",
+                          padding: "8px 16px",
+                          boxShadow: GLOBAL_BOXSHADOW,
+                          border: "1px solid red",
+                          fontWeight: "bold",
+                          color: GLOBAL_COLOR_MENU,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          marginX: "6px",
+                          "&:hover": {
+                            transform: "scale(1.03)",
+                            backgroundColor: "#f5f5f5",
+                          },
+                        }}
                       >
                         Hủy bỏ
-                      </Button>
-                      <Button variant="contained" onClick={handleSubmit}>
+                      </Box>
+                      <Box
+                        sx={{
+                          minWidth: "90px",
+                          textAlign: "center",
+                          borderRadius: "30px",
+                          padding: "8px 16px",
+                          boxShadow: GLOBAL_BOXSHADOW,
+                          background: GLOBAL_BG_BLUE_900,
+                          fontWeight: "bold",
+                          color: GLOBAL_COLOR_WHITE,
+                          cursor: "pointer",
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            transform: "scale(1.03)",
+                            backgroundColor: GLOBAL_BG_BLUE_300,
+                          },
+                        }}
+                        onClick={handleSubmit}
+                      >
                         Lưu lại
-                      </Button>
+                      </Box>
                     </Grid>
                   </Grid>
                   <Grid
@@ -244,6 +286,7 @@ export default function HomeSecure({ session }: IPros) {
                       image="/locked.png"
                       alt="lock"
                       sx={{
+                        maxWidth: "40%",
                         width: "auto",
                         filter: "drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)) ",
                       }}

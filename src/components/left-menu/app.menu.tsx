@@ -1,7 +1,13 @@
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import BookmarksIcon from "@mui/icons-material/Bookmarks";
+import FeedIcon from "@mui/icons-material/Feed";
+import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import SmsIcon from "@mui/icons-material/Sms";
 import {
   Box,
   Button,
   CardMedia,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -11,19 +17,23 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { MouseEventHandler } from "react";
-import FeedIcon from "@mui/icons-material/Feed";
-import PersonSearchIcon from "@mui/icons-material/PersonSearch";
-import BookmarksIcon from "@mui/icons-material/Bookmarks";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SmsIcon from "@mui/icons-material/Sms";
-import Link from "next/link";
-import { NextApiRequest, NextApiResponse } from "next";
 import { getSession, signOut } from "next-auth/react";
+import Link from "next/link";
+import React from "react";
 import { sendRequest } from "../utils/api";
-import { GLOBAL_URL } from "../utils/veriable.global";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_RED_300,
+  GLOBAL_BG_RED_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -41,7 +51,6 @@ const AppMenu = ({ session }: { session: User }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const leftMenu = [];
-  console.log(">>> check session?.user?.role?.id: ", session?.user?.role?.id);
   const info: ListItem[] = [
     {
       index: 0,
@@ -141,7 +150,6 @@ const AppMenu = ({ session }: { session: User }) => {
   const handler = async () => {
     try {
       const session = await getSession();
-      console.log(">>> session: ", session);
       session &&
         (await sendRequest({
           url: GLOBAL_URL + "/api/logout",
@@ -168,7 +176,7 @@ const AppMenu = ({ session }: { session: User }) => {
           position: "fixed",
           top: { xs: "58px", sm: "108px" },
           left: { xs: "0", sm: "12px" },
-          overflow: "auto",
+          // overflow: "auto",
           maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },
           "&::-webkit-scrollbar": {
             width: "5px",
@@ -181,22 +189,23 @@ const AppMenu = ({ session }: { session: User }) => {
               key={index}
               sx={{
                 width: "100%",
-                bgcolor: "#293145",
-                color: "white",
+                bgcolor: GLOBAL_BG,
+                color: GLOBAL_COLOR_BLACK,
                 marginTop: "12px",
-                borderRadius: "6px",
+                borderRadius: "12px",
+                boxShadow: GLOBAL_BOXSHADOW,
               }}
               component="nav"
               aria-label="main mailbox folders"
               subheader={
                 <ListSubheader
                   sx={{
-                    bgcolor: "#293145",
-                    color: "white",
+                    bgcolor: GLOBAL_BG,
+                    color: GLOBAL_COLOR_BLACK,
                     fontWeight: "bold",
                     zIndex: "0",
                     position: "relative",
-                    borderRadius: "6px",
+                    borderRadius: "12px",
                   }}
                   component="div"
                   id="nested-list-subheader"
@@ -205,6 +214,7 @@ const AppMenu = ({ session }: { session: User }) => {
                 </ListSubheader>
               }
             >
+              <Divider />
               {items?.map((item) => {
                 return (
                   <ListItemButton
@@ -224,7 +234,7 @@ const AppMenu = ({ session }: { session: User }) => {
                     <Link href={`${item.url}`}>
                       <ListItemIcon
                         sx={{
-                          color: "white",
+                          color: GLOBAL_BG_NAV,
                           backgroundColor: `${item.bgColor}`,
                           padding: "8px",
                           minWidth: "40px",
@@ -237,7 +247,8 @@ const AppMenu = ({ session }: { session: User }) => {
                       <ListItemText
                         primary={item.content}
                         sx={{
-                          color: "#ffffff",
+                          color: GLOBAL_COLOR_MENU,
+                          fontWeight: "bold",
                         }}
                       />
                     </Link>
@@ -290,12 +301,48 @@ const AppMenu = ({ session }: { session: User }) => {
               spacing={2}
               sx={{ justifyContent: "center", marginTop: "18px" }}
             >
-              <Button variant="contained" onClick={handleClose}>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_BLUE_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_BLUE_300,
+                  },
+                }}
+                onClick={handleClose}
+              >
                 Hủy
-              </Button>
-              <Button variant="contained" color="error" onClick={handler}>
+              </Box>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_RED_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_RED_300,
+                  },
+                }}
+                onClick={handler}
+              >
                 Đăng xuất
-              </Button>
+              </Box>
             </Stack>
           </Box>
         </Modal>

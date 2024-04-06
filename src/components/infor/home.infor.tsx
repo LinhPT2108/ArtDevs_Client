@@ -18,6 +18,13 @@ import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import * as React from "react";
 import { deleteSpace } from "../utils/utils";
+import {
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
+} from "../utils/veriable.global";
 
 export default function HomeInfor({ session }: { session: User }) {
   let firstName = session?.user?.firstName ? session?.user?.firstName : "";
@@ -96,14 +103,37 @@ export default function HomeInfor({ session }: { session: User }) {
               xs={2}
               sx={{ display: "flex", justifyContent: "flex-end" }}
             >
-              <Button variant="contained" onClick={handleClickOpen}>
+              <Box
+                onClick={handleClickOpen}
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_BLUE_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_BLUE_300,
+                  },
+                }}
+              >
                 Chỉnh sửa
-              </Button>
+              </Box>
               <Dialog
                 fullScreen={fullScreen}
                 open={open}
                 onClose={handleClose}
                 aria-labelledby="responsive-dialog-title"
+                sx={{
+                  "& .css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
+                    borderRadius: "12px",
+                  },
+                }}
               >
                 <DialogTitle
                   id="responsive-dialog-title"
@@ -163,13 +193,51 @@ export default function HomeInfor({ session }: { session: User }) {
                     sx={{ marginBottom: "0" }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button autoFocus onClick={handleClose}>
+                <DialogActions sx={{ marginRight: "18px" }}>
+                  <Box
+                    autoFocus
+                    onClick={handleClose}
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: "#cfcfcf",
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_MENU,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: "#bbbbbb",
+                      },
+                    }}
+                  >
                     Hủy bỏ
-                  </Button>
-                  <Button onClick={handleClose} autoFocus>
+                  </Box>
+                  <Box
+                    onClick={handleClose}
+                    autoFocus
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: GLOBAL_BG_BLUE_900,
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_WHITE,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: GLOBAL_BG_BLUE_300,
+                      },
+                    }}
+                  >
                     Lưu lại
-                  </Button>
+                  </Box>
                 </DialogActions>
               </Dialog>
             </Grid>
@@ -200,14 +268,37 @@ export default function HomeInfor({ session }: { session: User }) {
               xs={2}
               sx={{ display: "flex", justifyContent: "flex-end" }}
             >
-              <Button variant="contained" onClick={handleClickOpenUsername}>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_BLUE_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_BLUE_300,
+                  },
+                }}
+                onClick={handleClickOpenUsername}
+              >
                 Chỉnh sửa
-              </Button>
+              </Box>
               <Dialog
                 fullScreen={fullScreen}
                 open={openUsername}
                 onClose={handleCloseUsername}
                 aria-labelledby="responsive-dialog-title"
+                sx={{
+                  "& .css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
+                    borderRadius: "12px",
+                  },
+                }}
               >
                 <DialogTitle
                   id="responsive-dialog-title"
@@ -241,13 +332,51 @@ export default function HomeInfor({ session }: { session: User }) {
                     sx={{ marginBottom: "0" }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button autoFocus onClick={handleCloseUsername}>
+                <DialogActions sx={{ marginRight: "18px" }}>
+                  <Box
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: "#cfcfcf",
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_MENU,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: "#bbbbbb",
+                      },
+                    }}
+                    autoFocus
+                    onClick={handleCloseUsername}
+                  >
                     Hủy bỏ
-                  </Button>
-                  <Button onClick={handleCloseUsername} autoFocus>
+                  </Box>
+                  <Box
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: GLOBAL_BG_BLUE_900,
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_WHITE,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: GLOBAL_BG_BLUE_300,
+                      },
+                    }}
+                    onClick={handleCloseUsername}
+                    autoFocus
+                  >
                     Lưu lại
-                  </Button>
+                  </Box>
                 </DialogActions>
               </Dialog>
             </Grid>
@@ -279,14 +408,37 @@ export default function HomeInfor({ session }: { session: User }) {
               xs={2}
               sx={{ display: "flex", justifyContent: "flex-end" }}
             >
-              <Button variant="contained" onClick={handleClickOpenEmail}>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_BLUE_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_BLUE_300,
+                  },
+                }}
+                onClick={handleClickOpenEmail}
+              >
                 Chỉnh sửa
-              </Button>
+              </Box>
               <Dialog
                 fullScreen={fullScreen}
                 open={openEmail}
                 onClose={handleCloseEmail}
                 aria-labelledby="responsive-dialog-title"
+                sx={{
+                  "& .css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
+                    borderRadius: "12px",
+                  },
+                }}
               >
                 <DialogTitle
                   id="responsive-dialog-title"
@@ -321,13 +473,51 @@ export default function HomeInfor({ session }: { session: User }) {
                     sx={{ marginBottom: "0" }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button autoFocus onClick={handleCloseEmail}>
+                <DialogActions sx={{ marginRight: "18px" }}>
+                  <Box
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: "#cfcfcf",
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_MENU,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: "#bbbbbb",
+                      },
+                    }}
+                    autoFocus
+                    onClick={handleCloseEmail}
+                  >
                     Hủy bỏ
-                  </Button>
-                  <Button onClick={handleCloseEmail} autoFocus>
+                  </Box>
+                  <Box
+                    sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
+                      borderRadius: "30px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: GLOBAL_BG_BLUE_900,
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_WHITE,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: GLOBAL_BG_BLUE_300,
+                      },
+                    }}
+                    onClick={handleCloseEmail}
+                    autoFocus
+                  >
                     Lưu lại
-                  </Button>
+                  </Box>
                 </DialogActions>
               </Dialog>
             </Grid>

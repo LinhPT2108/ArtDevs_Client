@@ -4,6 +4,7 @@ import {
   CardMedia,
   Divider,
   Grid,
+  IconButton,
   InputLabel,
   Paper,
   TextField,
@@ -15,36 +16,12 @@ import AttachFileIcon from "@mui/icons-material/AttachFile";
 import { styled } from "@mui/system";
 import SendIcon from "@mui/icons-material/Send";
 import * as React from "react";
-
-const MaterialUIButton = styled(Button)(({ theme }) => ({
-  position: "relative",
-  overflow: "hidden",
-  height: "3rem",
-  padding: "0 2rem",
-  borderRadius: "1.5rem",
-  background: "#3d3a4e",
-  backgroundSize: "400%",
-  color: "#fff",
-  border: "none",
-  cursor: "pointer",
-  "&:hover::before": {
-    transform: "scaleX(1)",
-  },
-  "&::before": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: 0,
-    transform: "scaleX(0)",
-    transformOrigin: "0 50%",
-    width: "100%",
-    height: "inherit",
-    borderRadius: "inherit",
-    background:
-      "linear-gradient(82.3deg, rgba(150, 93, 233, 1) 10.8%, rgba(99, 88, 238, 1) 94.3%)",
-    transition: "all 0.475s",
-  },
-}));
+import {
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_WHITE,
+} from "../utils/veriable.global";
 
 export default function HomeFeedback() {
   return (
@@ -199,19 +176,31 @@ export default function HomeFeedback() {
             md={5}
             sx={{ display: "flex", justifyContent: "center" }}
           >
-            <MaterialUIButton>
-              <Typography
-                component={"span"}
-                sx={{
-                  position: "relative",
-                  display: "flex",
-                  zIndex: 1,
-                }}
-              >
-                <SendIcon sx={{ marginRight: "6px" }} />
-                Send
-              </Typography>
-            </MaterialUIButton>
+            <Box
+              aria-label="add an alarm"
+              sx={{
+                minWidth: "100px",
+                textAlign: "center",
+                borderRadius: "30px",
+                padding: "8px 16px",
+                boxShadow: GLOBAL_BOXSHADOW,
+                background: GLOBAL_BG_BLUE_900,
+                fontWeight: "bold",
+                color: GLOBAL_COLOR_WHITE,
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                transition: "all 0.2s",
+                "&:hover": {
+                  transform: "scale(1.03)",
+                  backgroundColor: GLOBAL_BG_BLUE_300,
+                },
+              }}
+            >
+              <SendIcon />
+              <Typography sx={{ marginLeft: "6px" }}>GỬI</Typography>
+            </Box>
           </Grid>
         </Grid>
         <Grid

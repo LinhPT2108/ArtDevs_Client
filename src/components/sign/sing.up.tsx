@@ -16,6 +16,7 @@ import Link from "next/link";
 import { sendRequest } from "../utils/api";
 import { preconnect } from "react-dom";
 import "../../style/loading.css";
+import { GLOBAL_URL } from "../utils/veriable.global";
 // import { SHA256 } from "crypto-js";
 
 const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
@@ -249,7 +250,7 @@ const SignUp = (props: MyData) => {
       try {
         if (data?.email && emailRegex.test(data?.email)) {
           const response = await sendRequest<IBackendRes<UserRegister>[]>({
-            url: "https://artdevs-server.azurewebsites.net/api/user-by-email",
+            url: GLOBAL_URL + "/api/user-by-email",
             // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
             // url: "http://localhost:8080/api/user-by-email",
             method: "GET",
@@ -566,7 +567,16 @@ const SignUp = (props: MyData) => {
                 </Button>
               </Box>
             ) : (
-              <Box sx={{ display: "flex", flexDirection: "row", p: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  p: 2,
+                  "& .continue": {
+                    backgroundColor: `${disableButton ? "gray" : "#1976d2"}`,
+                  },
+                }}
+              >
                 <Button
                   disabled={activeStep === 0}
                   onClick={handleBack}
@@ -586,6 +596,7 @@ const SignUp = (props: MyData) => {
                 <Box sx={{ flex: "1 1 auto" }} />
 
                 <Button
+                  className="continue"
                   onClick={handleClick}
                   disabled={disableButton}
                   variant="contained"

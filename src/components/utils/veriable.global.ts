@@ -4,6 +4,7 @@ import SockJS from "sockjs-client";
 // witdh of menu
 export const DRAWER_WIDTH: number = 200;
 export const GLOBAL_URL: string = "http://localhost:8080";
+export const GLOBAL_URL_SOCKET: string = "/wss";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";
 export const GLOBAL_SEND_MESSAGE: string = "/app/send-message";
 export const GLOBAL_SEND_IMAGE: string = "/app/image";
@@ -14,7 +15,21 @@ export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
 export const GLOBAL_DELETE_COMMENT_MESSAGE: string = "Xóa bình luận thành công";
 export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công";
 export const GLOBAL_ERROR_MESSAGE: string = "Có lỗi xảy ra !";
-export const GLOBAL_BG: string = "#f5f5f5";
+export const GLOBAL_BG: string = "#fff";
+export const GLOBAL_BG_NAV: string = "#f5f5f5";
+export const GLOBAL_COLOR_NAV: string = "#adb5bd";
+export const GLOBAL_COLOR_HEADER: string = "#1c4aa7";
+export const GLOBAL_BG_NOTIFY: string = "#e6e6e6";
+export const GLOBAL_BG_BLUE_300: string = "#0e56c9";
+export const GLOBAL_BG_BLUE_900: string = "#315ca1";
+export const GLOBAL_BG_RED_300: string = "#d31c1c";
+export const GLOBAL_BG_RED_900: string = "#cf0000";
+export const GLOBAL_COLOR_NOTIFY: string = "#000";
+export const GLOBAL_COLOR_BLACK: string = "#000";
+export const GLOBAL_COLOR_WHITE: string = "#fff";
+export const GLOBAL_COLOR_MENU: string = "#323235";
+export const GLOBAL_BOXSHADOW: string = "0 0 3px 1px #8080803b";
+
 //open menu
 let drawerOpen: boolean = true;
 

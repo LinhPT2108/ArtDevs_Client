@@ -23,7 +23,7 @@ import { sendRequest } from "../utils/api";
 import useSWR, { SWRResponse } from "swr";
 import { formatVND } from "../utils/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import { GLOBAL_BOXSHADOW, GLOBAL_URL } from "../utils/veriable.global";
 import { TransitionProps } from "@mui/material/transitions";
 import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
 import HomeFriend from "../friend/home.friend";
@@ -232,9 +232,10 @@ const HomeMentor = ({ user }: IPros) => {
                         width: "8px",
                         height: "8px",
                         borderRadius: "50%",
-                        backgroundColor: mentor.isOnline.toString()=="true"
-                          ? "#16D6B5"
-                          : "#e60839",
+                        backgroundColor:
+                          mentor?.isOnline?.toString() == "true"
+                            ? "#16D6B5"
+                            : "#e60839",
                         marginRight: "8px",
                       }}
                     ></Box>
@@ -243,8 +244,11 @@ const HomeMentor = ({ user }: IPros) => {
                         fontSize: "16px",
                         fontWeight: "500",
                         color: "white",
-                      }}>
-                      {mentor.isOnline.toString()=="true" ? "Online" : "Offline"}
+                      }}
+                    >
+                      {mentor?.isOnline?.toString() == "true"
+                        ? "Online"
+                        : "Offline"}
                     </Typography>
                   </Box>
 
@@ -321,7 +325,6 @@ const HomeMentor = ({ user }: IPros) => {
                         gutterBottom
                         component="div"
                         padding="5px 5px 3px 20px"
-                        fontFamily="Arial, sans-serif"
                         fontSize="24px"
                         fontStyle="bold"
                         onClick={() => {
@@ -335,32 +338,34 @@ const HomeMentor = ({ user }: IPros) => {
                         variant="h6"
                         component="div"
                         padding="5px 5px 3px 10px"
-                        fontFamily="Arial, sans-serif"
                         fontSize="18px"
                         fontStyle="bold"
                         onClick={() => {
                           handleRedirect(mentor?.userId);
                         }}
-                        // fontFamily: 'Arial, sans-serif' // Change the font family as needed
-                        // fontSize: '18px' // Adjust the font size as needed
-                        // fontWeight: 'bold' // Adjust the font weight as needed
                       >
                         {formatVND(mentor.priceMatch)}/Match
                       </Typography>
-                      <Button
-                        variant="contained"
+                      <Box
                         sx={{
                           background:
                             "linear-gradient(45deg, rgba(74,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
                           border: "5px ",
                           marginRight: "12px",
+                          borderRadius: "30px",
+                          padding: "8px 16px",
+                          ":hover": {
+                            background:
+                              "linear-gradient(45deg, rgba(99,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
+                            boxShadow: GLOBAL_BOXSHADOW,
+                          },
                         }}
                         onClick={() =>
                           handleSendmatch(mentor.userId, mentor.isReady)
                         }
                       >
                         Send Match
-                      </Button>
+                      </Box>
                     </CardActions>
                   </Grid>
                 </Grid>

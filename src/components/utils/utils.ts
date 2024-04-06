@@ -1,6 +1,7 @@
 import { format, parseISO } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
 import { GLOBAL_URL } from "./veriable.global";
+import { redirect } from "next/navigation";
 
 export const generateUniqueId = (): string => {
   const currentTime = new Date().getTime().toString();
@@ -63,7 +64,7 @@ export const checkUrl2 = (url: any): string => {
     reader.onloadend = () => {
       imageUrl = reader.result as string;
     };
-    console.log(imageUrl)
+    console.log(imageUrl);
   } else if (typeof url === "object") {
     imageUrl = url.url;
   } else {
@@ -129,6 +130,21 @@ export const formatDateString = (
     }
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "HH:mm:ss dd/MM/yyyy");
+    return formattedDate;
+  } else {
+    return "";
+  }
+};
+
+export const formatDayVN = (
+  input: string | null | undefined | Date
+): string => {
+  if (input) {
+    if (input instanceof Date) {
+      input = input.toISOString();
+    }
+    const dateObject = parseISO(input);
+    const formattedDate = format(dateObject, "dd/MM/yyyy");
     return formattedDate;
   } else {
     return "";

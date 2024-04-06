@@ -8,9 +8,15 @@ import {
   Card,
   CardActions,
   CardMedia,
+  Divider,
   List,
   ListSubheader,
 } from "@mui/material";
+import {
+  GLOBAL_BG,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+} from "@/components/utils/veriable.global";
 const MenuMentor = () => {
   const acountAccept: AccountExample[] = [
     { name: "Bản tin", avatar: <FeedIcon />, manualFriend: "12 bạn chung" },
@@ -35,26 +41,28 @@ const MenuMentor = () => {
       sx={{
         width: "100%",
         // maxWidth: 250,
+        borderRadius: "12px",
+        boxShadow: GLOBAL_BOXSHADOW,
+        bgcolor: GLOBAL_BG,
       }}
     >
       <List
         sx={{
           width: "100%",
-          bgcolor: "#293145",
           color: "white",
           marginTop: "12px",
           "& p": {
             color: "white",
           },
         }}
-        className="rounded-md"
         component="nav"
         aria-label="main mailbox folders"
         subheader={
           <ListSubheader
             sx={{
-              bgcolor: "#293145",
-              color: "white",
+              bgcolor: GLOBAL_BG,
+              color: GLOBAL_COLOR_BLACK,
+              borderRadius: "12px",
               fontWeight: "bold",
               zIndex: "0",
               position: "relative",
@@ -71,16 +79,16 @@ const MenuMentor = () => {
             }}
             component="div"
             id="nested-list-subheader"
-            className="rounded-t-md border-b"
           >
             Suggest Mentor
           </ListSubheader>
         }
       >
+        <Divider />
         {acountAccept.map((item, index) => {
           return (
             <Card
-              sx={{ maxWidth: 345, bgcolor: "#293145", padding: "12px 0" }}
+              sx={{ maxWidth: 345, bgcolor: GLOBAL_BG, padding: "12px 0" }}
               key={index}
             >
               <CardMedia

@@ -1254,21 +1254,7 @@ const HomeProfile = ({ session }: IPros) => {
                   overflow: "hidden",
                 }}
               >
-                <Box
-                  sx={{
-                    overflowY: "scroll",
-                    "::-webkit-scrollbar": {
-                      width: "2px",
-                    },
-                    "::-webkit-scrollbar-track": {
-                      background: "#f1f1f1",
-                    },
-                    "::-webkit-scrollbar-thumb": {
-                      background: "#888",
-                      borderRadius: "10px",
-                    },
-                  }}
-                >
+                <Box>
                   <Box>
                     <PostProfile
                       session={session}

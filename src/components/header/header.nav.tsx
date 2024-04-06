@@ -4,6 +4,7 @@ import Tab from "@mui/material/Tab";
 import PhoneIcon from "@mui/icons-material/Phone";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
+import { GLOBAL_BG_NAV, GLOBAL_COLOR_NAV } from "../utils/veriable.global";
 
 const IconTabs = (pros: any) => {
   const [value, setValue] = React.useState<number>(pros?.tabValue);
@@ -41,10 +42,10 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
           borderRadius: "100%",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
         }}
-        color=""
         icon={<PhoneIcon />}
         aria-label="phone"
       />
@@ -53,8 +54,9 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
           borderRadius: "100%",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
         }}
         icon={<FavoriteIcon />}
         aria-label="favorite"
@@ -64,7 +66,8 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
         icon={<PersonPinIcon />}
@@ -75,7 +78,8 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
         icon={<FavoriteIcon />}

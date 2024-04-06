@@ -1,5 +1,6 @@
 import { Box } from "@mui/material";
 import UpcomingIcon from "@mui/icons-material/Upcoming";
+import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 const ChatNone = () => {
   return (
     <Box

@@ -1,7 +1,7 @@
+import "@/components/admin/calendar/MiniCalendar.css";
+import ThemeProviders from "@/providers/ThemeProvider";
 import { type Metadata } from "next";
 import "./globals.css";
-import "@/components/admin/calendar/MiniCalendar.css";
-import ThemeProvider from "@/providers/ThemeProvider";
 
 export const metadata: Metadata = {
   title: "Art Devs Socail",
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProviders>{children}</ThemeProviders>
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { generateUniqueId } from "../utils/utils";
 import { useUser } from "@/lib/custom.content";
+import { truncate } from "fs/promises";
 
 const AppSignUp = () => {
   const { setUser } = useUser();
@@ -116,7 +117,7 @@ const AppSignUp = () => {
             const res = await signIn("credentials", {
               username: data?.email,
               password: data?.password,
-              redirect: false,
+              redirect: true,
             });
             if (!res?.error) {
               router.push("/");

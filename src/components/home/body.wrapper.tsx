@@ -2,7 +2,11 @@
 import { Drawer } from "@mui/material";
 import Box from "@mui/material/Box";
 import MainHome from "./main.home";
-import { DRAWER_WIDTH, getDrawerOpen } from "../utils/veriable.global";
+import {
+  DRAWER_WIDTH,
+  GLOBAL_BG,
+  getDrawerOpen,
+} from "../utils/veriable.global";
 import ContactMenu from "../left-menu/app.contact";
 import { useDrawer, useWidthScreen } from "@/lib/custom.content";
 import { usePathname } from "next/navigation";
@@ -26,7 +30,7 @@ const BodyWrapper = ({ children, session }: IPros) => {
             display: "flex",
             flexGrow: 1,
             marginTop: "0px",
-            backgroundColor: "#f0f2f5",
+            backgroundColor: "#FBFCFE",
             paddingTop: { xs: "50px", sm: "85px" },
             minHeight: "100vh",
             paddingX: { xs: "0" },
@@ -41,7 +45,7 @@ const BodyWrapper = ({ children, session }: IPros) => {
               flexShrink: 0,
               "& .MuiDrawer-paper": {
                 width: DRAWER_WIDTH,
-                backgroundColor: "#293145",
+                backgroundColor: GLOBAL_BG,
               },
               zIndex: `${drawerOpen ? "1201" : "initial"}`,
             }}

@@ -7,6 +7,7 @@ import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { generateUniqueId } from "@/components/utils/utils";
 import {
+  GLOBAL_URL,
   getGlobalUser,
   setGlobalUser,
 } from "@/components/utils/veriable.global";
@@ -60,7 +61,7 @@ export const authOptions: AuthOptions = {
         const res = await sendRequest<IBackendRes<UserLogin>>({
           // url: "https://artdevs-server.azurewebsites.net/api/user-social",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          url: "http://localhost:8080/api/user-social",
+          url: GLOBAL_URL + "/api/user-social",
           method: "POST",
           body: {
             lastName: "",
@@ -108,6 +109,7 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, user, token }) {
+      console.log("Session:", session);
       if (token) {
         session.access_token = token.access_token;
         session.refresh_token = token.refresh_token;

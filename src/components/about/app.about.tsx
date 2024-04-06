@@ -77,6 +77,7 @@ const About = () => {
               color="secondary"
               sx={{
                 "& button": {
+                  backgroundColor: "#9c27b0",
                   borderRadius: "30px",
                   paddingX: { xs: "8px", sm: "16px" },
                   fontSize: { xs: "8px", sm: "14px" },

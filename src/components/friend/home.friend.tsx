@@ -1,8 +1,6 @@
 "use client";
 
-import useSWR, { SWRResponse } from "swr";
-import { sendRequest } from "../utils/api";
-import { CubeSpan } from "../utils/component.global";
+import { useDrawer } from "@/lib/custom.content";
 import {
   Box,
   Button,
@@ -10,14 +8,20 @@ import {
   CardActions,
   CardContent,
   CardMedia,
-  Grid,
   Snackbar,
   Typography,
 } from "@mui/material";
-import { useDrawer } from "@/lib/custom.content";
-import { Content } from "next/font/google";
-import { GLOBAL_URL } from "../utils/veriable.global";
 import { useState } from "react";
+import useSWR, { SWRResponse } from "swr";
+import { sendRequest } from "../utils/api";
+import { CubeSpan } from "../utils/component.global";
+import {
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_WHITE,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 interface IPros {
   session: User;
 }
@@ -389,36 +393,17 @@ const HomeFriend = ({ session }: IPros) => {
                     justifyContent: "center",
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    color="success"
+                  <Box
                     onClick={() =>
                       handleAcceptAddfriend(item?.userAction?.userId)
                     }
                     sx={{
                       borderRadius: "30px",
-
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     paddingX: "4px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1023px)": {
-                      //   "&": {
-                      //     paddingX: "12px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
+                      backgroundColor: "red",
                     }}
                   >
                     Đồng ý
-                  </Button>
+                  </Box>
                   <Button
                     variant="outlined"
                     onClick={() =>
@@ -435,20 +420,6 @@ const HomeFriend = ({ session }: IPros) => {
                         outline: "none",
                         border: "none",
                       },
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     marginLeft: "4px",
-                      //     paddingX: "10px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     marginLeft: "8px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
                     }}
                   >
                     Từ chối
@@ -458,7 +429,7 @@ const HomeFriend = ({ session }: IPros) => {
             ))}
         </Box>
       </Box>
-      <CardActions className="justify-center">
+      <CardActions>
         <Button
           size="large"
           variant="contained"
@@ -467,6 +438,8 @@ const HomeFriend = ({ session }: IPros) => {
             backgroundColor: "#eeeeee",
             color: "#4d3869",
             display: "flex",
+            justifyContent: "center",
+            padding: "8px 0",
             "&:hover": {
               backgroundColor: "#ffffff",
               outline: "none",
@@ -546,47 +519,47 @@ const HomeFriend = ({ session }: IPros) => {
                     justifyContent: "center",
                   }}
                 >
-                  <Button
-                    variant="contained"
-                    color="success"
+                  <Box
                     onClick={() => handsenddAddfriend(item?.userId)}
                     sx={{
+                      minWidth: "90px",
+                      textAlign: "center",
                       borderRadius: "30px",
-
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     paddingX: "4px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1023px)": {
-                      //   "&": {
-                      //     paddingX: "12px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      background: GLOBAL_BG_BLUE_900,
+                      fontWeight: "bold",
+                      color: GLOBAL_COLOR_WHITE,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                      "&:hover": {
+                        transform: "scale(1.03)",
+                        backgroundColor: GLOBAL_BG_BLUE_300,
+                      },
                     }}
                   >
                     Kết Bạn
-                  </Button>
-                  <Button
-                    variant="outlined"
+                  </Box>
+                  <Box
                     onClick={() =>
                       handremoveUserofListfriendSuitable(item?.userId)
                     }
                     sx={{
+                      minWidth: "90px",
                       borderRadius: "30px",
                       backgroundColor: "#eeeeee",
+                      textAlign: "center",
                       color: "#4d3869",
-                      border: "none",
                       marginLeft: "4px",
+                      padding: "8px 16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      transition: "all 0.2s",
                       "&:hover": {
-                        backgroundColor: "#c7c7c7",
+                        transform: "scale(1.03)",
+                        backgroundColor: "#e3dede",
+                        // color: GLOBAL_COLOR_WHITE,
                         outline: "none",
                         border: "none",
                       },
@@ -607,13 +580,13 @@ const HomeFriend = ({ session }: IPros) => {
                     }}
                   >
                     Xóa
-                  </Button>
+                  </Box>
                 </CardActions>
               </Card>
             ))}
         </Box>
       </Box>
-      <CardActions className="justify-center">
+      <CardActions>
         <Button
           size="large"
           variant="contained"
@@ -622,6 +595,7 @@ const HomeFriend = ({ session }: IPros) => {
             backgroundColor: "#eeeeee",
             color: "#4d3869",
             display: "flex",
+            justifyContent: "center",
             "&:hover": {
               backgroundColor: "#ffffff",
               outline: "none",

@@ -295,7 +295,9 @@ declare global {
   interface HashtagInfor {
     id: number;
     hashtagText: string;
-    countHashtagOfDetail: number;
+    description: string;
+    totalPostUseHashtag: number;
+    timeCreate: string;
   }
   // interface CommentToPostDTO {
   //   content: string;

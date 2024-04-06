@@ -4,8 +4,11 @@ import ChatNone from "@/components/chat/chat.none";
 import OptionChat from "@/components/chat/option/chat.option";
 import ContactMenu from "@/components/left-menu/app.contact";
 import { formatTimeDifference } from "@/components/utils/utils";
-import { DRAWER_WIDTH } from "@/components/utils/veriable.global";
-import { useDrawer } from "@/lib/custom.content";
+import {
+  DRAWER_WIDTH,
+  GLOBAL_BG_NAV,
+} from "@/components/utils/veriable.global";
+import { useDrawer, useUser } from "@/lib/custom.content";
 import { Box, CssBaseline, Drawer } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import React from "react";
@@ -35,18 +38,19 @@ export default function Message() {
   const [value, setValue] = React.useState<number>(0);
   const [pageUrl, setPageUrl] = React.useState<string>("chat");
   const [openContact, setOpenContact] = React.useState<boolean>(true);
-  const [user, setUser] = React.useState<IUser>();
+  const [user, setUser] = React.useState<UserMessage>();
   const { drawerOpen, setDrawerOpen } = useDrawer();
-  const getUser = (user: IUser) => {
+  const getUser = (user: UserMessage) => {
     setUser(user);
   };
+  const { user: session } = useUser();
   const handlePost = (message: MessageExample[]) => {
     setPost(message);
   };
   const handleChange = (newValue: number) => {
     setValue(newValue);
   };
-
+  console.log(">>> check user: ", user);
   const ref = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
@@ -60,7 +64,7 @@ export default function Message() {
         display: "flex",
         flexGrow: 1,
         marginTop: "0px",
-        backgroundColor: "#ffffff",
+        backgroundColor: GLOBAL_BG_NAV,
         paddingTop: "85px",
       }}
     >
@@ -72,11 +76,14 @@ export default function Message() {
           position: "relative",
         }}
       >
-        <ContactMenu
-          openContact={openContact}
-          pageUrl={pageUrl}
-          getUser={getUser}
-        />
+        {session && (
+          <ContactMenu
+            openContact={openContact}
+            pageUrl={pageUrl}
+            getUser={getUser}
+            session={session}
+          />
+        )}
       </Box>
       <Main
         open={openContact}
@@ -96,6 +103,8 @@ export default function Message() {
               formatTimeDifference={formatTimeDifference}
               data={user}
               pageUrl="chat"
+              dataMessage={null}
+              session={session!}
             />
           ) : (
             <ChatNone />

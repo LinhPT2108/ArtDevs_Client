@@ -24,10 +24,10 @@ import React, { useEffect, useState } from "react";
 import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
-import SockJS from "sockjs-client";
-import Stomp from "stompjs"
 
+import { middleware } from "../utils/utils";
 import ForgotPassword from "./sign.forgotpasswork";
+import { NextResponse } from "next/server";
 
 interface State extends SnackbarOrigin {
   open: boolean;
@@ -86,7 +86,7 @@ const SignIn = () => {
       const res = await signIn("credentials", {
         username: email,
         password: password,
-        redirect: false,
+        redirect: true,
       });
       if (!res?.error) {
         //@ts-ignore
@@ -149,7 +149,7 @@ const SignIn = () => {
     <Box
       sx={{
         width: "100%",
-        height: "100%",
+        height: "100vh",
         backgroundColor: "#EFF2F5",
         display: "flex",
         position: "relative",
@@ -256,6 +256,9 @@ const SignIn = () => {
                 backgroundColor: "#ffffff",
                 boxShadow:
                   "0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)",
+                "& .sign-up": {
+                  backgroundColor: "#2e7d32",
+                },
               }}
             >
               <Box
@@ -272,6 +275,9 @@ const SignIn = () => {
                 sx={{
                   "& input:-internal-autofill-selected": {
                     WebkitBoxShadow: "0 0 0 1000px #fff inset",
+                  },
+                  "& .MuiButton-contained": {
+                    backgroundColor: "#1976d2",
                   },
                 }}
               >
@@ -358,17 +364,18 @@ const SignIn = () => {
               </Modal>
               <Divider sx={{ width: "100%", margin: " 20px 16px" }} />
               <Button
+                className="sign-up"
                 variant="contained"
                 color="success"
                 sx={{
                   "& a": {
                     color: "#ffffff",
                     fontSize: "17px",
-                    "&:hover": { textDecoration: "none" },
+                    textDecoration: "none",
                   },
                 }}
               >
-                <Link href="#">Tạo tài khoản mới</Link>
+                <Link href="/sign-up">Tạo tài khoản mới</Link>
               </Button>
               <Box sx={{ fontWeight: "bold", marginTop: "16px" }}>Hoặc</Box>
               <Grid

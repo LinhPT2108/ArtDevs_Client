@@ -13,6 +13,10 @@ import {
   Button,
   Grid,
 } from "@mui/material";
+import {
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
+} from "@/components/utils/veriable.global";
 
 interface TruncatedTextProps {
   text: string;
@@ -88,6 +92,12 @@ const CustomRadioInput = (props: IProps) => {
           label={
             <Card
               sx={{
+                backgroundColor: `${
+                  selectedValue == "user" ? "#f5f5f5" : "#fff"
+                }`,
+                boxShadow: `${
+                  selectedValue == "user" ? "#1976d2 0px 5px 15px" : "none"
+                }`,
                 "@media (min-width: 0px)": {
                   maxWidth: "240px",
                 },
@@ -191,6 +201,12 @@ const CustomRadioInput = (props: IProps) => {
           label={
             <Card
               sx={{
+                backgroundColor: `${
+                  selectedValue == "mentor" ? "#f5f5f5" : "#fff"
+                }`,
+                boxShadow: `${
+                  selectedValue == "mentor" ? "#1976d2 0px 5px 15px" : "none"
+                }`,
                 "@media (min-width: 0px)": {
                   maxWidth: "240px",
                 },

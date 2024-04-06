@@ -8,6 +8,7 @@ import {
   Box,
   Button,
   CardActions,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -15,11 +16,19 @@ import {
   ListSubheader,
   Snackbar,
   Stack,
+  Typography,
 } from "@mui/material";
 import { sendRequest } from "@/components/utils/api";
 import useSWR, { SWRResponse } from "swr";
 import { calculateTimeDifference } from "@/components/utils/utils";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -131,24 +140,6 @@ const UserAccept = ({ session }: IPros) => {
       console.error("Error sending match:", error);
     }
   };
-  // const mentorAccept: AccountExample[] = [
-  //   { name: "Bản tin", avatar: <FeedIcon />, manualFriend: "12 bạn chung" },
-  //   {
-  //     name: "Giảng viên",
-  //     avatar: <PersonSearchIcon />,
-  //     manualFriend: "9 bạn chung",
-  //   },
-  //   {
-  //     name: "Hash tag",
-  //     avatar: <BookmarksIcon />,
-  //     manualFriend: "12 bạn chung",
-  //   },
-  //   {
-  //     name: "Trang cá nhân",
-  //     avatar: <AccountCircleIcon />,
-  //     manualFriend: "7 bạn chung",
-  //   },
-  // ];
 
   const showSnackbar = () => {
     setSnackbarOpen(true);
@@ -171,17 +162,19 @@ const UserAccept = ({ session }: IPros) => {
       sx={{
         width: "100%",
         maxWidth: 250,
-        bgcolor: "#293145",
+        bgcolor: GLOBAL_BG,
+        borderRadius: "12px",
+        boxShadow: GLOBAL_BOXSHADOW,
       }}
     >
       <List
         sx={{
           width: "100%",
-
-          color: "white",
+          borderRadius: "12px",
+          color: GLOBAL_COLOR_BLACK,
           marginTop: "12px",
           "& p": {
-            color: "white",
+            color: GLOBAL_COLOR_BLACK,
           },
         }}
         className="rounded-md"
@@ -190,11 +183,12 @@ const UserAccept = ({ session }: IPros) => {
         subheader={
           <ListSubheader
             sx={{
-              bgcolor: "#293145",
-              color: "white",
+              bgcolor: GLOBAL_BG,
+              color: GLOBAL_COLOR_BLACK,
               fontWeight: "bold",
               zIndex: "0",
               position: "relative",
+              borderRadius: "12px",
               "@media (min-width: 900px)": {
                 "&": {
                   fontSize: "12px",
@@ -208,14 +202,13 @@ const UserAccept = ({ session }: IPros) => {
             }}
             component="div"
             id="nested-list-subheader"
-            className="rounded-md"
           >
             Yêu cầu kết bạn
           </ListSubheader>
         }
       >
-        {data &&
-          data.length &&
+        <Divider />
+        {data && data.length > 0 ? (
           data.slice(0, 4).map((item, index) => {
             return (
               <Box
@@ -244,9 +237,8 @@ const UserAccept = ({ session }: IPros) => {
                     sx={{
                       color: "white",
                       backgroundColor: `gray`,
-                      padding: "8px",
                       minWidth: "40px",
-                      marginRight: { md: "6px", lg: "24px" },
+                      marginRight: { md: "6px", lg: "12px" },
                       borderRadius: "100%",
                     }}
                   >
@@ -267,9 +259,16 @@ const UserAccept = ({ session }: IPros) => {
                   className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
                   sx={{
                     justifyContent: "space-evenly",
+                    "& .cancel": {
+                      backgroundColor: "#eeeeee",
+                    },
+                    "& .accept": {
+                      backgroundColor: "#2e7d32",
+                    },
                   }}
                 >
                   <Button
+                    className="accept"
                     variant="contained"
                     color="success"
                     onClick={() =>
@@ -277,29 +276,12 @@ const UserAccept = ({ session }: IPros) => {
                     }
                     sx={{
                       borderRadius: "30px",
-
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     paddingX: "4px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1023px)": {
-                      //   "&": {
-                      //     paddingX: "12px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
                     }}
                   >
                     Đồng ý
                   </Button>
                   <Button
+                    className="cancel"
                     variant="outlined"
                     onClick={() =>
                       handlerefusedAddfriend(item?.userAction?.userId)
@@ -315,20 +297,6 @@ const UserAccept = ({ session }: IPros) => {
                         outline: "none",
                         border: "none",
                       },
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     marginLeft: "4px",
-                      //     paddingX: "10px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     marginLeft: "8px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
                     }}
                   >
                     Từ chối
@@ -336,7 +304,14 @@ const UserAccept = ({ session }: IPros) => {
                 </Stack>
               </Box>
             );
-          })}
+          })
+        ) : (
+          <Typography
+            sx={{ margin: "12px 12px 0 12px", color: GLOBAL_COLOR_BLACK }}
+          >
+            Chưa có lời mời kết bạn !
+          </Typography>
+        )}
       </List>
       <CardActions className="justify-center">
         <Button

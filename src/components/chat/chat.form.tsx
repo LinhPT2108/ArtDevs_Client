@@ -1,4 +1,6 @@
 "use client";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ClearIcon from "@mui/icons-material/Clear";
 import {
   Avatar,
   Box,
@@ -8,10 +10,9 @@ import {
   ListItemText,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ClearIcon from "@mui/icons-material/Clear";
-import Messsages from "./chat.messages";
+import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 import MessageBox from "./chat.input";
+import Messsages from "./chat.messages";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 
@@ -73,7 +74,7 @@ const ChatMessagesForm = (pros: IPros) => {
       setNewDataMessage((pre: any) => [...pre, contentNew]);
       // if (contentNew.pictureOfMessages.length > 0) {
       //   console.log(contentNew.pictureOfMessages);
-        
+
       // } else {
       //   console.log("khoong co canh");
       // }
@@ -83,18 +84,19 @@ const ChatMessagesForm = (pros: IPros) => {
     console.log(newDataMessage);
   }, [newDataMessage]);
 
-  if (!dataMessage) {
-    return;
-  }
+  // if (!dataMessage) {
+  //   return;
+  // }
   return (
     <Box
       sx={{
         width: "100%",
         maxWidth: `${pageUrl == "home" ? 320 : "auto"}`,
         height: `${pageUrl == "home" ? 400 : "86vh"}`,
-        backgroundColor: "#fff",
+        backgroundColor: GLOBAL_BG_NAV,
       }}
     >
+      {" "}
       <Box
         sx={{
           height: "100%",

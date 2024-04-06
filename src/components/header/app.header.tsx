@@ -1,16 +1,17 @@
 "use client";
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Badge from "@mui/material/Badge";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
+import { useUser, useWidthScreen } from "@/lib/custom.content";
 import AccountCircle from "@mui/icons-material/AccountCircle";
+import CircleIcon from "@mui/icons-material/Circle";
+import CloseIcon from "@mui/icons-material/Close";
+import CommentIcon from "@mui/icons-material/Comment";
+import DoneAllIcon from "@mui/icons-material/DoneAll";
 import MailIcon from "@mui/icons-material/Mail";
+import MenuIcon from "@mui/icons-material/Menu";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import SearchComponent from "./header.search";
+import SearchIcon from "@mui/icons-material/Search";
+import ShareIcon from "@mui/icons-material/Share";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import {
   Alert,
   AlertTitle,
@@ -36,45 +37,42 @@ import {
   Slide,
   SlideProps,
   Snackbar,
-  Stack,
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import Stomp from "stompjs";
-import SockJS from "sockjs-client";
-import IconTabs from "./header.nav";
-import SearchIcon from "@mui/icons-material/Search";
-import MenuIcon from "@mui/icons-material/Menu";
-import AppMenu from "../left-menu/app.menu";
-import ContactMenu from "../left-menu/app.contact";
-import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
-import OptionChat from "../chat/option/chat.option";
-import { useSession } from "next-auth/react";
+import Badge from "@mui/material/Badge";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { styled } from "@mui/material/styles";
+import { TransitionProps } from "@mui/material/transitions";
 import Link from "next/link";
-import DoneAllIcon from "@mui/icons-material/DoneAll";
+import * as React from "react";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import useSWR, { SWRResponse } from "swr";
+import OptionChat from "../chat/option/chat.option";
+import ContactMenu from "../left-menu/app.contact";
+import AppMenu from "../left-menu/app.menu";
+import { sendRequest } from "../utils/api";
+import { formatDateString } from "../utils/utils";
 import {
   DRAWER_WIDTH,
   GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_HEADER,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_NOTIFY,
   GLOBAL_URL,
-  getDrawerOpen,
-  getGlobalUser,
-  // stompClient
 } from "../utils/veriable.global";
-import { useUser, useWidthScreen } from "@/lib/custom.content";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import useSWR, { SWRResponse } from "swr";
-import { sendRequest } from "../utils/api";
-import { formatDateString } from "../utils/utils";
-import ShareIcon from "@mui/icons-material/Share";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { TransitionProps } from "@mui/material/transitions";
-import CloseIcon from "@mui/icons-material/Close";
-import CommentIcon from "@mui/icons-material/Comment";
-import Messsages from "../chat/chat.messages";
+import IconTabs from "./header.nav";
+import SearchComponent from "./header.search";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
@@ -161,6 +159,7 @@ export default function AppHeader(pros: IPros) {
   const { widthScreen, setWidthScreen } = useWidthScreen();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [countUnRead, setCountUnRead] = React.useState<number>(0);
+  const [countMessage, setCountMessage] = React.useState<number>(0);
 
   const isMenuOpen = Boolean(anchorEl);
 
@@ -194,7 +193,6 @@ export default function AppHeader(pros: IPros) {
   };
 
   const handleClose2 = (index: any) => {
-    console.log(index);
     const newOpenArray = [...open2] as boolean[];
     newOpenArray[index] = false;
 
@@ -336,16 +334,15 @@ export default function AppHeader(pros: IPros) {
     stompClient.connect(
       {},
       () => {
-        console.log("Connected to WebSocket server");
         stompClient.subscribe(
           `/user/${user?.user?.userId}/notification`,
           (message) => {
-            console.log("Received message:", JSON.parse(message.body));
             if (message) {
               setOpenNoti(true);
               const data: notificationToGetDTO = JSON.parse(message.body);
               setDatanotification(data);
               GetCountUnRead();
+              GetCountMessage();
             }
           }
         );
@@ -393,7 +390,6 @@ export default function AppHeader(pros: IPros) {
         toggleDrawer("right", openContact)({} as React.MouseEvent);
       }
       if (window.innerWidth >= 900 && openContact) {
-        console.log(">>> check function");
         toggleDrawer("right", !openContact)({} as React.MouseEvent);
       }
     };
@@ -413,9 +409,13 @@ export default function AppHeader(pros: IPros) {
   };
   const GetCountUnRead = async () => {
     const response = getCount(`${GLOBAL_URL}/api/count-notifications-unread`);
-    console.log(await response);
     setCountUnRead(await response);
   };
+  const GetCountMessage = async () => {
+    const response = getCount(`${GLOBAL_URL}/api/count-message-unread`);
+    setCountMessage(await response);
+  };
+
   React.useEffect(() => {
     const windowWidth = window.innerWidth;
 
@@ -428,6 +428,7 @@ export default function AppHeader(pros: IPros) {
   React.useEffect(() => {
     if (user) {
       GetCountUnRead();
+      GetCountMessage();
       connectAndSubscribe();
     }
   }, [user]);
@@ -453,9 +454,7 @@ export default function AppHeader(pros: IPros) {
     );
   React.useEffect(() => {
     if (data && !error) {
-      console.log(user);
       setDataNoti(data);
-      console.table(dataNoti);
     }
   }, [data]);
 
@@ -470,9 +469,6 @@ export default function AppHeader(pros: IPros) {
     });
     const newPage = page + 1;
     setPage(newPage);
-    console.log(page);
-    console.table(response);
-    console.log(response.length);
     if (response.length > 0) {
       setDataNoti((prevData) => [...prevData, ...response]);
     } else {
@@ -485,17 +481,15 @@ export default function AppHeader(pros: IPros) {
       method: "PUT",
       headers: { authorization: `Bearer ${user?.access_token}` },
     });
-    console.log(response);
 
     if (response.status == 200) {
       const updateNoti = await fetchData(
         `${GLOBAL_URL}/api/notifications/${user?.user?.userId}`
       );
-      console.log(await updateNoti);
       setDataNoti(await updateNoti);
       GetCountUnRead();
     } else {
-      console.log("error: " + response);
+      // console.log("error: " + response);
     }
   };
 
@@ -503,7 +497,6 @@ export default function AppHeader(pros: IPros) {
     notiId: number,
     read: boolean
   ) => {
-    console.log(read);
     const response = await fetch(
       `${GLOBAL_URL}/api/notifications/${notiId}?read=${!read}`,
       {
@@ -511,7 +504,6 @@ export default function AppHeader(pros: IPros) {
         headers: { authorization: `Bearer ${user?.access_token}` },
       }
     );
-    console.log(response);
     if (response.status == 200) {
       GetCountUnRead();
       setDataNoti((preData) =>
@@ -520,7 +512,7 @@ export default function AppHeader(pros: IPros) {
         )
       );
     } else {
-      console.log("error: " + response);
+      // console.log("error: " + response);
     }
   };
 
@@ -532,14 +524,13 @@ export default function AppHeader(pros: IPros) {
         headers: { authorization: `Bearer ${user?.access_token}` },
       }
     );
-    console.log(response);
     if (response.status == 200) {
       GetCountUnRead();
       const updatedData = dataNoti.filter((item) => item.id !== notiId);
       setDataNoti(updatedData);
       handleClick();
     } else {
-      console.log("error: " + response);
+      // console.log("error: " + response);
     }
   };
 
@@ -688,7 +679,8 @@ export default function AppHeader(pros: IPros) {
             : dataNotification?.message == "replyComment"
             ? dataNotification?.senderId?.fullname +
               " đã phản hồi bình luận của bạn"
-            : " mess"}
+            : dataNotification?.senderId?.fullname +
+              " đã gửi cho bạn một tin nhắn mới "}
         </Alert>
       </Snackbar>
       <CssBaseline />
@@ -715,7 +707,7 @@ export default function AppHeader(pros: IPros) {
             sx={{
               display: { sm: "block" },
               padding: "6px 0",
-              marginRight: { xs: "0", sm: "12px" },
+              marginRight: { xs: "0" },
             }}
           >
             <Link href="/">
@@ -727,7 +719,7 @@ export default function AppHeader(pros: IPros) {
               />
             </Link>
           </Typography>
-          <Typography
+          {/* <Typography
             variant="h6"
             noWrap
             component="div"
@@ -735,7 +727,7 @@ export default function AppHeader(pros: IPros) {
             sx={{
               display: { sm: "inline" },
               padding: "6px 0",
-              margin: "0 6px",
+              margin: "0 24px 0 0",
               fontWeight: "bolder",
               "& a": {
                 color: "#0766FF",
@@ -753,7 +745,7 @@ export default function AppHeader(pros: IPros) {
             }}
           >
             <Link href="/">Art Devs</Link>
-          </Typography>
+          </Typography> */}
           <SearchComponent />
           <IconTabs
             tabValue={pros?.tabValue}
@@ -809,9 +801,11 @@ export default function AppHeader(pros: IPros) {
                   minWidth: { xs: "32px", md: "48px" },
                 }}
               >
-                <Badge badgeContent={11} color="error">
+                <Badge badgeContent={countMessage} color="error">
                   <MailIcon
                     sx={{
+                      backgroundColor: GLOBAL_BG_NAV,
+                      color: GLOBAL_COLOR_HEADER,
                       "@media (min-width: 0px)": {
                         fontSize: "16px",
                       },
@@ -844,6 +838,8 @@ export default function AppHeader(pros: IPros) {
                     <Badge badgeContent={11} color="error">
                       <MailIcon
                         sx={{
+                          backgroundColor: GLOBAL_BG_NAV,
+                          color: GLOBAL_COLOR_HEADER,
                           "@media (min-width: 0px)": {
                             fontSize: "16px",
                           },
@@ -872,7 +868,13 @@ export default function AppHeader(pros: IPros) {
               size="large"
               aria-label="notifications"
               color="inherit"
-              sx={{ padding: { xs: "8px", sm: "12px" } }}
+              sx={{
+                padding: { xs: "8px", sm: "12px" },
+                marginLeft: "6px",
+                border: "1px solid #0000001f",
+                backgroundColor: GLOBAL_BG_NAV,
+                color: GLOBAL_COLOR_HEADER,
+              }}
               ref={anchorRef}
               id="composition-button"
               aria-controls={open ? "composition-menu" : undefined}
@@ -901,6 +903,7 @@ export default function AppHeader(pros: IPros) {
               placement="bottom-start"
               transition
               disablePortal
+              sx={{}}
             >
               {({ TransitionProps, placement }) => (
                 <Grow
@@ -912,18 +915,28 @@ export default function AppHeader(pros: IPros) {
                 >
                   <Paper
                     sx={{
-                      backgroundColor: "#293145",
+                      backgroundColor: GLOBAL_BG_NOTIFY,
                       border: "0.5px solid white",
+                      borderRadius: "16px",
+                      boxShadow: GLOBAL_BOXSHADOW,
                     }}
                   >
                     <ClickAwayListener onClickAway={handleClose}>
                       <Box>
-                        <Box px={2} color={"white"}>
+                        <Box
+                          px={2}
+                          color={"black"}
+                          sx={{
+                            borderBottom: "1px solid #80808047",
+                            paddingBottom: "6px",
+                          }}
+                        >
                           <Box
                             sx={{
                               display: "flex",
                               justifyContent: "space-between",
                               alignItems: "center",
+                              color: GLOBAL_COLOR_NOTIFY,
                             }}
                           >
                             <h1>Thông báo</h1>
@@ -941,6 +954,7 @@ export default function AppHeader(pros: IPros) {
                                 p: "0",
                                 minWidth: "40px !important",
                                 height: "40px !important",
+                                color: GLOBAL_COLOR_NOTIFY,
                               }}
                             >
                               <MoreVertIcon />
@@ -1004,6 +1018,7 @@ export default function AppHeader(pros: IPros) {
                               )}
                             </Popper>
                           </Box>
+                          <Divider sx={{ marginBottom: "6px" }} />
                           <ToggleButtonGroup
                             color="primary"
                             value={alignment}
@@ -1011,10 +1026,20 @@ export default function AppHeader(pros: IPros) {
                             onChange={handleChange}
                             aria-label="Platform"
                           >
-                            <ToggleButton value="all" sx={{ color: "white" }}>
+                            <ToggleButton
+                              value="all"
+                              sx={{
+                                color: GLOBAL_COLOR_NOTIFY,
+                              }}
+                            >
                               Tất cả
                             </ToggleButton>
-                            <ToggleButton value="false" sx={{ color: "white" }}>
+                            <ToggleButton
+                              value="false"
+                              sx={{
+                                color: GLOBAL_COLOR_NOTIFY,
+                              }}
+                            >
                               Chưa đọc
                             </ToggleButton>
                           </ToggleButtonGroup>
@@ -1022,9 +1047,11 @@ export default function AppHeader(pros: IPros) {
                         <List
                           sx={{
                             width: "360px",
-                            bgcolor: "#293145",
+                            bgcolor: GLOBAL_BG_NOTIFY,
                             maxHeight: "500px",
                             overflow: "auto",
+                            borderBottomLeftRadius: "12px",
+                            borderBottomRightRadius: "12px",
                             "&::-webkit-scrollbar": {
                               width: "5px",
                               borderRadius: "8px",
@@ -1121,7 +1148,10 @@ export default function AppHeader(pros: IPros) {
                                         primary={
                                           <React.Fragment>
                                             <Typography
-                                              sx={{ display: "inline" }}
+                                              sx={{
+                                                display: "inline",
+                                                color: GLOBAL_COLOR_NOTIFY,
+                                              }}
                                               component="span"
                                               variant="body2"
                                               color="white"
@@ -1130,10 +1160,12 @@ export default function AppHeader(pros: IPros) {
                                               {e.senderId.fullname}
                                             </Typography>
                                             <Typography
-                                              sx={{ display: "inline" }}
+                                              sx={{
+                                                display: "inline",
+                                                color: GLOBAL_COLOR_MENU,
+                                              }}
                                               component="span"
                                               variant="body2"
-                                              color="whitesmoke"
                                             >
                                               {e.message == "like"
                                                 ? " đã thích bài viết của bạn"
@@ -1183,7 +1215,11 @@ export default function AppHeader(pros: IPros) {
                                     right: 5,
                                   }}
                                 >
-                                  <MoreVertIcon sx={{ color: "white" }} />
+                                  <MoreVertIcon
+                                    sx={{
+                                      color: GLOBAL_COLOR_NOTIFY,
+                                    }}
+                                  />
                                 </IconButton>
                                 <Menu
                                   id="long-menu"
@@ -1253,7 +1289,10 @@ export default function AppHeader(pros: IPros) {
               color="inherit"
               sx={{
                 display: { xs: "none", sm: "inline" },
-                padding: { xs: "8px", sm: "12px" },
+                padding: { xs: "5px" },
+                // border: "1px solid #0000001f",
+                marginLeft: "6px",
+                fontSize: "18px",
               }}
             >
               {user?.user ? (
@@ -1265,6 +1304,9 @@ export default function AppHeader(pros: IPros) {
                 ) : (
                   <AccountCircle
                     sx={{
+                      backgroundColor: GLOBAL_BG_NAV,
+                      color: GLOBAL_COLOR_HEADER,
+
                       "@media (min-width: 0px)": {
                         fontSize: "16px",
                       },
@@ -1277,6 +1319,9 @@ export default function AppHeader(pros: IPros) {
               ) : (
                 <AccountCircle
                   sx={{
+                    backgroundColor: GLOBAL_BG_NAV,
+                    color: GLOBAL_COLOR_HEADER,
+
                     "@media (min-width: 0px)": {
                       fontSize: "16px",
                     },

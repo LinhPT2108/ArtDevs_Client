@@ -1,6 +1,7 @@
 import {
   Avatar,
   Box,
+  Divider,
   Drawer,
   List,
   ListItemButton,
@@ -15,7 +16,14 @@ import ChatMessagesForm from "../chat/chat.form";
 import { styled } from "@mui/system";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 interface IPros {
@@ -89,11 +97,8 @@ const ContactMenu = (pros: IPros) => {
   rightMenu.push(ListFriend?.statusCode ? [] : ListFriend);
   //@ts-ignore
   rightMenu.push(ListMentor?.statusCode ? [] : ListMentor);
-  // console.log(">>> check rightMenu: ", rightMenu[1]?.length);
   const titleMenu = ["Bạn bè", "Mentor"];
   const [selectedIndex, setSelectedIndex] = React.useState(0);
-  // console.log("check list mentor", ListMentor);
-  // console.log("check list if friend", ListFriend);
   function formatTimeDifference(startTime: Date, endTime: Date): string {
     const differenceInMilliseconds = startTime.getTime() - endTime.getTime();
 
@@ -132,31 +137,32 @@ const ContactMenu = (pros: IPros) => {
     stompClient.connect(
       {},
       () => {
-        console.log("Connected to WebSocket server");
         stompClient.subscribe(
           `/user/${session?.user?.userId}/message`, //
           async (message) => {
-            console.log("Received message content:", JSON.parse(message.body));
-            const data: MessageContent|pictureOfMessageDTOs = JSON.parse(message.body);
-            console.log(data);
-            if (typeof data === 'object') {
-              if ('content' in data) {
-                const fetchDataMessage =await sendRequest<MessageContent[] | null>({
+            const data: MessageContent | pictureOfMessageDTOs = JSON.parse(
+              message.body
+            );
+            if (typeof data === "object") {
+              if ("content" in data) {
+                const fetchDataMessage = await sendRequest<
+                  MessageContent[] | null
+                >({
                   url: GLOBAL_URL + `/api/message/${data?.formUserId}`,
                   method: "GET",
                   headers: { authorization: `Bearer ${session?.access_token}` },
                 });
-                console.log( fetchDataMessage);
-    
+
                 setDataMessage(fetchDataMessage);
-              } else if ('cloudinaryPublicId' in data) {
-                const fetchDataMessage =await sendRequest<MessageContent[] | null>({
+              } else if ("cloudinaryPublicId" in data) {
+                const fetchDataMessage = await sendRequest<
+                  MessageContent[] | null
+                >({
                   url: GLOBAL_URL + `/api/message/${user?.userId}`,
                   method: "GET",
                   headers: { authorization: `Bearer ${session?.access_token}` },
                 });
-                console.log( fetchDataMessage);
-    
+
                 setDataMessage(fetchDataMessage);
               }
             }
@@ -189,14 +195,11 @@ const ContactMenu = (pros: IPros) => {
 
     console.table(fetchDataMessage);
     setDataMessage(fetchDataMessage);
-    console.log(">>> check user:P ", item);
     connectAndSubscribe();
     setState({ ...state, [anchor]: open });
   };
 
   useEffect(() => {
-    console.log("new message");
-    console.log(dataMessage);
     setDataMessage(dataMessage);
   }, [dataMessage]);
   useEffect(() => {
@@ -237,11 +240,12 @@ const ContactMenu = (pros: IPros) => {
       <Box
         sx={{
           position: `${pageUrl == "home" ? "static" : "fixed"}`,
-          top: { xs: "58px", sm: `${pageUrl == "home" ? "85px" : "85px"}` },
+          top: { xs: "58px", sm: `${pageUrl == "home" ? "85px" : "105px"}` },
           left: { xs: "0", sm: `${pageUrl == "home" ? "12px" : "0"}` },
           width: `${pageUrl == "home" ? "auto" : "240px"}`,
           overflow: "auto",
-          // backgroundColor: "#293145",
+          backgroundColor: "#fff",
+          borderRight: "1px solid gray",
           maxHeight: {
             xs: "calc(100vh - 120px)",
             md: `${
@@ -260,30 +264,31 @@ const ContactMenu = (pros: IPros) => {
                 key={index}
                 sx={{
                   width: "100%",
-                  bgcolor: "#293145",
-                  minHeight: "40vh",
-                  color: "white",
+                  backgroundColor: GLOBAL_BG,
+                  minHeight: "45vh",
+                  color: GLOBAL_COLOR_BLACK,
                   marginTop: "12px",
                   "& p": {
-                    color: "gray",
+                    color: GLOBAL_COLOR_MENU,
+                  },
+                  "& .Mui-selected": {
+                    backgroundColor: "none",
                   },
                 }}
-                className="rounded-md"
                 component="nav"
                 aria-label="main mailbox folders"
                 subheader={
                   <ListSubheader
                     sx={{
-                      bgcolor: "#293145",
-                      color: "white",
+                      bgcolor: GLOBAL_BG,
+                      color: GLOBAL_COLOR_BLACK,
                       fontWeight: "bold",
                       zIndex: "0",
                       position: "relative",
-                      borderBottom: "1px solid gray",
+                      borderRadius: "12px",
                     }}
                     component="div"
                     id="nested-list-subheader"
-                    className="rounded-md"
                   >
                     {titleMenu[index]}
                   </ListSubheader>
@@ -311,6 +316,7 @@ const ContactMenu = (pros: IPros) => {
                           >
                             {item?.profilePicUrl ? (
                               <Avatar
+                                sx={{ boxShadow: GLOBAL_BOXSHADOW }}
                                 alt={item?.profilePicUrl || ""}
                                 src={item?.profilePicUrl}
                               />
@@ -323,6 +329,7 @@ const ContactMenu = (pros: IPros) => {
                                   minWidth: "40px",
                                   marginRight: { xs: "6px" },
                                   borderRadius: "100%",
+                                  boxShadow: GLOBAL_BOXSHADOW,
                                 }}
                               >
                                 <AccountCircleIcon />
@@ -344,8 +351,8 @@ const ContactMenu = (pros: IPros) => {
                                 }`,
                                 padding: "6px",
                                 minWidth: "6px",
+                                borderRadius: "100%",
                               }}
-                              className="rounded-full"
                             ></ListItemIcon>
                           </ListItemButton>
                         );
@@ -389,7 +396,7 @@ const ContactMenu = (pros: IPros) => {
                 ) : (
                   <Typography
                     component={"h5"}
-                    sx={{ padding: "12px ", color: "#fff" }}
+                    sx={{ padding: "12px ", color: GLOBAL_COLOR_MENU }}
                   >
                     Trống !
                   </Typography>
