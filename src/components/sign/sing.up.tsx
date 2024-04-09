@@ -505,7 +505,7 @@ const SignUp = (props: MyData) => {
               minHeight: "620px",
             }}
           >
-            <Box sx={{ mt: 2, mb: 1, mx: 2, flex: "1" }}>
+            <Box sx={{ mt: 2, mb: 1, mx: 2, flex: "1", paddingX: "24px" }}>
               {activeStep === 0 ? (
                 <InforSign
                   handleLastName={handleLastName}

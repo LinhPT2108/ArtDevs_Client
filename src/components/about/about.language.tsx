@@ -2,6 +2,7 @@ import CardMedia from "@mui/material/CardMedia";
 
 import Box from "@mui/material/Box";
 import { Grid } from "@mui/material";
+import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 const LanguageAbout = () => {
   return (
     <Box
@@ -15,7 +16,7 @@ const LanguageAbout = () => {
         container
         columns={6}
         sx={{
-          backgroundColor: "#0B090B",
+          backgroundColor: GLOBAL_BG_NAV,
           borderRadius: "16px",
           "& div": {
             display: "flex",
@@ -30,7 +31,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/Clogo.png"
@@ -41,7 +42,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/Java-logo.png"
@@ -52,7 +53,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/javascript-logo.png"
@@ -63,7 +64,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/python-logo.png"
@@ -74,7 +75,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/PHP-logo.png"
@@ -85,7 +86,7 @@ const LanguageAbout = () => {
           <CardMedia
             sx={{
               borderRadius: "8px",
-              width: "60px",
+              width: "100px",
             }}
             component="img"
             image="/language-program/program.png"

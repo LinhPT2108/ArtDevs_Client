@@ -5,6 +5,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 interface NextArrowProps {
   className?: string;
   style?: React.CSSProperties;
@@ -78,7 +79,7 @@ const SliderAbout = () => {
     >
       <Container
         sx={{
-          backgroundColor: "#1B1622",
+          backgroundColor: GLOBAL_BG_NAV,
           boxShadow:
             "0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)",
           borderRadius: "8px",
@@ -160,7 +161,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 700,
-                      color: "#ffffff",
+                      color: "#000",
                       fontSize: { xs: "18px", sm: "22px", md: "26px" },
                       "@media (max-width: 390px)": {
                         marginTop: "24px",
@@ -172,7 +173,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 400,
-                      color: "#ffffff",
+                      color: "#000",
                       mt: 1.5,
                       fontSize: { xs: "12px", sm: "14px", md: "16px" },
                       textAlign: "justify",
@@ -232,7 +233,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 700,
-                      color: "#ffffff",
+                      color: "#000",
                       fontSize: { xs: "18px", sm: "22px", md: "26px" },
                       "@media (max-width: 390px)": {
                         marginTop: "24px",
@@ -244,7 +245,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 400,
-                      color: "#ffffff",
+                      color: "#000",
                       mt: 1.5,
                       fontSize: { xs: "12px", sm: "14px", md: "16px" },
                       textAlign: "justify",
@@ -306,7 +307,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 700,
-                      color: "#ffffff",
+                      color: "#000",
                       fontSize: { xs: "18px", sm: "22px", md: "26px" },
                       "@media (max-width: 390px)": {
                         marginTop: "24px",
@@ -318,7 +319,7 @@ const SliderAbout = () => {
                   <Box
                     sx={{
                       fontWeight: 400,
-                      color: "#ffffff",
+                      color: "#000",
                       mt: 1.5,
                       fontSize: { xs: "12px", sm: "14px", md: "16px" },
                       textAlign: "justify",

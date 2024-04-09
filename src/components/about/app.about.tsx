@@ -12,11 +12,16 @@ import SliderAbout from "./about.slide";
 import ShareAbout from "./about.share";
 import LanguageAbout from "./about.language";
 import FooterAbout from "./about.footer";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
+} from "../utils/veriable.global";
 
 const About = () => {
   return (
-    <Box sx={{ flexGrow: 1, bgcolor: "#000000" }}>
-      <AppBar position="static" sx={{ bgcolor: "#000000" }}>
+    <Box sx={{ flexGrow: 1, bgcolor: GLOBAL_BG }}>
+      <AppBar position="static" sx={{ bgcolor: GLOBAL_BG }}>
         <Container sx={{ paddingX: { xs: 0, md: "16px" } }}>
           <Toolbar>
             <Box
@@ -46,7 +51,7 @@ const About = () => {
                 flexGrow: 1,
                 "& a": {
                   textDecoration: "none",
-                  color: "white",
+                  color: "#1976d2",
                   "@media (min-width: 0px)": {
                     fontSize: "14px",
                   },
@@ -146,11 +151,11 @@ const About = () => {
       </Box>
       <Box
         sx={{
-          backgroundColor: "#000508",
+          backgroundColor: GLOBAL_BG_NAV,
           backgroundImage:
-            "radial-gradient(farthest-side at bottom left,#271d3b,transparent 900px),radial-gradient(farthest-corner at bottom right,#3a233f,transparent 1000px)",
+            "radial-gradient(farthest-side at bottom left, #fff, transparent 900px), radial-gradient(farthest-corner at bottom right, #fff, transparent 1000px)",
           borderRadius: "12px 12px 0 0",
-          border: "1px solid #141414",
+          // border: "1px solid #141414",
         }}
       >
         <FooterAbout />

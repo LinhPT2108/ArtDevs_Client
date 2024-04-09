@@ -43,7 +43,7 @@ const IntroAbout = () => {
             <Box
               sx={{
                 fontWeight: 700,
-                color: "#ffffff",
+                color: "#1976d2",
                 fontSize: { xs: "24px", sm: "36px", md: "48px" },
               }}
             >
@@ -52,7 +52,7 @@ const IntroAbout = () => {
             <Box
               sx={{
                 fontWeight: 400,
-                color: "#ffffff",
+                color: "#000",
                 mt: 1.5,
                 fontSize: { xs: "16px", sm: "22px", md: "28px" },
                 textAlign: "center",
