@@ -381,6 +381,28 @@ declare global {
     message: string;
     model: AccountListDTO;
   }
+
+  interface ReponseReportFormAdmin {
+    statusCode: number;
+    message: string;
+    model: ReportListDTO;
+  }
+  interface ReportListDTO {
+    listNewReport: Report[];
+    listReport: Report[];
+    listUserReport1: UserFormAdminDTO[];
+    listUserReport2: UserFormAdminDTO[];
+    listUserReport3: UserFormAdminDTO[];
+    listPostisDel: Post[];
+  }
+  interface Report{
+    id : number;
+    reportDetail: string;
+    reportPostId: string;
+    reportUserId: string;
+    timeReport: Date;
+    userIdActionReport: string;
+  }
   interface AccountListDTO{
     listBand: UserFormAdminDTO[];
     listAllAccount: UserFormAdminDTO[];

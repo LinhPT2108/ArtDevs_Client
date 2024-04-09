@@ -3,7 +3,7 @@ import Banner from "./components/Banner";
 import General from "./components/General";
 import Notification from "./components/Notification";
 import Project from "./components/Project";
-import Storage from "./components/Storage";
+import Storage from "../report/table/Storage";
 import Upload from "./components/Upload";
 
 export const metadata: Metadata = {

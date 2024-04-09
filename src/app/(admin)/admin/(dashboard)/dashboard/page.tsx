@@ -19,13 +19,23 @@ import DailyTraffic from "./components/DailyTraffic";
 import TaskCard from "./components/TaskCard";
 import tableDataCheck from "./variables/tableDataCheck.json";
 import tableDataComplex from "./variables/tableDataComplex.json";
-import TopCreatorTable from "../nft-marketplace/components/TableTopCreators";
 
 import { tableColumnsTopCreators } from "./variables/tableColumnsTopCreators";
-import Banner from "../profile/components/Banner";
+
 import { sendRequest } from "@/components/utils/api";
 import useSWR, { SWRResponse } from "swr";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import {
+  GLOBAL_LISTALLACCOUNT,
+  GLOBAL_LISTALLBAND,
+  GLOBAL_LISTMENTOR,
+  GLOBAL_LISTNEWMENTOR,
+  GLOBAL_LISTNEWUSER,
+  GLOBAL_LISTUSER,
+  GLOBAL_TURNON_MENTOR,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
+import TopCreatorTable from "./components/table/TableTopCreators";
+import Banner from "./components/table/Banner";
 
 const MiniCalendar = dynamic(
   () => import("@/components/admin/calendar/MiniCalendar"),
@@ -39,11 +49,14 @@ type Props = {};
 
 const DashboardPage: FC<Props> = () => {
   const [dataForTable, setDataForTable] = useState<UserFormAdminDTO[]>([]);
-
+  const [listNameTable, setlistNameTable] = useState<string>(
+    GLOBAL_LISTALLACCOUNT
+  );
   const [userData, setUserData] = useState<UserFormAdminDTO | null>(null);
   const handleRowClick = (rowData: UserFormAdminDTO) => {
     // Xử lý dữ liệu của hàng được chọn tại đây, ví dụ:
     setUserData(rowData);
+
     console.log("Row data:", rowData);
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
@@ -70,19 +83,70 @@ const DashboardPage: FC<Props> = () => {
   useEffect(() => {
     setDataForTable(dataGetAll?.model?.listAllAccount ?? []);
   }, [dataGetAll]);
-  const handleWidgetClick = (listData: UserFormAdminDTO[]) => {
+  const handleWidgetClick = (
+    listData: UserFormAdminDTO[],
+    listname: string
+  ) => {
     // Truyền danh sách dữ liệu từ Widget vào TopCreatorTable khi người dùng click vào Widget
     setDataForTable(listData);
+    setlistNameTable(listname);
   };
 
-  const handleWidgetClick1 = (DataUser: UserFormAdminDTO) => {
+  console.log("get all ne", dataGetAll);
+  const returnlistname = (listnametable: string): UserFormAdminDTO[] | null => {
+    switch (listnametable) {
+      case GLOBAL_LISTALLACCOUNT:
+        // Xử lý trường hợp GLOBAL_LISTALLACCOUNT
+        // Ví dụ:
+        return dataGetAll?.model.listAllAccount || [];
+      case GLOBAL_LISTALLBAND:
+        // Xử lý trường hợp GLOBAL_LISTALLBAND
+        // Ví dụ:
+        return dataGetAll?.model.listBand || [];
+      case GLOBAL_LISTMENTOR:
+        // Xử lý trường hợp GLOBAL_LISTMENTOR
+        // Ví dụ:
+        return dataGetAll?.model.listMentor || [];
+      case GLOBAL_LISTNEWMENTOR:
+        // Xử lý trường hợp GLOBAL_LISTNEWMENTOR
+        // Ví dụ:
+        return dataGetAll?.model.listNewMentor || [];
+      case GLOBAL_LISTUSER:
+        // Xử lý trường hợp GLOBAL_LISTUSER
+        // Ví dụ:
+        return dataGetAll?.model.listUser || [];
+      case GLOBAL_LISTNEWUSER:
+        // Xử lý trường hợp GLOBAL_LISTNEWUSER
+        // Ví dụ:
+        return dataGetAll?.model.listNewUser || [];
+      default:
+        // Trường hợp không khớp với bất kỳ giá trị nào được xác định
+        return null;
+    }
+  };
+
+  const handleWidgetClick1 = (
+    DataUser: UserFormAdminDTO,
+    typeupdate: string,
+    listname: string
+  ) => {
     // Truyền danh sách dữ liệu từ Widget vào TopCreatorTable khi người dùng click vào Widget
     // setDataForTable(listData);
-    console.log("dataClick", DataUser);
+    const listResult: UserFormAdminDTO[] | null = returnlistname(listname);
+
+    const index: number | undefined = listResult?.findIndex(
+      (t) => t.userId == DataUser.userId
+    );
+    listResult?.splice(index!, 1, DataUser);
+
+    setDataForTable([...listResult!]);
+    console.log("check data listresult", listResult);
+    console.log("check data listresult", dataForTable);
     handleRowClick(DataUser);
   };
-
-  console.log("data get ALL", dataGetAll?.model.listAllAccount.length);
+  useEffect(() => {
+    console.log("check data datadataForTable", dataForTable);
+  }, [dataForTable]);
   return (
     <>
       {/* Card widget */}
@@ -95,7 +159,10 @@ const DashboardPage: FC<Props> = () => {
             "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listAllAccount ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listAllAccount ?? [],
+              GLOBAL_LISTALLACCOUNT
+            )
           }
         />
         <Widget
@@ -105,7 +172,10 @@ const DashboardPage: FC<Props> = () => {
             dataGetAll?.model?.listUser.length?.toString() || "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listUser ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listUser ?? [],
+              GLOBAL_LISTUSER
+            )
           }
         />
         <Widget
@@ -115,7 +185,10 @@ const DashboardPage: FC<Props> = () => {
             dataGetAll?.model?.listMentor.length?.toString() || "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listMentor ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listMentor ?? [],
+              GLOBAL_LISTMENTOR
+            )
           }
         />
         <Widget
@@ -125,7 +198,10 @@ const DashboardPage: FC<Props> = () => {
             dataGetAll?.model?.listBand.length?.toString() || "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listBand ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listBand ?? [],
+              GLOBAL_LISTALLBAND
+            )
           }
         />
         <Widget
@@ -135,7 +211,10 @@ const DashboardPage: FC<Props> = () => {
             dataGetAll?.model?.listNewUser.length?.toString() || "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listNewUser ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listNewUser ?? [],
+              GLOBAL_LISTNEWUSER
+            )
           }
         />
         <Widget
@@ -145,7 +224,10 @@ const DashboardPage: FC<Props> = () => {
             dataGetAll?.model?.listNewMentor.length?.toString() || "Loading..."
           }
           onWidgetClick={() =>
-            handleWidgetClick(dataGetAll?.model?.listNewMentor ?? [])
+            handleWidgetClick(
+              dataGetAll?.model?.listNewMentor ?? [],
+              GLOBAL_LISTNEWMENTOR
+            )
           }
         />
       </div>
@@ -166,7 +248,11 @@ const DashboardPage: FC<Props> = () => {
           onRowClick={handleRowClick}
         />
         {userData && (
-          <Banner user={userData} handlepropdata={handleWidgetClick1} />
+          <Banner
+            user={userData}
+            listnametable={listNameTable}
+            handlepropdata={handleWidgetClick1}
+          />
         )}
         {/* Check Table */}
         {/* <div>

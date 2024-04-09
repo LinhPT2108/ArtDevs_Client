@@ -2,7 +2,13 @@
 import Card from "@/components/admin/card";
 import { sendRequest } from "@/components/utils/api";
 import { calculateHoursDifference } from "@/components/utils/utils";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import {
+  GLOBAL_LOCKED_ACCOUNT,
+  GLOBAL_TURNOFF_MENTOR,
+  GLOBAL_TURNON_MENTOR,
+  GLOBAL_UNLOCKED_ACCOUNT,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
 import {
   Button,
   Dialog,
@@ -17,10 +23,16 @@ import useSWR, { SWRResponse } from "swr";
 
 interface ip {
   user: UserFormAdminDTO;
-  handlepropdata: (userupdate: UserFormAdminDTO) => void;
+  handlepropdata: (
+    userupdate: UserFormAdminDTO,
+    typeupdate: string,
+    listname: string
+  ) => void;
+  listnametable: string;
 }
 const Banner = (ip: ip) => {
-  const { user, handlepropdata } = ip;
+
+  const { user, handlepropdata,listnametable} = ip;
   const [updatedUser, setUser] = useState<UserFormAdminDTO | null>(null);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const [openStatusChangeDialog, setOpenStatusChangeDialog] = useState(false);
@@ -65,7 +77,7 @@ const Banner = (ip: ip) => {
         const dataupdate = response.model;
         console.log("data update", response.model);
         if (response.statusCode == 200) {
-          handlepropdata(response.model);
+          handlepropdata(response.model, GLOBAL_TURNON_MENTOR,listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -94,7 +106,7 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model);
+          handlepropdata(response.model, GLOBAL_TURNOFF_MENTOR,listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -124,7 +136,7 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model);
+          handlepropdata(response.model, GLOBAL_LOCKED_ACCOUNT,listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -148,7 +160,7 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model);
+          handlepropdata(response.model, GLOBAL_UNLOCKED_ACCOUNT,listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);

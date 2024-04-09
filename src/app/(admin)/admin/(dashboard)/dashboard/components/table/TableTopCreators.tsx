@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Card from "@/components/admin/card";
 import Progress from "@/components/admin/progress";
-import moment from 'moment';
+import moment from "moment";
 import {
   Row,
   useGlobalFilter,
@@ -20,16 +20,14 @@ type Props = {
   tableData: UserFormAdminDTO[];
   onRowClick: (rowData: UserFormAdminDTO) => void;
 };
-type TableData = UserFormAdminDTO[];
 
 function TopCreatorTable(props: Props) {
-  const { columnsData,tableData, onRowClick } = props;
+  const { columnsData, tableData, onRowClick } = props;
+  const [dataPresent, setdataPresent] = useState(props.tableData);
   const [selectedRow, setSelectedRow] = useState<Row<UserFormAdminDTO> | null>(
     null
   ); // Sử dụng state để lưu trữ hàng được chọn
   // Trong component của bạn:
- 
-  
 
   // Hàm callback để truyền dữ liệu khi click vào hàng
   const handleRowClick = (rowData: UserFormAdminDTO) => {
@@ -37,32 +35,99 @@ function TopCreatorTable(props: Props) {
     props.onRowClick(rowData);
   };
 
+  useEffect(() => {
+    console.log("check data 3", tableData);
+    setdataPresent(tableData);
+  }, [tableData]);
   const columns = useMemo(() => columnsData, [columnsData]);
-  const data = useMemo(() => tableData, [tableData]);
-  console.log("check data table",data);
+  const data = useMemo(() => {
+    console.log("check data table 1", dataPresent);
+    return dataPresent;
+  }, [dataPresent]);
+
+  useEffect(() => {
+    console.log("check data 2", data);
+  }, [data]);
+
   const tableInstance = useTable(
     {
       columns,
-      data,
+      data: data,
     },
     useGlobalFilter,
     useSortBy,
     usePagination
   );
 
-  const { getTableProps, getTableBodyProps, headerGroups, page, prepareRow } =
-    tableInstance;
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    page,
+    prepareRow,
+    state: { pageIndex, pageSize },
+    previousPage,
+    nextPage,
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    gotoPage,
+    setPageSize,
+  } = tableInstance;
 
   return (
-    <Card className={"h-[600px] w-full pb-5"}>
+    <Card className={"h-[600px] w-full pb-5  relative "}>
       {/* Top Creator Header */}
       <div className="flex h-fit w-full items-center justify-between rounded-t-2xl bg-white px-4 pt-4 pb-[20px] shadow-2xl shadow-gray-100 dark:!bg-navy-700 dark:shadow-none">
         <h4 className="text-lg font-bold text-navy-700 dark:text-white">
           Top Creators
         </h4>
-        <button className="linear rounded-[20px] bg-lightPrimary px-4 py-2 text-base font-medium text-brand-500 transition duration-200 hover:bg-gray-100 active:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 dark:active:bg-white/20">
-          See all
-        </button>
+        <div className="flex items-center justify-center space-x-2">
+          <button
+            onClick={() => previousPage()}
+            disabled={!canPreviousPage}
+            className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500"
+          >
+            {"<"}
+          </button>
+          <button
+            onClick={() => nextPage()}
+            disabled={!canNextPage}
+            className="px-3 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500"
+          >
+            {">"}
+          </button>
+          <span className="text-gray-700">
+            Page{" "}
+            <strong>
+              {pageIndex + 1} of {pageOptions.length}
+            </strong>{" "}
+          </span>
+          <span className="text-gray-700">| Go to page: </span>
+          <input
+            type="number"
+            defaultValue={pageIndex + 1}
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              gotoPage(page);
+            }}
+            className="w-12 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          />
+          <span className="text-gray-700">| Show </span>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+            }}
+            className="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+          >
+            {[10, 20, 30, 40, 50].map((pageSize) => (
+              <option key={pageSize} value={pageSize}>
+                {pageSize}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Top Creator Heading */}
@@ -124,7 +189,9 @@ function TopCreatorTable(props: Props) {
                         </div>
                       );
                     } else if (cell.column.Header === "createDate") {
-                      const formattedDate = moment(row.original.createDate).format('MMMM Do YYYY, h:mm:ss a');
+                      const formattedDate = moment(
+                        row.original.createDate
+                      ).format("MMMM Do YYYY, h:mm:ss a");
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
                           {formattedDate}

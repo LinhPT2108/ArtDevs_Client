@@ -55,21 +55,52 @@ export const columnsDataColumns = [
   },
 ];
 
-export const columnsDataComplex = [
+export const columnsDataReport = [
   {
-    Header: "NAME",
-    accessor: "name",
+    Header: "ID",
+    accessor: "id",
   },
   {
-    Header: "STATUS",
-    accessor: "status",
+    Header: "Chi Tiết Tố Cáo",
+    accessor: "reportdetail",
   },
   {
-    Header: "DATE",
+    Header: "Bài Viết Bị Tố Cáo",
+    accessor: "postreport",
+  },
+  {
+    Header: "Tài Khoản Đăng Bài",
+    accessor: "accountreport",
+  },
+  {
+    Header: "Tài Khoản Tố Cáo",
+    accessor: "progress",
+  },
+  {
+    Header: "Ngày Tố Cáo",
     accessor: "date",
   },
+];
+
+export const columnsDataPostReport = [
   {
-    Header: "PROGRESS",
+    Header: "ID",
+    accessor: "id",
+  },
+  {
+    Header: "Nội Dung Bài Viết",
+    accessor: "postcontent",
+  },
+  {
+    Header: "Tài Khoản Đăng Bài",
+    accessor: "accountpost",
+  },
+  {
+    Header: "Thời Gian Đăng Bài",
     accessor: "progress",
+  },
+  {
+    Header: "Chế Độ Bài Viết",
+    accessor: "typepost",
   },
 ];
