@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Row,
   useGlobalFilter,
@@ -44,10 +44,11 @@ const style = {
 type Props = {
   columnsData: any[];
   tableData: Post[];
+  handleUnlockPost: (postId: string) => void;
 };
 
 const PostReportTable = (props: Props) => {
-  const { columnsData, tableData } = props;
+  const { columnsData, tableData, handleUnlockPost } = props;
   const [openModal, setOpenModal] = React.useState(false);
   const [openSnackbar, setopenSnackbar] = React.useState(false);
 
@@ -57,7 +58,7 @@ const PostReportTable = (props: Props) => {
 
   const [openDeletePostDialog, setOpenDeletePostDialog] = React.useState(false);
 
-  const handleDeletePost = () => {
+  const handleDeletePost = (postId: string) => {
     setOpenDeletePostDialog(true);
   };
 
@@ -88,14 +89,13 @@ const PostReportTable = (props: Props) => {
         method: "POST",
         queryParams: { postId },
       });
-
       // Kiểm tra kết quả từ API
       if (fetchData.errorCode === 200) {
         // Hiển thị thông báo thành công
         handleOpenSnackbar(fetchData.message);
-
         // Đóng modal sau khi xóa thành công
         handleCloseModal();
+        handleUnlockPost(postId);
       } else {
         // Hiển thị thông báo lỗi
         handleOpenSnackbar(fetchData.message);
@@ -138,6 +138,10 @@ const PostReportTable = (props: Props) => {
   } = tableInstance;
   //---------**********************
 
+  console.log(">>> check tableData: ", tableData);
+  useEffect(() => {
+    console.log(">>> check tableData: ", tableData);
+  }, [tableData]);
   return (
     <Card className={"w-full h-full p-4 sm:overflow-x-auto"}>
       <div className="relative flex items-center justify-between">
@@ -313,7 +317,7 @@ const PostReportTable = (props: Props) => {
               <Button
                 variant="outlined"
                 endIcon={<DeleteIcon />}
-                onClick={() => handleDeletePost()}
+                onClick={() => handleDeletePost(post?.postId!)}
               >
                 Mở Khóa Bài Viết
               </Button>

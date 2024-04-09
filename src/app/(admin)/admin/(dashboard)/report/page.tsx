@@ -103,6 +103,7 @@ const Example = () => {
     data: dataGetAll,
     error,
     isLoading,
+    mutate,
   }: SWRResponse<ReponseReportFormAdmin, any> = useSWR(
     `${GLOBAL_URL}/api/admin/get-all-report`,
     fetchData,
@@ -111,11 +112,28 @@ const Example = () => {
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
+
+  const handleUnlockPost = (postId: string) => {
+    const newListPostisDel = dataGetAll?.model?.listPostisDel.filter(
+      (post) => post?.postId != postId
+    );
+    if (newListPostisDel) {
+      const updatedData = {
+        ...dataGetAll,
+        model: {
+          ...dataGetAll?.model,
+          listPostisDel: newListPostisDel,
+        },
+      };
+      //@ts-ignore
+      mutate(updatedData, false);
+      setDataForTablePostReport(newListPostisDel);
+    }
+  };
   //end sử lý lấy dữ liệu
 
   // Sử dụng hook useEffect để cập nhật state dataForTable khi dataGetAll thay đổi
 
-  console.log("data", dataForTableReport);
   return (
     <Box sx={{ flexGrow: 2 }}>
       <div className="mt-10 grid h-full grid-cols-1 gap-20 md:grid-cols-2">
@@ -206,6 +224,7 @@ const Example = () => {
           <PostReportTable
             columnsData={columnsDataPostReport}
             tableData={dataForTablePostReport}
+            handleUnlockPost={handleUnlockPost}
           />
         </Box>
       </Modal>
