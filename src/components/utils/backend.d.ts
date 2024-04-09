@@ -394,4 +394,64 @@ declare global {
     reportDetail: string;
     postId: string;
   }
+  interface ReponseUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: UserFormAdminDTO[];
+  }
+  interface RequestUserUpdateFormAdmin {
+    statusCode: number;
+    message: string;
+    model: UserFormAdminDTO;
+  }
+
+  interface ReponseAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: AccountListDTO;
+  }
+
+  interface ReponseReportFormAdmin {
+    statusCode: number;
+    message: string;
+    model: ReportListDTO;
+  }
+  interface ReportListDTO {
+    listNewReport: Report[];
+    listReport: Report[];
+    listUserReport1: UserFormAdminDTO[];
+    listUserReport2: UserFormAdminDTO[];
+    listUserReport3: UserFormAdminDTO[];
+    listPostisDel: Post[];
+  }
+  interface Report {
+    id: number;
+    reportDetail: string;
+    reportPostId: string;
+    reportUserId: string;
+    timeReport: Date;
+    userIdActionReport: string;
+  }
+  interface AccountListDTO {
+    listBand: UserFormAdminDTO[];
+    listAllAccount: UserFormAdminDTO[];
+    listMentor: UserFormAdminDTO[];
+    listUser: UserFormAdminDTO[];
+    listNewMentor: UserFormAdminDTO[];
+    listNewUser: UserFormAdminDTO[];
+  }
+
+  interface UserFormAdminDTO {
+    email: string;
+    role: Role;
+    fullname: string;
+    createDate: Date;
+    accountNonLocked: boolean;
+    userPictureAvatar: string;
+    userPictureBackground: string;
+    totalFriend: number;
+    totalPost: number;
+    totalReport: number;
+    userId: string;
+  }
 }

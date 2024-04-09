@@ -3,21 +3,20 @@ import Banner from "./components/Banner";
 import General from "./components/General";
 import Notification from "./components/Notification";
 import Project from "./components/Project";
-import Storage from "./components/Storage";
+import Storage from "../report/table/Storage";
 import Upload from "./components/Upload";
 
-
 export const metadata: Metadata = {
-  title: 'Profile | Horizon UI by Ories',
-}
+  title: "Profile | Horizon UI by Ories",
+};
 
 const ProfileOverview = () => {
   return (
     <div className="flex w-full flex-col gap-5">
       <div className="w-ful mt-3 flex h-fit flex-col gap-5 lg:grid lg:grid-cols-12">
-        <div className="col-span-4 lg:!mb-0">
+        {/* <div className="col-span-4 lg:!mb-0">
           <Banner />
-        </div>
+        </div> */}
 
         <div className="col-span-3 lg:!mb-0">
           <Storage />

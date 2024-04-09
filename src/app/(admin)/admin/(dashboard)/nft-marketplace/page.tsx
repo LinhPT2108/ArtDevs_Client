@@ -1,7 +1,7 @@
 import { type Metadata } from "next";
 import Banner from "./components/Banner";
 import HistoryCard from "./components/HistoryCard";
-import TopCreatorTable from "./components/TableTopCreators";
+import TopCreatorTable from "../dashboard/components/table/TableTopCreators";
 import NftCard from "@/components/admin/card/NftCard";
 
 import tableDataTopCreators from "./variables/tableDataTopCreators.json";
@@ -22,7 +22,7 @@ const NFTMarketPlacePage = () => {
     <div className="mt-3 grid h-full grid-cols-1 gap-5 xl:grid-cols-2 2xl:grid-cols-3">
       <div className="col-span-1 h-fit w-full xl:col-span-1 2xl:col-span-2">
         {/* NFt Banner */}
-        <Banner />
+        {/* <Banner /> */}
 
         {/* NFt Header */}
         <div className="mb-4 mt-5 flex flex-col justify-between px-4 md:flex-row md:items-center">
@@ -125,12 +125,12 @@ const NFTMarketPlacePage = () => {
 
       {/* right side section */}
       <div className="col-span-1 h-full w-full rounded-xl 2xl:col-span-1">
-        <TopCreatorTable
+        {/* <TopCreatorTable
           // extra="mb-5"
           tableData={tableDataTopCreators}
           columnsData={tableColumnsTopCreators}
-        />
-        <HistoryCard />
+        /> */}
+        {/* <HistoryCard /> */}
       </div>
     </div>
   );
