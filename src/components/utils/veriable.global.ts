@@ -8,6 +8,7 @@ export const GLOBAL_URL: string = "http://localhost:8080";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";
 export const GLOBAL_SEND_MESSAGE: string = "/app/send-message";
 export const GLOBAL_SEND_IMAGE: string = "/app/image";
+export const GLOBAL_SEND_FRIEND: string = "/app/send-friend";
 
 export const GLOBAL_UPLOAD_POST_MESSAGE: string = "Đăng bài viết thành công";
 export const GLOBAL_REPORT_POST: string = "Báo cáo bài viết thành công";

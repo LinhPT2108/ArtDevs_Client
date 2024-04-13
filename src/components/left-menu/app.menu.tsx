@@ -41,7 +41,7 @@ const AppMenu = ({ session }: { session: User }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const leftMenu = [];
-  console.log(">>> check session?.user?.role?.id: ", session?.user?.role?.id);
+  // console.log(">>> check session?.user?.role?.id: ", session?.user?.role?.id);
   const info: ListItem[] = [
     {
       index: 0,

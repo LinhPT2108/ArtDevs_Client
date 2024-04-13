@@ -14,6 +14,8 @@ import ShareIcon from "@mui/icons-material/Share";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
+import * as nsfwjs from "nsfwjs";
+import { badWords, blackList } from "vn-badwords";
 import {
   Alert,
   AppBar,
@@ -358,20 +360,20 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const handleSendReport = async () => {
     console.log(reportDTO);
     const response = await sendRequest<number>({
-      url: GLOBAL_URL+"/api/report",
+      url: GLOBAL_URL + "/api/report",
       headers: { authorization: `Bearer ${session?.access_token}` },
       method: "POST",
-      body:reportDTO
+      body: reportDTO,
     });
     console.log(response);
-    if(response==200){
+    if (response == 200) {
       setDataSnackbar({
         openSnackbar: true,
         contentSnackbar: GLOBAL_REPORT_POST,
         type: "success",
       });
       handleCloseDialogReportPost();
-    }else{
+    } else {
       setDataSnackbar({
         openSnackbar: true,
         contentSnackbar: GLOBAL_ERROR_MESSAGE,
@@ -401,6 +403,7 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [hashtagData, setHashtagData] = useState<HashtagInfor[]>([]);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [timerContent, setTimerContent] = useState<NodeJS.Timeout | null>(null);
   const [postModal, setPostModal] = useState<ResPost | null>(null);
   const [postData, setPostData] = useState<AddPost>({
     postId: "",
@@ -515,6 +518,34 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
       ...prevData,
       content: value,
     }));
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      console.log("Stop typing");
+      const content = badWords(value, {
+        replacement: "*",
+        blackList: (defaultList) => [
+          ...defaultList,
+          "mẹ mày",
+          "cc",
+          "nigga",
+          "đmm",
+          "mm",
+          "đmm",
+        ],
+      });
+      console.log(content);
+      if (value.trim() != "") {
+        setPostData((prevData) => ({
+          ...prevData,
+          content: content.toString(),
+        }));
+      }
+    }, 1000);
+
+    setTimer(newTimer);
   };
   const formatHashtagText = (hashtagText: any) => {
     if (hashtagText && typeof hashtagText === "string") {
@@ -561,12 +592,14 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
 
     setTimer(newTimer);
   };
-  const handleChangePicturePost = (
+  const handleChangePicturePost = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const fileInput = event.target as HTMLInputElement;
     const selected = fileInput.files;
+
     console.log(selected);
+
     setPostData((prevData) => ({
       ...prevData,
       listImageofPost: [
@@ -574,6 +607,16 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
         ...(selected ? Array.from(selected) : []),
       ] as File[],
     }));
+
+    // nsfwjs
+    //   .load()
+    //   .then(function (model) {
+    //     // Classify the image
+    //     return model.classify(selected![0]);
+    //   })
+    //   .then(function (predictions) {
+    //     console.log("Predictions: ", predictions);
+    //   });
   };
   const handleSaveEditPost = async () => {
     console.log(postData);
@@ -2108,8 +2151,12 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                     <a href="#">
                       <img
                         src={`${
-                          session?.user?.profileImageUrl
+                          url == "post-by-user-logged"
                             ? session?.user?.profileImageUrl
+                              ? session?.user?.profileImageUrl
+                              : "/profile/user.jpg"
+                            : item.postId.userPost.profilePicUrl
+                            ? item.postId.userPost.profilePicUrl
                             : "/profile/user.jpg"
                         }`}
                       />
@@ -3904,7 +3951,11 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
           >
             Hủy
           </Button>
-          <Button autoFocus onClick={handleSendReport} disabled={!reportDTO.reportDetail}>
+          <Button
+            autoFocus
+            onClick={handleSendReport}
+            disabled={!reportDTO.reportDetail}
+          >
             Gửi
           </Button>
         </DialogActions>

@@ -148,7 +148,7 @@ const MessageBox = (pros: IPros) => {
         // console.log(JSON.parse(data));
 
         // setImgReturn(JSON.parse(data));
-        data.forEach((e:any) => {
+        data.forEach((e: any) => {
           console.log(e);
           stompClient.send(
             `${GLOBAL_SEND_IMAGE}/${formData?.toUser}`,
@@ -179,7 +179,6 @@ const MessageBox = (pros: IPros) => {
     });
     handelPreview(false);
   };
-  React.useEffect(() => {}, [selectedFiles]);
   return (
     <Box
       sx={{
@@ -191,6 +190,7 @@ const MessageBox = (pros: IPros) => {
         "& form": {
           width: `${pageUrl === "home" ? "auto" : "100%"}`,
         },
+        width: "100%",
       }}
     >
       {previewURLs.length > 0 && (
@@ -201,19 +201,38 @@ const MessageBox = (pros: IPros) => {
             "& img": {
               margin: "10px 0px 0px 10px",
             },
+            "& video": {
+              margin: "10px 0px 0px 10px",
+            },
+            overflow: "auto",
           }}
         >
           {previewURLs.map((url, index) => (
             <Box sx={{ position: "relative" }} key={index}>
-              <img src={url} alt={`Preview ${index}`} width="68" height="68" />
+              {url.match("image") != null ? (
+                <img
+                  src={url}
+                  alt={`Preview ${index}`}
+                  width="68"
+                  height="68"
+                />
+              ) : null}
+              {url.match("video") != null ? (
+                <video src={url} controls width="200" height="70" style={{
+                  borderRadius: "16px",
+                }} ></video>
+              ) : null}
               <Button
                 sx={{
                   position: "absolute",
                   top: 0,
                   right: 0,
-                  minWidth: "40px",
-                  transform: "Translate(50%, -20%)",
+                  minWidth: "20px",
+                  transform: "Translate(30%, 0%)",
                   color: "#7b7b7b",
+                  bgcolor:"#bababa",
+                  p:0,
+                  borderRadius:"50%"
                 }}
                 onClick={() => handleRemoveImage(index)}
               >

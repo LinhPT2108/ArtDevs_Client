@@ -90,8 +90,8 @@ const ChatMessagesForm = (pros: IPros) => {
     <Box
       sx={{
         width: "100%",
-        maxWidth: `${pageUrl == "home" ? 320 : "auto"}`,
-        height: `${pageUrl == "home" ? 400 : "86vh"}`,
+        maxWidth: `${pageUrl == "home" ? "320px" : "auto"}`,
+        height: `${pageUrl == "home" ? "400px" : "86vh"}`,
         backgroundColor: "#fff",
       }}
     >

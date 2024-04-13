@@ -195,8 +195,6 @@ const ContactMenu = (pros: IPros) => {
   };
 
   useEffect(() => {
-    console.log("new message");
-    console.log(dataMessage);
     setDataMessage(dataMessage);
   }, [dataMessage]);
   useEffect(() => {

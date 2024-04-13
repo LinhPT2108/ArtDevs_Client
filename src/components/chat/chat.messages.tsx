@@ -1,4 +1,4 @@
-import { Box, CardMedia, Stack, Tooltip } from "@mui/material";
+import { Box, CardMedia, Stack, Tooltip, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { checkUrl, checkUrl2, formatDateString, isImage } from "../utils/utils";
 import { useEffect, useRef } from "react";
@@ -66,6 +66,56 @@ const Messsages = (pros: IPros) => {
       </Box>
     );
   }
+  if (dataMessage?.length == 0) {
+    return (
+      <Box
+        sx={{
+          margin: "0",
+          height: `${
+            pageUrl === "home"
+              ? !preViewImage
+                ? "274px"
+                : "200px"
+              : !preViewImage
+              ? "88%"
+              : "79%"
+          }`,
+          overflowY: "auto",
+          "::-webkit-scrollbar": {
+            width: "5px",
+          },
+          "::-webkit-scrollbar-thumb": {
+            backgroundColor: "#4CAF50",
+            borderRadius: "4px",
+          },
+          "::-webkit-scrollbar-track": {
+            backgroundColor: "#f1f1f1",
+          },
+          maxWidth: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
+          <Box
+            sx={{
+              maxWidth: "100px",
+            }}
+          >
+            <CardMedia component="img" image="/wave.gif" alt="hello" />
+          </Box>
+          <Typography variant="body1" color="initial" px={5} textAlign={"center"} fontWeight={"bold"}>
+            Hãy gửi một tin nhắn để bắt đầu cuộc trò chuyện !
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
   return (
     <Box
       sx={{
@@ -115,7 +165,7 @@ const Messsages = (pros: IPros) => {
                   arrow
                 >
                   <Stack justifyContent="center" alignItems="flex-start">
-                    <Box
+                    {_e.content&&<Box
                       sx={{
                         backgroundColor: "orange",
                         borderRadius: "30px 30px 30px 0",
@@ -128,8 +178,8 @@ const Messsages = (pros: IPros) => {
                       }}
                     >
                       {_e.content}
-                    </Box>
-                    <Box sx={{ display: "flex",mt:"8px" }}>
+                    </Box>}
+                    <Box sx={{ display: "flex", mt: "8px" }}>
                       {_e.pictureOfMessages.length > 0 &&
                         _e.pictureOfMessages.map((p, index) => {
                           return (
@@ -183,7 +233,7 @@ const Messsages = (pros: IPros) => {
                     justifyContent="center"
                     alignItems="flex-end"
                   >
-                    <Box
+                   {_e.content&&<Box
                       sx={{
                         backgroundColor: "aqua",
                         borderRadius: "30px 30px 0 30px",
@@ -196,7 +246,7 @@ const Messsages = (pros: IPros) => {
                       }}
                     >
                       {_e.content}
-                    </Box>
+                    </Box>}
                     <Box
                       sx={{
                         float: "right",

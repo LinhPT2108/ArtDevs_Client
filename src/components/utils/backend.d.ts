@@ -345,12 +345,28 @@ declare global {
     userID1: string;
     timeRelation: string;
   }
+
+  interface RelationNotificationDTO {
+    userAction: string;
+    userReceive: string;
+    createDate: Date;
+    typeRelation: boolean;
+  }
+
+  interface RelaNotiDTO {
+    userAction: UserPost;
+    userReceive: string;
+    createDate: Date;
+    typeRelation: boolean;
+  }
+
   interface UserAction {
     userId: string;
     username: string;
     profilePicUrl: string;
     fullname: string;
     userReceiveDto: UserPost;
+    sendStatus: boolean;
   }
 
   interface notificationToPostDTO {
