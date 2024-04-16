@@ -40,6 +40,17 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
+import CircleIcon from "@mui/icons-material/Circle";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import Stomp from "stompjs";
+import SockJS from "sockjs-client";
+import IconTabs from "./header.nav";
+import SearchIcon from "@mui/icons-material/Search";
+import MenuIcon from "@mui/icons-material/Menu";
+import AppMenu from "../left-menu/app.menu";
+import ContactMenu from "../left-menu/app.contact";
+import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
@@ -74,6 +85,13 @@ import {
 import IconTabs from "./header.nav";
 import SearchComponent from "./header.search";
 import { useRouter } from "next/navigation";
+import ShareIcon from "@mui/icons-material/Share";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { TransitionProps } from "@mui/material/transitions";
+import CloseIcon from "@mui/icons-material/Close";
+import CommentIcon from "@mui/icons-material/Comment";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import Messsages from "../chat/chat.messages";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
@@ -116,6 +134,32 @@ interface IPros {
 
 export default function AppHeader(pros: IPros) {
   const router = useRouter();
+  const [stateAlertFriend, setStateAlertFriend] = React.useState<{
+    open: boolean;
+    Transition: React.ComponentType<
+      TransitionProps & { children: React.ReactElement<any, any> }
+    >;
+    RelaNoti: RelaNotiDTO | null;
+  }>({
+    open: false,
+    Transition: Fade,
+    RelaNoti: null,
+  });
+
+  const handleClickAlertFriend = () => {
+    setStateAlertFriend({
+      ...stateAlertFriend,
+      open: true,
+      Transition: SlideTransition,
+    });
+  };
+
+  const handleCloseAlertFriend = () => {
+    setStateAlertFriend({
+      ...stateAlertFriend,
+      open: false,
+    });
+  };
   const [openNoti, setOpenNoti] = React.useState(false);
   const [dataNotification, setDatanotification] =
     React.useState<notificationToGetDTO>();
@@ -348,6 +392,21 @@ export default function AppHeader(pros: IPros) {
               setDatanotification(data);
               GetCountUnRead();
               GetCountMessage();
+            }
+          }
+        );
+        stompClient.subscribe(
+          `/user/${user?.user?.userId}/friend`,
+          (message) => {
+            if (message) {
+              const data: RelaNotiDTO = JSON.parse(message.body);
+              console.log(data);
+              console.log("noti friend");
+              setStateAlertFriend({
+                RelaNoti: data as RelaNotiDTO,
+                open: true,
+                Transition: SlideTransition,
+              });
             }
           }
         );
@@ -686,6 +745,78 @@ export default function AppHeader(pros: IPros) {
               " đã phản hồi bình luận của bạn"
             : dataNotification?.senderId?.fullname +
               " đã gửi cho bạn một tin nhắn mới "}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={stateAlertFriend.open}
+        autoHideDuration={2500}
+        onClose={handleCloseAlertFriend}
+        TransitionComponent={stateAlertFriend.Transition}
+      >
+        <Alert
+          severity="success"
+          icon={
+            <Badge
+              overlap="circular"
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              sx={{
+                maxHeight: "50px",
+              }}
+              badgeContent={
+                <Box
+                  padding={"5px"}
+                  sx={{
+                    backgroundColor: stateAlertFriend.RelaNoti?.typeRelation
+                      ? "#4CAF50"
+                      : "#0683FE",
+                    borderRadius: "50%",
+                  }}
+                >
+                  {stateAlertFriend.RelaNoti?.typeRelation ? (
+                    <HowToRegIcon fontSize="small" sx={{ color: "white" }} />
+                  ) : (
+                    <PersonAddIcon fontSize="small" sx={{ color: "white" }} />
+                  )}
+                </Box>
+              }
+            >
+              <Avatar
+                alt={stateAlertFriend.RelaNoti?.userAction.profilePicUrl}
+                src={stateAlertFriend.RelaNoti?.userAction.profilePicUrl}
+                sx={{ width: 50, height: 50 }}
+              />
+            </Badge>
+          }
+          action={
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={handleCloseAlertFriend}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        >
+          <AlertTitle sx={{ fontWeight: "bold" }}>Thông báo mới</AlertTitle>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="subtitle2" fontWeight="bold">
+              {stateAlertFriend.RelaNoti?.userAction.fullname}
+            </Typography>
+
+            {stateAlertFriend.RelaNoti?.typeRelation ? (
+              <Typography variant="subtitle2">
+                &nbsp;đã chấp nhận lời mời kết bạn
+              </Typography>
+            ) : (
+              <Typography variant="subtitle2">
+                &nbsp;đã gửi lời mời kết bạn
+              </Typography>
+            )}
+          </Box>
         </Alert>
       </Snackbar>
       <CssBaseline />

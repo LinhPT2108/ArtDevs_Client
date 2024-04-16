@@ -1,6 +1,7 @@
 "use client";
 
 import { useDrawer } from "@/lib/custom.content";
+
 import {
   Box,
   Button,
@@ -11,8 +12,8 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
-import useSWR, { SWRResponse } from "swr";
+import { useEffect, useState } from "react";
+import useSWR, { SWRResponse, mutate } from "swr";
 import { sendRequest } from "../utils/api";
 import { CubeSpan } from "../utils/component.global";
 import {
@@ -20,20 +21,31 @@ import {
   GLOBAL_BG_BLUE_900,
   GLOBAL_BOXSHADOW,
   GLOBAL_COLOR_WHITE,
+  GLOBAL_SEND_FRIEND,
   GLOBAL_URL,
 } from "../utils/veriable.global";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+
 interface IPros {
   session: User;
 }
+
 const HomeFriend = ({ session }: IPros) => {
+  const socket = new SockJS("http://localhost:8080/friend");
+  const stompClient = Stomp.over(socket);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
   const [snackbar3Open, setSnackbar3Open] = useState(false);
   const [snackbar4Open, setSnackbar4Open] = useState(false);
+  const [snackbar5Open, setSnackbar5Open] = useState(false);
+  const [listDataUserSuitable, setListDataUserSuitable] = useState<
+    UserAction[]
+  >([]);
+  const [listDataSendFriend, setListDataSendFriend] = useState<Relation[]>([]);
   const { drawerOpen } = useDrawer();
 
   let pageNumber: number = 0;
-
   const fetchDataUserAction = async (url: string) => {
     return await sendRequest<UserAction[]>({
       url: url,
@@ -56,6 +68,11 @@ const HomeFriend = ({ session }: IPros) => {
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
+  useEffect(() => {
+    if (listUserSuitable) {
+      setListDataUserSuitable(listUserSuitable);
+    }
+  }, [listUserSuitable]);
 
   const fetchDataRelation = async (url: string) => {
     return await sendRequest<Relation[]>({
@@ -72,15 +89,22 @@ const HomeFriend = ({ session }: IPros) => {
     error: ErrorSendFriend,
     isLoading: loadingSendFriend,
   }: SWRResponse<Relation[], any> = useSWR(
-    "http://localhost:8080/api/get-request-friend",
+    GLOBAL_URL + "/api/get-request-friend",
     fetchDataRelation,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-  console.log("check list user Suitable home friend", listUserSuitable);
-  console.log("check list sendfriend home friend", listSendFriend);
+
+  useEffect(() => {
+    if (listSendFriend) {
+      setListDataSendFriend(listSendFriend);
+    }
+  }, [listSendFriend]);
+
+  // console.log("check list user Suitable home friend", listUserSuitable);
+  // console.log("check list sendfriend home friend", listSendFriend);
   //End Fetch Data
 
   // add friend
@@ -115,12 +139,23 @@ const HomeFriend = ({ session }: IPros) => {
       const apiResult = await acceptAddfriend(UserId);
 
       console.log("test Result" + apiResult);
-      // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
       if (apiResult === true) {
-        // Thành công, chuyển hướng đến trang mới
         showSnackbar();
+        const relation: RelationNotificationDTO = {
+          userAction: session.user.userId,
+          userReceive: UserId,
+          createDate: new Date(),
+          typeRelation: true,
+        };
+        stompClient.send(
+          `${GLOBAL_SEND_FRIEND}/${UserId}`,
+          {},
+          JSON.stringify(relation)
+        );
+        setListDataSendFriend(
+          listDataSendFriend.filter((i) => i.userAction.userId != UserId)
+        );
       } else {
-        // Xử lý khi có lỗi trong cuộc gọi API
         console.error("Match request failed.");
       }
     } catch (error) {
@@ -152,25 +187,44 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string) => {
+  const handlerefusedAddfriend = async (UserId: string, type: boolean) => {
     try {
-      // Gọi hàm thực hiện cuộc gọi API
       const apiResult = await refusedAddfriend(UserId);
 
       console.log("test Result" + apiResult);
-      // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
       if (apiResult === true) {
-        // Thành công, chuyển hướng đến trang mới
-        showSnackbar2();
+        if (type) {
+          showSnackbar2();
+          setListDataSendFriend(
+            listDataSendFriend?.filter((i) => i.userAction.userId != UserId)
+          );
+        } else {
+          showSnackbar5();
+        }
+        setListDataUserSuitable(
+          listDataUserSuitable?.map((t) => {
+            if (t.userId == UserId) {
+              return { ...t, sendStatus: false };
+            }
+            return t;
+          })
+        );
       } else {
-        // Xử lý khi có lỗi trong cuộc gọi API
-        console.error("Match request failed.");
+        setListDataUserSuitable(
+          listDataUserSuitable?.map((t) => {
+            if (t.userId == UserId) {
+              return { ...t, sendStatus: false };
+            }
+            return t;
+          })
+        );
+
+        console.log("Match request failed.");
       }
     } catch (error) {
       console.error("Error sending match:", error);
     }
   };
-  //End Request Friend
 
   //Send add Friend
   const sendAddfriend = async (UserId: string): Promise<boolean> => {
@@ -202,11 +256,31 @@ const HomeFriend = ({ session }: IPros) => {
       // Gọi hàm thực hiện cuộc gọi API
       const apiResult = await sendAddfriend(UserId);
 
-      console.log("test Result" + apiResult);
+      console.log("test Result: " + apiResult);
       // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
       if (apiResult === true) {
         // Thành công, chuyển hướng đến trang mới
         showSnackbar3();
+        setListDataUserSuitable(
+          listDataUserSuitable?.map((t) => {
+            if (t.userId == UserId) {
+              return { ...t, sendStatus: true };
+            }
+            return t;
+          })
+        );
+        const relation: RelationNotificationDTO = {
+          userAction: session.user.userId,
+          userReceive: UserId,
+          createDate: new Date(),
+          typeRelation: false,
+        };
+        stompClient.send(
+          `${GLOBAL_SEND_FRIEND}/${UserId}`,
+          {},
+          JSON.stringify(relation)
+        );
+        // console.log(listUserSuitable);
       } else {
         // Xử lý khi có lỗi trong cuộc gọi API
         console.error("Match request failed.");
@@ -252,6 +326,9 @@ const HomeFriend = ({ session }: IPros) => {
       if (apiResult === true) {
         // Thành công, chuyển hướng đến trang mới
         showSnackbar4();
+        setListDataUserSuitable(
+          listDataUserSuitable?.filter((t) => t.userId != UserId)
+        );
       } else {
         // Xử lý khi có lỗi trong cuộc gọi API
         console.error("Match request failed.");
@@ -261,6 +338,37 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
   //End add Friend
+
+  const connectAndSubscribe = () => {
+    stompClient.connect(
+      {},
+      () => {
+        console.log("Connected to WebSocket server home friend");
+        stompClient.subscribe(
+          `/user/${session?.user?.userId}/friend`,
+          (message) => {
+            if (message) {
+              const data: RelaNotiDTO = JSON.parse(message.body);
+              console.log(data);
+              mutate(
+                GLOBAL_URL + "/api/get-request-friend",
+                fetchDataUserAction(GLOBAL_URL + "/api/get-request-friend"),
+                false
+              );
+            }
+          }
+        );
+      },
+      (error) => {
+        console.error("Error connecting to WebSocket server:", error);
+      }
+    );
+  };
+  useEffect(() => {
+    if (session) {
+      connectAndSubscribe();
+    }
+  }, [session]);
 
   //Snackbar
   const showSnackbar = () => {
@@ -275,11 +383,15 @@ const HomeFriend = ({ session }: IPros) => {
 
   const showSnackbar3 = () => {
     setSnackbar3Open(true);
-    setTimeout(() => setSnackbar2Open(false), 10000);
+    setTimeout(() => setSnackbar3Open(false), 10000);
   };
   const showSnackbar4 = () => {
     setSnackbar4Open(true);
-    setTimeout(() => setSnackbar2Open(false), 10000);
+    setTimeout(() => setSnackbar4Open(false), 10000);
+  };
+  const showSnackbar5 = () => {
+    setSnackbar5Open(true);
+    setTimeout(() => setSnackbar5Open(false), 10000);
   };
   //End Snack Bar
 
@@ -348,16 +460,17 @@ const HomeFriend = ({ session }: IPros) => {
             justifyContent: "flex-start",
           }}
         >
-          {listSendFriend &&
-            listSendFriend?.map((item) => (
+          {listDataSendFriend &&
+            listDataSendFriend?.map((item) => (
               <Card
+                key={item.id + "listSendFriend"}
                 sx={{
                   backgroundColor: "#c0c0d7",
                   marginTop: "24px",
                   marginLeft: "24px",
                   width: { xs: "230px" },
 
-                  flexGrow: listSendFriend.length >= 12 ? 1 : "auto",
+                  flexGrow: listDataSendFriend.length >= 12 ? 1 : "auto",
                 }}
               >
                 <CardMedia
@@ -407,7 +520,7 @@ const HomeFriend = ({ session }: IPros) => {
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      handlerefusedAddfriend(item?.userAction?.userId)
+                      handlerefusedAddfriend(item?.userAction?.userId, true)
                     }
                     sx={{
                       borderRadius: "30px",
@@ -475,15 +588,16 @@ const HomeFriend = ({ session }: IPros) => {
             justifyContent: "flex-start",
           }}
         >
-          {listUserSuitable &&
-            listUserSuitable?.map((item) => (
+          {listDataUserSuitable &&
+            listDataUserSuitable?.map((item) => (
               <Card
+                key={item.userId}
                 sx={{
                   backgroundColor: "#c0c0d7",
                   marginTop: "24px",
                   marginLeft: "24px",
                   width: { xs: "215px" },
-                  flexGrow: listUserSuitable.length >= 12 ? 1 : "auto",
+                  flexGrow: listDataUserSuitable.length >= 12 ? 1 : "auto",
                 }}
               >
                 <CardMedia
@@ -511,7 +625,8 @@ const HomeFriend = ({ session }: IPros) => {
                     {item.fullname}
                   </Typography>
                 </CardContent>
-                <CardActions
+
+                {/* <CardActions
                   sx={{
                     display: "flex",
 
@@ -560,28 +675,91 @@ const HomeFriend = ({ session }: IPros) => {
                         transform: "scale(1.03)",
                         backgroundColor: "#e3dede",
                         // color: GLOBAL_COLOR_WHITE,
-                        outline: "none",
-                        border: "none",
-                      },
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     marginLeft: "4px",
-                      //     paddingX: "10px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     marginLeft: "8px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
+                        outline: "none", */}
+
+                {!item.sendStatus ? (
+                  <CardActions
+                    sx={{
+                      display: "flex",
+
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
                   >
-                    Xóa
-                  </Box>
-                </CardActions>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => handsenddAddfriend(item?.userId)}
+                      sx={{
+                        borderRadius: "30px",
+                      }}
+                    >
+                      Kết Bạn
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        handremoveUserofListfriendSuitable(item?.userId)
+                      }
+                      sx={{
+                        borderRadius: "30px",
+                        backgroundColor: "#eeeeee",
+                        color: "#4d3869",
+                        border: "none",
+                        marginLeft: "4px",
+                        "&:hover": {
+                          backgroundColor: "#c7c7c7",
+                          outline: "none",
+                          border: "none",
+                        },
+                      }}
+                    >
+                      Xóa
+                    </Button>
+                  </CardActions>
+                ) : (
+                  <CardActions
+                    sx={{
+                      display: "flex",
+
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() =>
+                        handlerefusedAddfriend(item?.userId, false)
+                      }
+                      sx={{
+                        borderRadius: "30px",
+                      }}
+                    >
+                      Hủy kết Bạn
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() =>
+                        handremoveUserofListfriendSuitable(item?.userId)
+                      }
+                      sx={{
+                        borderRadius: "30px",
+                        backgroundColor: "#eeeeee",
+                        color: "#4d3869",
+                        border: "none",
+                        marginLeft: "4px",
+                        "&:hover": {
+                          backgroundColor: "#c7c7c7",
+                          outline: "none",
+                          border: "none",
+                        },
+                      }}
+                    >
+                      Xóa
+                    </Button>
+                  </CardActions>
+                )}
               </Card>
             ))}
         </Box>
@@ -608,7 +786,7 @@ const HomeFriend = ({ session }: IPros) => {
       </CardActions>
       <Snackbar
         open={snackbarOpen}
-        message="Addfriend successfully!"
+        message="Thêm bạn thành công!"
         autoHideDuration={3000}
         onClose={() => setSnackbarOpen(false)}
         sx={{
@@ -618,32 +796,38 @@ const HomeFriend = ({ session }: IPros) => {
       />
       <Snackbar
         open={snackbar2Open}
-        message="Refused to make friends!"
+        message="Từ chối kết bạn!"
         autoHideDuration={3000}
         onClose={() => setSnackbar2Open(false)}
         sx={{
           color: "black",
-          backgroundColor: "##e60839",
         }}
       />
       <Snackbar
         open={snackbar3Open}
-        message="Send addfriend successfully!"
+        message="Gừi lời mời kết bạn thành công!"
         autoHideDuration={3000}
-        onClose={() => setSnackbar2Open(false)}
+        onClose={() => setSnackbar3Open(false)}
         sx={{
           color: "black",
-          backgroundColor: "##e60839",
         }}
       />
       <Snackbar
         open={snackbar4Open}
-        message="Remove Account of Suitable List Friend successfully!"
+        message="Đã xóa tài khoản khỏi danh sách gợi ý!"
         autoHideDuration={3000}
-        onClose={() => setSnackbar2Open(false)}
+        onClose={() => setSnackbar4Open(false)}
         sx={{
           color: "black",
-          backgroundColor: "##e60839",
+        }}
+      />
+      <Snackbar
+        open={snackbar5Open}
+        message="Hủy gửi lời mời kết bạn!"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar5Open(false)}
+        sx={{
+          color: "black",
         }}
       />
     </Box>

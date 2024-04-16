@@ -14,6 +14,8 @@ import ShareIcon from "@mui/icons-material/Share";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
+import * as nsfwjs from "nsfwjs";
+import { badWords, blackList } from "vn-badwords";
 import {
   Alert,
   AppBar,
@@ -424,6 +426,7 @@ const PostProfile = ({
   const [openBackdrop, setOpenBackdrop] = React.useState(false);
   const [hashtagData, setHashtagData] = useState<HashtagInfor[]>([]);
   const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+  const [timerContent, setTimerContent] = useState<NodeJS.Timeout | null>(null);
   const [postModal, setPostModal] = useState<ResPost | null>(null);
   const [postData, setPostData] = useState<AddPost>({
     postId: "",
@@ -538,6 +541,34 @@ const PostProfile = ({
       ...prevData,
       content: value,
     }));
+    if (timer) {
+      clearTimeout(timer);
+    }
+
+    const newTimer = setTimeout(async () => {
+      console.log("Stop typing");
+      const content = badWords(value, {
+        replacement: "*",
+        blackList: (defaultList) => [
+          ...defaultList,
+          "mẹ mày",
+          "cc",
+          "nigga",
+          "đmm",
+          "mm",
+          "đmm",
+        ],
+      });
+      console.log(content);
+      if (value.trim() != "") {
+        setPostData((prevData) => ({
+          ...prevData,
+          content: content.toString(),
+        }));
+      }
+    }, 1000);
+
+    setTimer(newTimer);
   };
   const formatHashtagText = (hashtagText: any) => {
     if (hashtagText && typeof hashtagText === "string") {
@@ -584,12 +615,14 @@ const PostProfile = ({
 
     setTimer(newTimer);
   };
-  const handleChangePicturePost = (
+  const handleChangePicturePost = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const fileInput = event.target as HTMLInputElement;
     const selected = fileInput.files;
+
     console.log(selected);
+
     setPostData((prevData) => ({
       ...prevData,
       listImageofPost: [
@@ -597,6 +630,16 @@ const PostProfile = ({
         ...(selected ? Array.from(selected) : []),
       ] as File[],
     }));
+
+    // nsfwjs
+    //   .load()
+    //   .then(function (model) {
+    //     // Classify the image
+    //     return model.classify(selected![0]);
+    //   })
+    //   .then(function (predictions) {
+    //     console.log("Predictions: ", predictions);
+    //   });
   };
   const handleSaveEditPost = async () => {
     console.log(postData);
@@ -2152,8 +2195,12 @@ const PostProfile = ({
                     <a href="#">
                       <img
                         src={`${
-                          session?.user?.profileImageUrl
+                          url == "post-by-user-logged"
                             ? session?.user?.profileImageUrl
+                              ? session?.user?.profileImageUrl
+                              : "/profile/user.jpg"
+                            : item.postId.userPost.profilePicUrl
+                            ? item.postId.userPost.profilePicUrl
                             : "/profile/user.jpg"
                         }`}
                       />
