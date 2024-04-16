@@ -73,6 +73,7 @@ import {
 } from "../utils/veriable.global";
 import IconTabs from "./header.nav";
 import SearchComponent from "./header.search";
+import { useRouter } from "next/navigation";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
@@ -114,6 +115,7 @@ interface IPros {
 }
 
 export default function AppHeader(pros: IPros) {
+  const router = useRouter();
   const [openNoti, setOpenNoti] = React.useState(false);
   const [dataNotification, setDatanotification] =
     React.useState<notificationToGetDTO>();
@@ -275,6 +277,9 @@ export default function AppHeader(pros: IPros) {
   };
 
   const menuId = "primary-search-account-menu";
+  const handleActivity = () => {
+    router.push("/activity");
+  };
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -292,7 +297,7 @@ export default function AppHeader(pros: IPros) {
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      <MenuItem onClick={handleActivity}>Lịch sử hoạt động</MenuItem>
     </Menu>
   );
 

@@ -4,6 +4,7 @@ import {
   Grid,
   IconButton,
   InputBase,
+  Pagination,
   Paper,
   Stack,
   Typography,
@@ -21,23 +22,33 @@ import {
   GLOBAL_URL,
 } from "../utils/veriable.global";
 import HashtagSkeleton from "./home.hashtag.skeletion";
-import { debounce } from "lodash";
-import { METHODS } from "http";
+import InfiniteScroll from "./Infinite.scroll";
+import { Loader } from "../utils/component.global";
 
 const HomeHashtag = () => {
   const router = useRouter();
   const [searchHashtag, setSearchHashTag] = useState<string>("");
+  const [dataHashtag, setDatahashtag] = useState<HashtagInfor[]>([]);
+
   const fetchData = async (url: string) => {
-    return await sendRequest<HashtagInfor[]>({
+    return await sendRequest<IModelPaginate<HashtagInfor>>({
       url: url,
       method: "GET",
     });
   };
-  const { data, error, isLoading, mutate }: SWRResponse<HashtagInfor[], any> =
-    useSWR(GLOBAL_URL + "/api/detailhashtag", fetchData, {
+  const {
+    data,
+    error,
+    isLoading,
+    mutate,
+  }: SWRResponse<IModelPaginate<HashtagInfor>, any> = useSWR(
+    GLOBAL_URL + "/api/detailhashtag",
+    fetchData,
+    {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
-    });
+      revalidateOnFocus: false, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+    }
+  );
 
   const handleRedirectHashtag = (hashtagText: string) => {
     router.push(`/hash-tag/${hashtagText}`);
@@ -52,17 +63,40 @@ const HomeHashtag = () => {
       fetchHashtagSearch(value);
     }, 1500);
   };
+
   const fetchHashtagSearch = async (v: string) => {
-    const newData = await sendRequest<HashtagInfor[]>({
+    const newData = await sendRequest<IModelPaginate<HashtagInfor>>({
       url: GLOBAL_URL + `/api/search-detailhashtag`,
       method: "GET",
       queryParams: { keyword: v },
     });
-    console.log(">>> check newData: ", newData);
     if (newData) {
       mutate(newData, false);
     }
   };
+  console.log(">>> check data: ", data);
+
+  const [page, setPage] = useState<number>(0);
+
+  useEffect(() => {
+    (async () => {
+      if (page) {
+        console.log(">>> check data: 12312312");
+        const response = await sendRequest<IModelPaginate<HashtagInfor>>({
+          url: GLOBAL_URL + `/api/detailhashtag`,
+          method: "GET",
+          queryParams: { page: page },
+        });
+        const has = data?.result ? data?.result : [];
+        const resHash = response?.result ? response?.result : [];
+        const newData: HashtagInfor[] = [...has, ...resHash];
+        setDatahashtag(newData);
+        mutate({ meta: response?.meta, result: newData! }, false);
+      }
+    })();
+  }, [page]);
+  console.log(">>> check page: ", page);
+  console.log(">>> check data?.meta?.: ", data?.meta?.total);
   if (isLoading) {
     return (
       <Box
@@ -125,124 +159,140 @@ const HomeHashtag = () => {
           <SearchIcon />
         </IconButton>
       </Paper>
-      <Grid
-        container
-        columns={12}
-        spacing={2}
-        sx={{
-          backgroundColor: "transparent",
-          justifyContent: "flex-start",
-        }}
+      <InfiniteScroll
+        loader={<Loader />}
+        className="w-[800px] mx-auto my-10"
+        fetchMore={() => setPage((prev) => prev + 1)}
+        hasMore={data && page < data?.meta?.total}
+        endMessage={
+          <Box
+            sx={{ fontWeight: "bold", textAlign: "center", margin: "12px 0" }}
+          >
+            Bạn đã xem hết !
+          </Box>
+        }
       >
-        {data &&
-          data?.map((item, index) => (
-            <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
-              <Card sx={{ padding: "12px" }}>
-                <Stack spacing={1}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "center",
-                    }}
-                  >
+        <Grid
+          container
+          columns={12}
+          spacing={2}
+          sx={{
+            backgroundColor: "transparent",
+            justifyContent: "flex-start",
+          }}
+        >
+          {data &&
+            data?.result?.map((item, index) => (
+              <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
+                <Card sx={{ padding: "12px" }}>
+                  <Stack spacing={1}>
                     <Box
-                      onClick={() => {
-                        handleRedirectHashtag(item?.hashtagText);
-                      }}
-                      sx={{
-                        width: "auto",
-                        padding: "0 12px",
-                        minWidth: "80px",
-                        textDecoration: "none",
-                        fontWeight: "bold",
-                        boxShadow: `0 0 3px 1px ${GLOBAL_BG_BLUE_900}`,
-                        textAlign: "center",
-                        color: GLOBAL_BG_BLUE_900,
-                        borderRadius: "16px",
-                        transition: "all .2s",
-                        cursor: "pointer",
-                        "&:hover": {
-                          transform: "scale(1.03)",
-                        },
-                      }}
-                    >
-                      {item?.hashtagText}
-                    </Box>
-                  </Box>
-                  <Box
-                    height={100}
-                    sx={{
-                      fontSize: { md: "14px", lg: "16px" },
-                      textAlign: "justify",
-                      lineHeight: "1.4",
-                      maxHeight: 4 * 1.4 + "em",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 4,
-                      color: GLOBAL_COLOR_MENU,
-                    }}
-                  >
-                    {item?.description ? item?.description : "..."}
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      paddingBottom: "8px",
-                      color: GLOBAL_COLOR_MENU,
-                    }}
-                  >
-                    <Box
-                      width={100}
-                      height={30}
                       sx={{
                         display: "flex",
                         justifyContent: "flex-start",
                         alignItems: "center",
-                        fontSize: "12px",
                       }}
                     >
-                      <Typography
+                      <Box
+                        onClick={() => {
+                          handleRedirectHashtag(item?.hashtagText);
+                        }}
                         sx={{
+                          width: "auto",
+                          padding: "0 12px",
+                          minWidth: "80px",
+                          textDecoration: "none",
                           fontWeight: "bold",
-                          marginRight: "4px",
-                          fontSize: "14px",
+                          boxShadow: `0 0 3px 1px ${GLOBAL_BG_BLUE_900}`,
+                          textAlign: "center",
+                          color: GLOBAL_BG_BLUE_900,
+                          borderRadius: "16px",
+                          transition: "all .2s",
+                          cursor: "pointer",
+                          "&:hover": {
+                            transform: "scale(1.03)",
+                          },
                         }}
                       >
-                        {item?.totalPostUseHashtag}
-                      </Typography>
-                      bài viết
+                        {item?.hashtagText}
+                      </Box>
                     </Box>
                     <Box
-                      width={100}
-                      height={30}
+                      height={100}
                       sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                        flexDirection: "column",
-                        fontSize: "12px",
+                        fontSize: { md: "14px", lg: "16px" },
+                        textAlign: "justify",
+                        lineHeight: "1.4",
+                        maxHeight: 4 * 1.4 + "em",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitBoxOrient: "vertical",
+                        WebkitLineClamp: 4,
+                        color: GLOBAL_COLOR_MENU,
                       }}
                     >
-                      Ngày tạo{" "}
-                      <Typography sx={{ fontWeight: "bold", fontSize: "14px" }}>
-                        {formatDayVN(item?.timeCreate)}
-                      </Typography>
+                      {item?.description ? item?.description : "..."}
                     </Box>
-                  </Box>
-                </Stack>
-              </Card>
-            </Grid>
-          ))}
-        {data?.length == 0 ? (
-          <Box sx={{ margin: "16px" }}>Không tìm thấy hashtag !</Box>
-        ) : (
-          ""
-        )}
-      </Grid>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        paddingBottom: "8px",
+                        color: GLOBAL_COLOR_MENU,
+                      }}
+                    >
+                      <Box
+                        width={100}
+                        height={30}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-start",
+                          alignItems: "center",
+                          fontSize: "12px",
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontWeight: "bold",
+                            marginRight: "4px",
+                            fontSize: "14px",
+                          }}
+                        >
+                          {item?.totalPostUseHashtag}
+                        </Typography>
+                        bài viết
+                      </Box>
+                      <Box
+                        width={100}
+                        height={30}
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "flex-start",
+                          flexDirection: "column",
+                          fontSize: "12px",
+                        }}
+                      >
+                        Ngày tạo{" "}
+                        <Typography
+                          sx={{ fontWeight: "bold", fontSize: "14px" }}
+                        >
+                          {formatDayVN(item?.timeCreate)}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Stack>
+                </Card>
+              </Grid>
+            ))}
+          {data?.result?.length == 0 ? (
+            <Box sx={{ margin: "16px" }}>Không tìm thấy hashtag !</Box>
+          ) : (
+            ""
+          )}
+        </Grid>
+      </InfiniteScroll>
     </Box>
   );
 };

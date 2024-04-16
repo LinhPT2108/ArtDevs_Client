@@ -454,4 +454,27 @@ declare global {
     totalReport: number;
     userId: string;
   }
+
+  interface Reponse<T> {
+    statusCode: number;
+    message: string;
+    model: Feedback;
+  }
+
+  interface Feedback {
+    id: number;
+    title: string;
+    content: string;
+    createFeedback: Date;
+    dateHandle: Date | null;
+    status: boolean;
+    user: UserLogin;
+    listImage: File[] | null;
+  }
+  interface ImageofFeedback {
+    id: number;
+    cloudinaryPublicId: string;
+    imageOfFeedbackUrl: string;
+    time: string;
+  }
 }

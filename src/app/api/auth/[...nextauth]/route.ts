@@ -56,7 +56,7 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, profile, trigger }) {
+    async jwt({ token, user, account, profile, trigger, session }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
         const res = await sendRequest<IBackendRes<UserLogin>>({
           // url: "https://artdevs-server.azurewebsites.net/api/user-social",
@@ -66,18 +66,18 @@ export const authOptions: AuthOptions = {
           body: {
             lastName: "",
             middleName: "",
-            firstName: `${token.name}`,
-            email: `${token.email}`,
+            firstName: `${token?.name}`,
+            email: `${token?.email}`,
             password: "",
             dateOfBirth: "",
             provider: `${account?.provider}`,
-            profilePicUrl: `${token.picture}`,
+            profilePicUrl: `${token?.picture}`,
             city: "",
             district: "",
             ward: "",
             role: { id: 2, roleName: "user" },
             userId: generateUniqueId(),
-            username: `${token.name}`,
+            username: `${token?.name}`,
             isOnline: false,
             listDemandOfUser: [],
             listSkillOfUser: [],
@@ -105,6 +105,9 @@ export const authOptions: AuthOptions = {
         token.user = user.userdto;
         //@ts-ignore
         setGlobalUser(user);
+      }
+      if (trigger === "update") {
+        token = session;
       }
       return token;
     },

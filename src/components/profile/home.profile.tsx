@@ -34,6 +34,8 @@ import { deleteSpace, formatBirthDay } from "../utils/utils";
 import { GLOBAL_URL } from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import CloseIcon from "@mui/icons-material/Close";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -77,10 +79,13 @@ const HomeProfile = ({ session }: IPros) => {
   let lastName = session?.user?.lastName ? session?.user?.lastName : "";
   let fullname = firstName + " " + middleName + " " + lastName;
 
+  const { data: sessions, update: sessionUpdate } = useSession();
+  const router = useRouter();
+  console.log(">>> check sessions?.user: ", sessions?.user?.lastName);
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
-  console.log(">>> check session: ", session);
   //xử lý mở modal cập nhật
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
@@ -171,6 +176,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataWard();
   }, [district]);
+
   useEffect(() => {
     const fetchDataDemand = async () => {
       try {
@@ -187,31 +193,7 @@ const HomeProfile = ({ session }: IPros) => {
     fetchDataDemand();
   }, []);
   //xử lý cập nhật thông tin người dùng
-  const [data, setData] = useState<UserLogin>(
-    session?.user
-    // {
-    // lastName: session?.user?.lastName ? session?.user?.lastName : "",
-    // middleName: session?.user?.middleName ? session?.user?.middleName : "",
-    // firstName: session?.user?.firstName ? session?.user?.firstName : "",
-    // email: session?.user?.email ? session?.user?.email : "",
-    // password: session?.user?.password ? session?.user?.password : "",
-    // birthday: session?.user?.birthday ? session?.user?.birthday : "",
-    // gender: session?.user?.gender ? session?.user?.gender : 0,
-    // city: session?.user?.city ? session?.user?.city : "",
-    // district: session?.user?.district ? session?.user?.district : "",
-    // ward: session?.user?.ward ? session?.user?.email : "",
-    // role: session?.user?.role,
-    // userId: session?.user?.userId ? session?.user?.userId : "",
-    // username: session?.user?.username ? session?.user?.username : "",
-    // isOnline: true,
-    // listDemandOfUser: session?.user?.listDemandOfUser
-    //   ? session?.user?.listDemandOfUser
-    //   : [],
-    // listSkillOfUser: session?.user?.listSkillOfUser
-    //   ? session?.user?.listSkillOfUser
-    //   : [],
-    // }
-  );
+  const [data, setData] = useState<UserLogin>(session?.user);
   const handleLastName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
@@ -330,9 +312,9 @@ const HomeProfile = ({ session }: IPros) => {
             ...data,
           },
         };
-        console.log(">>> check local: ", sessionStorage.getItem("userdto"));
+        await sessionUpdate(updatedUserData);
+        router.refresh();
         handleClose();
-        // localStorage.setItem("user", JSON.stringify(updatedUserData));
       }
     } catch (error) {
       console.error("Error fetching data:", error);

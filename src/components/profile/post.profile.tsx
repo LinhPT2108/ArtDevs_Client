@@ -228,6 +228,7 @@ interface IPros {
   hashTagText?: string;
   profile?: string;
   search?: string;
+  friendPost?: string;
   searchContent?: string | null;
 }
 
@@ -237,6 +238,7 @@ const PostProfile = ({
   profile,
   search,
   searchContent,
+  friendPost,
 }: IPros) => {
   const socket = new SockJS(GLOBAL_URL + GLOBAL_URL_SOCKET);
   const stompClient = Stomp.over(socket);
@@ -262,6 +264,8 @@ const PostProfile = ({
     ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
     : search
     ? search
+    : friendPost
+    ? friendPost
     : "/news-feed";
 
   console.log(">>> check session: ", session);

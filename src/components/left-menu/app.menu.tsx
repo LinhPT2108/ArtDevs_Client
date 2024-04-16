@@ -98,10 +98,10 @@ const AppMenu = ({ session }: { session: User }) => {
     },
     {
       index: 6,
-      content: "Near post",
+      content: "Bài viết của bạn bè",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/near-post",
+      url: "/friend-post",
     },
     {
       index: 7,
