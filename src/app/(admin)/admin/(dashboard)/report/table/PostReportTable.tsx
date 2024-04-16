@@ -45,18 +45,19 @@ type Props = {
   columnsData: any[];
   tableData: Post[];
   handleUnlockPost: (postId: string) => void;
+  
 };
 
 const PostReportTable = (props: Props) => {
   const { columnsData, tableData, handleUnlockPost } = props;
-  const [openModal, setOpenModal] = React.useState(false);
-  const [openSnackbar, setopenSnackbar] = React.useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [openSnackbar, setopenSnackbar] = useState(false);
 
-  const [message, setMessage] = React.useState("");
+  const [message, setMessage] = useState("");
   const [post, setPost] = useState<Post | null>(null);
   const [selectedRow, setSelectedRow] = useState<Row<Post> | null>(null);
 
-  const [openDeletePostDialog, setOpenDeletePostDialog] = React.useState(false);
+  const [openDeletePostDialog, setOpenDeletePostDialog] = useState(false);
 
   const handleDeletePost = (postId: string) => {
     setOpenDeletePostDialog(true);

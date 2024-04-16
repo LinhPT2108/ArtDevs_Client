@@ -113,6 +113,7 @@ const Example = () => {
     }
   );
 
+  //end sử lý lấy dữ liệu
   const handleUnlockPost = (postId: string) => {
     const newListPostisDel = dataGetAll?.model?.listPostisDel.filter(
       (post) => post?.postId != postId
@@ -130,7 +131,42 @@ const Example = () => {
       setDataForTablePostReport(newListPostisDel);
     }
   };
-  //end sử lý lấy dữ liệu
+
+  const handleLockPost = (postId: string) => {
+    const newListReport = dataGetAll?.model?.listReport.filter(
+      (report) => report.reportPostId != postId
+    );
+    if (newListReport) {
+      const updatedData = {
+        ...dataGetAll,
+        model: {
+          ...dataGetAll?.model,
+          listReport: newListReport,
+        },
+      };
+      //@ts-ignore
+      mutate(updatedData, false);
+      setDataForTableReport(newListReport);
+    }
+  };
+
+  const handleLockReport = (reportId: number) => {
+    const newListReport = dataGetAll?.model?.listReport.filter(
+      (report) => report.id != reportId
+    );
+    if (newListReport) {
+      const updatedData = {
+        ...dataGetAll,
+        model: {
+          ...dataGetAll?.model,
+          listReport: newListReport,
+        },
+      };
+      //@ts-ignore
+      mutate(updatedData, false);
+      setDataForTableReport(newListReport);
+    }
+  };
 
   // Sử dụng hook useEffect để cập nhật state dataForTable khi dataGetAll thay đổi
 
@@ -209,6 +245,8 @@ const Example = () => {
           <ReportTable
             columnsData={columnsDataReport}
             tableData={dataForTableReport}
+            handlelockPost={handleLockPost}
+            handlelockRePort={handleLockReport}
           />
         </Box>
       </Modal>

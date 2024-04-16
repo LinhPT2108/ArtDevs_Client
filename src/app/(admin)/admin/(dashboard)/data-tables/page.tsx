@@ -1,6 +1,6 @@
+"use client";
 import { type Metadata } from "next";
-import CheckTable from "./components/CheckTable";
-import DevelopmentTable from "./components/DevelopmentTable";
+
 import ColumnsTable from "./components/ColumnsTable";
 import ComplexTable from "../report/table/ReportTable";
 
@@ -9,37 +9,28 @@ import {
   columnsDataCheck,
   columnsDataColumns,
   columnsDataComplex,
+  columnsHashtagTable,
+  columnsProgramingLanguageTable,
 } from "./variables/columnsData";
 import tableDataDevelopment from "./variables/tableDataDevelopment.json";
 import tableDataCheck from "./variables/tableDataCheck.json";
 import tableDataColumns from "./variables/tableDataColumns.json";
 import tableDataComplex from "./variables/tableDataComplex.json";
+import HashtagTable from "./components/HashtagTable";
+import { sendRequest } from "@/components/utils/api";
+import useSWR, { SWRResponse } from "swr";
 
-export const metadata: Metadata = {
-  title: "DataTables | Horizon UI by Ories",
-};
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import { useState } from "react";
+import ProgamingLanguageTable from "./components/ProgamingLanguageTable";
+import DailyTraffic from "../dashboard/components/DailyTraffic";
 
 const DataTablesPage = () => {
   return (
     <div>
       <div className="mt-5 grid h-full grid-cols-1 gap-5 md:grid-cols-2">
-        <DevelopmentTable
-          columnsData={columnsDataDevelopment}
-          tableData={tableDataDevelopment}
-        />
-        <CheckTable columnsData={columnsDataCheck} tableData={tableDataCheck} />
-      </div>
-
-      <div className="mt-5 grid h-full grid-cols-1 gap-5 md:grid-cols-2">
-        <ColumnsTable
-          columnsData={columnsDataColumns}
-          tableData={tableDataColumns}
-        />
-
-        {/* <ComplexTable
-          columnsData={columnsDataComplex}
-          tableData={tableDataComplex}
-        /> */}
+        <HashtagTable columnsData={columnsHashtagTable} />
+        <ProgamingLanguageTable columnsData={columnsProgramingLanguageTable} />
       </div>
     </div>
   );
