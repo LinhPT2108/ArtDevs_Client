@@ -255,9 +255,6 @@ const ContactMenu = (pros: IPros) => {
           "&::-webkit-scrollbar": {
             width: "1px",
           },
-          "& .Mui-selected": {
-            backgroundColor: "none",
-          },
         }}
       >
         {rightMenu &&
@@ -305,7 +302,7 @@ const ContactMenu = (pros: IPros) => {
                               margin: " 0",
                             }}
                             key={index}
-                            selected={selectedIndex === index}
+                            // selected={selectedIndex === index}
                             onClick={() => {
                               if (pageUrl === "home") {
                                 toggleDrawer(anchor, true, item);

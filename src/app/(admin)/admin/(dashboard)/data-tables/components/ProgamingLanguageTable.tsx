@@ -78,10 +78,11 @@ const ProgamingLanguageTable = (props: Props) => {
     `${GLOBAL_URL}/api/admin/get-all-progaminglanguage`,
     fetchData,
     {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
   );
+  console.log(">>> check reponseAPI: ", reponseAPI);
   if (reponseAPI && !dataForTableLanguage.length) {
     setDataForTableLanguage(reponseAPI.model);
   }

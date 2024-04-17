@@ -79,10 +79,12 @@ const HashtagTable = (props: Props) => {
     `${GLOBAL_URL}/api/admin/get-all-hashtag`,
     fetchData,
     {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
   );
+  console.log(">>> check data123123: ", reponseAPI);
+
   if (reponseAPI && !dataForTableHashtag.length) {
     setDataForTableHashtag(reponseAPI.model);
   }
