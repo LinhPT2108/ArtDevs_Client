@@ -1,10 +1,9 @@
 "use client";
+import { useDrawer, useUser } from "@/lib/custom.content";
 import { Grid } from "@mui/material";
 import Box from "@mui/material/Box";
-import AppHeader from "./app.header";
-import { getValueTab, handleValueTab } from "../utils/veriable.global";
-import { useDrawer, useUser } from "@/lib/custom.content";
 import { useEffect } from "react";
+import AppHeader from "./app.header";
 
 interface HomeProps {
   user: User | null;
@@ -30,11 +29,9 @@ const HeaderWrapper = ({ user }: HomeProps) => {
         <Box component={Grid} item xs={16}>
           <AppHeader
             handleDrawerOpen={setDrawerOpen}
-            tabValue={getValueTab()}
-            handleChangeTab={handleValueTab}
             openContact={drawerOpen}
             pageUrl={"home"}
-            session ={user}
+            session={user}
           />
         </Box>
       </Grid>

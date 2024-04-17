@@ -109,8 +109,6 @@ function GrowTransition(props: GrowProps) {
 
 interface IPros {
   handleDrawerOpen: (openContact: boolean) => void;
-  tabValue: number;
-  handleChangeTab: (newValue: number) => void;
   openContact: boolean;
   pageUrl: string;
   session: User | null;
@@ -867,10 +865,7 @@ export default function AppHeader(pros: IPros) {
             <Link href="/">Art Devs</Link>
           </Typography> */}
           <SearchComponent />
-          <IconTabs
-            tabValue={pros?.tabValue}
-            handleChangeTab={pros?.handleChangeTab}
-          />
+          <IconTabs />
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { md: "flex" }, alignItems: "center" }}>
             <IconButton

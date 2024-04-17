@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
-import React from "react";
 import { sendRequest } from "../utils/api";
 import {
   GLOBAL_BG,
@@ -34,6 +33,8 @@ import {
   GLOBAL_COLOR_WHITE,
   GLOBAL_URL,
 } from "../utils/veriable.global";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -47,9 +48,21 @@ const style = {
   p: 4,
 };
 const AppMenu = ({ session }: { session: User }) => {
-  const [open, setOpen] = React.useState(false);
+  // lấy url hiện tại
+  const currentPath = usePathname();
+
+  //tạo biến router xử lý chuyển hướng tab
+  const router = useRouter();
+
+  // gắn giá trị định hình vị trí tab đang chọn
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+
+  //tạo biến xử lý modal đăng xuất
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  //tạo dữ liệu cứng trên menu trái
   const leftMenu = [];
   const info: ListItem[] = [
     {
@@ -135,7 +148,6 @@ const AppMenu = ({ session }: { session: User }) => {
   leftMenu.push(info);
   leftMenu.push(recent);
   const titleMenu = ["Thông tin", "Gần đây"];
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   const handleListItemClick = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
@@ -146,6 +158,25 @@ const AppMenu = ({ session }: { session: User }) => {
     }
     setSelectedIndex(index);
   };
+
+  // xử lý khi change tab
+  const handleChangeNavTab = () => {
+    if (currentPath == "/") {
+      setSelectedIndex(0);
+    } else if (currentPath == "/friend-post") {
+      setSelectedIndex(6);
+    } else if (currentPath == "/mentor") {
+      setSelectedIndex(1);
+    } else if (currentPath == "/profile") {
+      setSelectedIndex(4);
+    } else {
+      setSelectedIndex(null);
+    }
+  };
+
+  useEffect(() => {
+    handleChangeNavTab();
+  }, [currentPath]);
 
   const handler = async () => {
     try {
