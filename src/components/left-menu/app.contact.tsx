@@ -255,6 +255,9 @@ const ContactMenu = (pros: IPros) => {
           "&::-webkit-scrollbar": {
             width: "1px",
           },
+          "& .Mui-selected": {
+            backgroundColor: "none",
+          },
         }}
       >
         {rightMenu &&
@@ -270,9 +273,6 @@ const ContactMenu = (pros: IPros) => {
                   marginTop: "12px",
                   "& p": {
                     color: GLOBAL_COLOR_MENU,
-                  },
-                  "& .Mui-selected": {
-                    backgroundColor: "none",
                   },
                 }}
                 component="nav"

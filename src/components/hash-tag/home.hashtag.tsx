@@ -29,11 +29,13 @@ const HomeHashtag = () => {
   const router = useRouter();
   const [searchHashtag, setSearchHashTag] = useState<string>("");
   const [dataHashtag, setDatahashtag] = useState<HashtagInfor[]>([]);
+  const [page, setPage] = useState<number>(0);
 
   const fetchData = async (url: string) => {
     return await sendRequest<IModelPaginate<HashtagInfor>>({
       url: url,
       method: "GET",
+      queryParams: { keyword: "", page: page },
     });
   };
   const {
@@ -45,8 +47,8 @@ const HomeHashtag = () => {
     GLOBAL_URL + "/api/detailhashtag",
     fetchData,
     {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: false, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
   );
 
@@ -56,6 +58,7 @@ const HomeHashtag = () => {
 
   let typingTimeout: ReturnType<typeof setTimeout>;
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPage(0);
     const { value } = event.target;
     setSearchHashTag(value);
     clearTimeout(typingTimeout);
@@ -64,20 +67,28 @@ const HomeHashtag = () => {
     }, 1500);
   };
 
+  // const fetchHashtagSearch = async (v: string) => {
+  //   const newData = await sendRequest<IModelPaginate<HashtagInfor>>({
+  //     url: GLOBAL_URL + `/api/search-detailhashtag`,
+  //     method: "GET",
+  //     queryParams: { keyword: v, page: page },
+  //   });
+  //   if (newData) {
+  //     mutate(newData, false);
+  //   }
+  // };
+
   const fetchHashtagSearch = async (v: string) => {
     const newData = await sendRequest<IModelPaginate<HashtagInfor>>({
-      url: GLOBAL_URL + `/api/search-detailhashtag`,
+      url: GLOBAL_URL + `/api/detailhashtag`,
       method: "GET",
-      queryParams: { keyword: v },
+      queryParams: { keyword: v, page: page },
     });
     if (newData) {
       mutate(newData, false);
     }
   };
-  console.log(">>> check data: ", data);
-
-  const [page, setPage] = useState<number>(0);
-
+  console.log(">>> check page: ", page);
   useEffect(() => {
     (async () => {
       if (page) {
@@ -85,7 +96,7 @@ const HomeHashtag = () => {
         const response = await sendRequest<IModelPaginate<HashtagInfor>>({
           url: GLOBAL_URL + `/api/detailhashtag`,
           method: "GET",
-          queryParams: { page: page },
+          queryParams: { keyword: searchHashtag, page: page },
         });
         const has = data?.result ? data?.result : [];
         const resHash = response?.result ? response?.result : [];
@@ -94,9 +105,8 @@ const HomeHashtag = () => {
         mutate({ meta: response?.meta, result: newData! }, false);
       }
     })();
-  }, [page]);
-  console.log(">>> check page: ", page);
-  console.log(">>> check data?.meta?.: ", data?.meta?.total);
+  }, [page, searchHashtag]);
+  console.log(">>> check data: ", data);
   if (isLoading) {
     return (
       <Box
@@ -161,15 +171,20 @@ const HomeHashtag = () => {
       </Paper>
       <InfiniteScroll
         loader={<Loader />}
-        className="w-[800px] mx-auto my-10"
+        className=" my-10"
         fetchMore={() => setPage((prev) => prev + 1)}
-        hasMore={data && page < data?.meta?.total}
+        hasMore={data && page + 1 < data?.meta?.total}
+        totalPage={data ? data?.meta?.total : 1}
         endMessage={
-          <Box
-            sx={{ fontWeight: "bold", textAlign: "center", margin: "12px 0" }}
-          >
-            Bạn đã xem hết !
-          </Box>
+          data && data?.meta?.total > 1 ? (
+            <Box
+              sx={{ fontWeight: "bold", textAlign: "center", margin: "12px 0" }}
+            >
+              Bạn đã xem hết !
+            </Box>
+          ) : (
+            ""
+          )
         }
       >
         <Grid

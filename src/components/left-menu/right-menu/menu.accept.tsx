@@ -36,6 +36,10 @@ import {
   GLOBAL_COLOR_BLACK,
   GLOBAL_URL,
   GLOBAL_SEND_FRIEND,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_COLOR_WHITE,
+  GLOBAL_COLOR_MENU,
 } from "@/components/utils/veriable.global";
 import { useEffect, useState } from "react";
 
@@ -277,81 +281,16 @@ const UserAccept = ({ session }: IPros) => {
   const handleRedirectFriend = () => {
     router.push(`/friend`);
   };
-  // console.log("check data>>", data);
-  // return (
-  //   <Box
-  //     sx={{
-  //       width: "100%",
-  //       maxWidth: 250,
-  //       bgcolor: GLOBAL_BG,
-  //       borderRadius: "12px",
-  //       boxShadow: GLOBAL_BOXSHADOW,
-  //     }}
-  //   >
-  //     <List
-  //       sx={{
-  //         width: "100%",
-  //         borderRadius: "12px",
-  //         color: GLOBAL_COLOR_BLACK,
-  //         marginTop: "12px",
-  //         "& p": {
-  //           color: GLOBAL_COLOR_BLACK,
-  //         },
-  //       }}
-  //       className="rounded-md"
-  //       component="nav"
-  //       aria-label="main mailbox folders"
-  //       subheader={
-  //         <ListSubheader
-  //           sx={{
-  //             bgcolor: GLOBAL_BG,
-  //             color: GLOBAL_COLOR_BLACK,
-  //             fontWeight: "bold",
-  //             zIndex: "0",
-  //             position: "relative",
-  //             borderRadius: "12px",
-  //             "@media (min-width: 900px)": {
-  //               "&": {
-  //                 fontSize: "12px",
-  //               },
-  //             },
-  //             "@media (min-width: 1023px)": {
-  //               "&": {
-  //                 fontSize: "14px",
-  //               },
-  //             },
-  //           }}
-  //           component="div"
-  //           id="nested-list-subheader"
-  //         >
-  //           Yêu cầu kết bạn
-  //         </ListSubheader>
-  //       }
-  //     >
-  //       <Divider />
-  //       {data && data.length > 0 ? (
-  //         data.slice(0, 4).map((item, index) => {
-  //           return (
-  //             <Box
-  //               key={index}
-  //               sx={{
-  //                 paddingBottom: "24px",
-  //                 "& p": {
-  //                   fontSize: { md: "10px", lg: "14px" },
-  //                 },
-  //                 "& span": {
-  //                   fontSize: { md: "14px", lg: "16px" },
-  //                   overflow: "hidden",
-  //                   textOverflow: "ellipsis",
-  //                   whiteSpace: "nowrap",
-  //                 },
+
   if (data && data?.length > 0) {
     return (
       <Box
         sx={{
           width: "100%",
           maxWidth: 250,
-          bgcolor: "#293145",
+          bgcolor: GLOBAL_BG,
+          borderRadius: "12px",
+          boxShadow: GLOBAL_BOXSHADOW,
         }}
       >
         <Snackbar
@@ -376,92 +315,11 @@ const UserAccept = ({ session }: IPros) => {
                   <Box
                     padding={"5px"}
                     sx={{
-                      //                 color: "white",
-                      //                 backgroundColor: `gray`,
-                      //                 minWidth: "40px",
-                      //                 marginRight: { md: "6px", lg: "12px" },
-                      //                 borderRadius: "100%",
-                      //               }}
-                      //             >
-                      //               <Avatar
-                      //                 alt="Remy Sharp"
-                      //                 src={item.userAction.profilePicUrl || "/OIP.jpg"}
-                      //                 sx={{ width: 56, height: 56 }}
-                      //               />
-                      //             </ListItemIcon>
-                      //             <ListItemText
-                      //               primary={item.userAction.fullname}
-                      //               secondary={calculateTimeDifference(item?.timeRelation)}
-                      //             />
-                      //           </ListItemButton>
-                      //           <Stack
-                      //             direction="row"
-                      //             spacing={0}
-                      //             className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
-                      //             sx={{
-                      //               justifyContent: "space-evenly",
-                      //               "& .cancel": {
-                      //                 backgroundColor: "#eeeeee",
-                      //               },
-                      //               "& .accept": {
-                      //                 backgroundColor: "#2e7d32",
-                      //               },
-                      //             }}
-                      //           >
-                      //             <Button
-                      //               className="accept"
-                      //               variant="contained"
-                      //               color="success"
-                      //               onClick={() =>
-                      //                 handleacceptAddfriend(item?.userAction?.userId)
-                      //               }
-                      //               sx={{
-                      //                 borderRadius: "30px",
-                      //               }}
-                      //             >
-                      //               Đồng ý
-                      //             </Button>
-                      //             <Button
-                      //               className="cancel"
-                      //               variant="outlined"
-                      //               onClick={() =>
-                      //                 handlerefusedAddfriend(item?.userAction?.userId)
-                      //               }
-                      //               sx={{
-                      //                 borderRadius: "30px",
-                      //                 backgroundColor: "#eeeeee",
-                      //                 color: "#4d3869",
-                      //                 border: "none",
-                      //                 marginLeft: "4px",
-                      //                 "&:hover": {
-                      //                   backgroundColor: "#c7c7c7",
-                      //                   outline: "none",
-                      //                   border: "none",
-                      //                 },
-                      //               }}
-                      //             >
-                      //               Từ chối
-                      //             </Button>
-                      //           </Stack>
-                      //         </Box>
-                      //       );
-                      //     })
-                      //   ) : (
-                      //     <Typography
-                      //       sx={{ margin: "12px 12px 0 12px", color: GLOBAL_COLOR_BLACK }}
-                      //     >
-                      //       Chưa có lời mời kết bạn !
-                      //     </Typography>
-                      //   )}
-                      // </List>
-                      // <CardActions className="justify-center">
-                      //   <Button
-                      //     size="small"
-                      //     variant="contained"
-                      //     onClick={() => handleRedirectFriend()}
-                      backgroundColor: "#0683FE",
-
-                      borderRadius: "50%",
+                      color: "white",
+                      backgroundColor: `gray`,
+                      minWidth: "40px",
+                      marginRight: { md: "6px", lg: "12px" },
+                      borderRadius: "100%",
                     }}
                   >
                     {<PersonAddIcon fontSize="small" sx={{ color: "white" }} />}
@@ -500,24 +358,24 @@ const UserAccept = ({ session }: IPros) => {
         <List
           sx={{
             width: "100%",
-
-            color: "white",
+            borderRadius: "12px",
+            color: GLOBAL_COLOR_BLACK,
             marginTop: "12px",
             "& p": {
-              color: "white",
+              color: GLOBAL_COLOR_BLACK,
             },
           }}
-          className="rounded-md"
           component="nav"
           aria-label="main mailbox folders"
           subheader={
             <ListSubheader
               sx={{
-                bgcolor: "#293145",
-                color: "white",
+                bgcolor: GLOBAL_BG,
+                color: GLOBAL_COLOR_BLACK,
                 fontWeight: "bold",
                 zIndex: "0",
                 position: "relative",
+                borderRadius: "12px",
                 "@media (min-width: 900px)": {
                   "&": {
                     fontSize: "12px",
@@ -537,13 +395,14 @@ const UserAccept = ({ session }: IPros) => {
             </ListSubheader>
           }
         >
+          <Divider />
           {listDataUserRequest &&
             listDataUserRequest.slice(0, 4).map((item, index) => {
               return (
                 <Box
                   key={index}
                   sx={{
-                    paddingBottom: "24px",
+                    paddingY: "12px",
                     "& p": {
                       fontSize: { md: "10px", lg: "14px" },
                     },
@@ -559,16 +418,13 @@ const UserAccept = ({ session }: IPros) => {
                   <ListItemButton
                     onClick={() => handleRedirect(item.userAction.userId)}
                     sx={{ padding: "6px 12px", margin: " 0" }}
-                    //   selected={selectedIndex === item.index}
-                    //   onClick={(event) => handleListItemClick(event, item.index)}
                   >
                     <ListItemIcon
                       sx={{
                         color: "white",
                         backgroundColor: `gray`,
-                        padding: "8px",
                         minWidth: "40px",
-                        marginRight: { md: "6px", lg: "24px" },
+                        marginRight: { md: "6px" },
                         borderRadius: "100%",
                       }}
                     >
@@ -586,43 +442,57 @@ const UserAccept = ({ session }: IPros) => {
                   <Stack
                     direction="row"
                     spacing={0}
-                    className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
                     sx={{
                       justifyContent: "space-evenly",
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      color="success"
+                    <Box
                       onClick={() =>
                         handleacceptAddfriend(item?.userAction?.userId)
                       }
                       sx={{
+                        minWidth: "60px",
                         borderRadius: "30px",
+                        backgroundColor: GLOBAL_BG_BLUE_300,
+                        textAlign: "center",
+                        color: GLOBAL_COLOR_WHITE,
+                        marginLeft: "4px",
+                        padding: "4px 12px",
+                        boxShadow: GLOBAL_BOXSHADOW,
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          backgroundColor: GLOBAL_BG_BLUE_900,
+                          outline: "none",
+                        },
                       }}
                     >
                       Đồng ý
-                    </Button>
-                    <Button
-                      variant="outlined"
+                    </Box>
+                    <Box
                       onClick={() =>
                         handlerefusedAddfriend(item?.userAction?.userId, true)
                       }
                       sx={{
+                        minWidth: "60px",
                         borderRadius: "30px",
-                        backgroundColor: "#eeeeee",
-                        color: "#4d3869",
-                        border: "none",
+                        border: "1px solid red",
+                        textAlign: "center",
+                        color: GLOBAL_COLOR_MENU,
                         marginLeft: "4px",
+                        padding: "4px 12px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
                         "&:hover": {
-                          backgroundColor: "#c7c7c7",
-                          outline: "none",
-                          border: "none",
+                          boxShadow: GLOBAL_BOXSHADOW,
+                          backgroundColor: "#f5f5f5",
                         },
                       }}
                     >
                       Từ chối
-                    </Button>
+                    </Box>
                   </Stack>
                 </Box>
               );

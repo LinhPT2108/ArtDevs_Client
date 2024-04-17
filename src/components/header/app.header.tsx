@@ -5,10 +5,12 @@ import CircleIcon from "@mui/icons-material/Circle";
 import CloseIcon from "@mui/icons-material/Close";
 import CommentIcon from "@mui/icons-material/Comment";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
 import MailIcon from "@mui/icons-material/Mail";
 import MenuIcon from "@mui/icons-material/Menu";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import SearchIcon from "@mui/icons-material/Search";
 import ShareIcon from "@mui/icons-material/Share";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
@@ -40,17 +42,6 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import CircleIcon from "@mui/icons-material/Circle";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import Stomp from "stompjs";
-import SockJS from "sockjs-client";
-import IconTabs from "./header.nav";
-import SearchIcon from "@mui/icons-material/Search";
-import MenuIcon from "@mui/icons-material/Menu";
-import AppMenu from "../left-menu/app.menu";
-import ContactMenu from "../left-menu/app.contact";
-import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import Badge from "@mui/material/Badge";
 import Box from "@mui/material/Box";
@@ -62,6 +53,7 @@ import Typography from "@mui/material/Typography";
 import { styled } from "@mui/material/styles";
 import { TransitionProps } from "@mui/material/transitions";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
@@ -84,14 +76,6 @@ import {
 } from "../utils/veriable.global";
 import IconTabs from "./header.nav";
 import SearchComponent from "./header.search";
-import { useRouter } from "next/navigation";
-import ShareIcon from "@mui/icons-material/Share";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { TransitionProps } from "@mui/material/transitions";
-import CloseIcon from "@mui/icons-material/Close";
-import CommentIcon from "@mui/icons-material/Comment";
-import PersonAddIcon from "@mui/icons-material/PersonAdd";
-import Messsages from "../chat/chat.messages";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {

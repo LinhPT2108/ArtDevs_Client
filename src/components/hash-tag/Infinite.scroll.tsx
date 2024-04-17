@@ -7,6 +7,7 @@ interface IPros {
   hasMore: any;
   endMessage: any;
   className: any;
+  totalPage: number;
 }
 
 const InfiniteScroll = ({
@@ -16,12 +17,14 @@ const InfiniteScroll = ({
   hasMore,
   endMessage,
   className,
+  totalPage,
 }: IPros) => {
   const pageEndRef = useRef(null);
   useEffect(() => {
     if (hasMore) {
       const observer = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
+          console.log(">>> check co vi khon: ");
           fetchMore();
         }
       });
@@ -40,8 +43,15 @@ const InfiniteScroll = ({
   return (
     <div className={className}>
       {children}
-
-      {hasMore ? <div ref={pageEndRef}>{loader}</div> : endMessage}
+      {totalPage > 1 ? (
+        hasMore ? (
+          <div ref={pageEndRef}>{loader}</div>
+        ) : (
+          endMessage
+        )
+      ) : (
+        ""
+      )}
     </div>
   );
 };

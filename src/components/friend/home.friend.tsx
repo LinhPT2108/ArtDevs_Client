@@ -625,97 +625,60 @@ const HomeFriend = ({ session }: IPros) => {
                     {item.fullname}
                   </Typography>
                 </CardContent>
-
-                {/* <CardActions
-                  sx={{
-                    display: "flex",
-
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Box
-                    onClick={() => handsenddAddfriend(item?.userId)}
-                    sx={{
-                      minWidth: "90px",
-                      textAlign: "center",
-                      borderRadius: "30px",
-                      padding: "8px 16px",
-                      boxShadow: GLOBAL_BOXSHADOW,
-                      background: GLOBAL_BG_BLUE_900,
-                      fontWeight: "bold",
-                      color: GLOBAL_COLOR_WHITE,
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      "&:hover": {
-                        transform: "scale(1.03)",
-                        backgroundColor: GLOBAL_BG_BLUE_300,
-                      },
-                    }}
-                  >
-                    Kết Bạn
-                  </Box>
-                  <Box
-                    onClick={() =>
-                      handremoveUserofListfriendSuitable(item?.userId)
-                    }
-                    sx={{
-                      minWidth: "90px",
-                      borderRadius: "30px",
-                      backgroundColor: "#eeeeee",
-                      textAlign: "center",
-                      color: "#4d3869",
-                      marginLeft: "4px",
-                      padding: "8px 16px",
-                      boxShadow: GLOBAL_BOXSHADOW,
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      "&:hover": {
-                        transform: "scale(1.03)",
-                        backgroundColor: "#e3dede",
-                        // color: GLOBAL_COLOR_WHITE,
-                        outline: "none", */}
-
                 {!item.sendStatus ? (
                   <CardActions
                     sx={{
                       display: "flex",
-
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      color="success"
+                    <Box
                       onClick={() => handsenddAddfriend(item?.userId)}
                       sx={{
+                        minWidth: "90px",
+                        textAlign: "center",
                         borderRadius: "30px",
+                        padding: "8px 16px",
+                        boxShadow: GLOBAL_BOXSHADOW,
+                        background: GLOBAL_BG_BLUE_900,
+                        fontWeight: "bold",
+                        color: GLOBAL_COLOR_WHITE,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          transform: "scale(1.03)",
+                          backgroundColor: GLOBAL_BG_BLUE_300,
+                        },
                       }}
                     >
                       Kết Bạn
-                    </Button>
-                    <Button
-                      variant="outlined"
+                    </Box>
+                    <Box
                       onClick={() =>
                         handremoveUserofListfriendSuitable(item?.userId)
                       }
                       sx={{
+                        minWidth: "90px",
                         borderRadius: "30px",
                         backgroundColor: "#eeeeee",
+                        textAlign: "center",
                         color: "#4d3869",
-                        border: "none",
                         marginLeft: "4px",
+                        padding: "8px 16px",
+                        boxShadow: GLOBAL_BOXSHADOW,
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
                         "&:hover": {
-                          backgroundColor: "#c7c7c7",
+                          transform: "scale(1.03)",
+                          backgroundColor: "#e3dede",
                           outline: "none",
-                          border: "none",
                         },
                       }}
                     >
                       Xóa
-                    </Button>
+                    </Box>
                   </CardActions>
                 ) : (
                   <CardActions
@@ -726,18 +689,29 @@ const HomeFriend = ({ session }: IPros) => {
                       justifyContent: "center",
                     }}
                   >
-                    <Button
-                      variant="contained"
-                      color="success"
+                    <Box
                       onClick={() =>
                         handlerefusedAddfriend(item?.userId, false)
                       }
                       sx={{
+                        minWidth: "90px",
+                        textAlign: "center",
                         borderRadius: "30px",
+                        padding: "8px 16px",
+                        boxShadow: GLOBAL_BOXSHADOW,
+                        background: GLOBAL_BG_BLUE_900,
+                        fontWeight: "bold",
+                        color: GLOBAL_COLOR_WHITE,
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        "&:hover": {
+                          transform: "scale(1.03)",
+                          backgroundColor: GLOBAL_BG_BLUE_300,
+                        },
                       }}
                     >
                       Hủy kết Bạn
-                    </Button>
+                    </Box>
                     <Button
                       variant="outlined"
                       onClick={() =>
