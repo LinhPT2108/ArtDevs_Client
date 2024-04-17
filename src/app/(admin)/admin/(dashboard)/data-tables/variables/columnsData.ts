@@ -73,3 +73,47 @@ export const columnsDataComplex = [
     accessor: "progress",
   },
 ];
+
+export const columnsHashtagTable = [
+  {
+    Header: "ID",
+    accessor: "id",
+  },
+  {
+    Header: "Tên Hashtag",
+    accessor: "hastagname",
+  },
+  // {
+  //   Header: "Chi tiết Hashtag",
+  //   accessor: "hastagdetail",
+  // },
+  {
+    Header: "Số lượng bài viết",
+    accessor: "totalpost",
+  },
+  {
+    Header: "Thao Tác",
+    accessor: "action",
+  },
+];
+
+export const columnsProgramingLanguageTable = [
+
+  {
+    Header: "Tên Ngôn Ngữ Lập Trình",
+    accessor: "languagename",
+  },
+  {
+    Header: "Học Viên Quan Tâm",
+    accessor: "userdemand",
+  },
+  {
+    Header: "Người Hướng Dẫn",
+    accessor: "mentorskill",
+  },
+  {
+    Header: "Thao Tác",
+    accessor: "action",
+  },
+];
+

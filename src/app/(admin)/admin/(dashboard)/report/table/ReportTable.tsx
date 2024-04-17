@@ -46,10 +46,12 @@ const style = {
 type Props = {
   columnsData: any[];
   tableData: Report[];
+  handlelockPost: (postId: string) => void;
+  handlelockRePort: (postId: number) => void;
 };
 
 const ReportTable = (props: Props) => {
-  const { columnsData, tableData } = props;
+  const { columnsData, tableData, handlelockPost, handlelockRePort } = props;
   const [openModal, setOpenModal] = React.useState(false);
   const [openSnackbar, setopenSnackbar] = React.useState(false);
   const [reportId, setReportId] = React.useState<number>(0); // Khởi tạo reportId với giá trị mặc định là 0
@@ -105,6 +107,7 @@ const ReportTable = (props: Props) => {
 
         // Đóng modal sau khi xóa thành công
         handleCloseModal();
+        handlelockPost(postId);
       } else {
         // Hiển thị thông báo lỗi
         handleOpenSnackbar(fetchData.message);
@@ -134,6 +137,7 @@ const ReportTable = (props: Props) => {
 
         // Đóng modal sau khi xóa thành công
         handleCloseModal();
+        handlelockRePort(reportId);
       } else {
         // Hiển thị thông báo lỗi
         handleOpenSnackbar(fetchData.message);

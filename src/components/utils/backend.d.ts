@@ -123,7 +123,9 @@ declare global {
   }
   interface MyLanguageProgram {
     languageName: string;
-    id: string;
+    id: number;
+    countUserOfLanguage: number;
+    countMentorOfLanguage: number;
   }
   interface Role {
     id: number;
@@ -298,6 +300,12 @@ declare global {
     description: string;
     totalPostUseHashtag: number;
     timeCreate: string;
+    isDel: Boolean;
+  }
+  interface ReponseHashtagInfor{
+    statusCode: number;
+      message: string;
+      model: HashtagInfor;
   }
   // interface CommentToPostDTO {
   //   content: string;
@@ -410,10 +418,20 @@ declare global {
     reportDetail: string;
     postId: string;
   }
-  interface ReponseUserFormAdmin {
+  interface ReponseReportFormAdmin {
     statusCode: number;
     message: string;
-    model: UserFormAdminDTO[];
+    model: ReportListDTO;
+  }
+  interface ReponseHashtagFormAdmin {
+    statusCode: number;
+    message: string;
+    model: HashtagInfor[];
+  }
+  interface ReponseLangugeFormAdmin {
+    statusCode: number;
+    message: string;
+    model: MyLanguageProgram[];
   }
   interface RequestUserUpdateFormAdmin {
     statusCode: number;
@@ -432,6 +450,7 @@ declare global {
     message: string;
     model: ReportListDTO;
   }
+  
   interface ReportListDTO {
     listNewReport: Report[];
     listReport: Report[];
