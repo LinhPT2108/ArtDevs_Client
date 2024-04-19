@@ -414,10 +414,10 @@ const Post = ({ user, post }: IPros, props: Props) => {
     index: number,
     isDataLoading: boolean
   ) => {
-  console.log("share");
-  
+    console.log("share");
+
     console.log(dataId);
-    
+
     if (actionType == "deleteCmt") {
       setActionDialog({
         actionType: actionType,
@@ -2008,7 +2008,8 @@ const Post = ({ user, post }: IPros, props: Props) => {
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
               >
                 <MenuItem onClick={() => handleEditPost(p, index)}>
-                  Chỉnh sửa bài viết {user?.user?.userId+" "+p?.userPost?.userId} 123
+                  Chỉnh sửa bài viết{" "}
+                  {user?.user?.userId + " " + p?.userPost?.userId} 123
                 </MenuItem>
                 <MenuItem
                   onClick={() =>
