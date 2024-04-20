@@ -9,6 +9,8 @@ import {
   Rating,
   Slide,
   Snackbar,
+  Tab,
+  Tabs,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -23,11 +25,50 @@ import { sendRequest } from "../utils/api";
 import useSWR, { SWRResponse } from "swr";
 import { formatVND } from "../utils/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { GLOBAL_BOXSHADOW, GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import { TransitionProps } from "@mui/material/transitions";
 import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
 import HomeFriend from "../friend/home.friend";
-
+import HistoryCard from "@/app/(admin)/admin/(dashboard)/nft-marketplace/components/HistoryCard";
+import TaskCard from "@/app/(admin)/admin/(dashboard)/dashboard/components/TaskCard";
+import General from "@/app/(admin)/admin/(dashboard)/profile/components/General";
+import MentorIsReady from "./component/mentorIsReady";
+import AllMentor from "./component/allMentor";
+import MentorSuitable from "./component/MentorSuitable";
+import NftCard from "../admin/card/NftCard";
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+function CustomTabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ py: 3 }}>
+          <Box>{children}</Box>
+        </Box>
+      )}
+    </div>
+  );
+}
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 interface IPros {
   user: User;
 }
@@ -40,136 +81,12 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const HomeMentor = ({ user }: IPros) => {
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbar2Open, setSnackbar2Open] = useState(false);
-  const [open, setOpen] = React.useState(false);
-  var path = usePathname();
-  const mentorCode = Array.isArray(path)
-    ? path[0].split("/")[2]
-    : path.split("/")[2];
+  const [value, setValue] = useState(0);
 
-  var router = useRouter();
-  const fetchData = async (url: string) => {
-    return await sendRequest<MentorInfor[]>({
-      url: url,
-      method: "GET",
-      headers: { authorization: `Bearer ${user?.access_token}` },
-    });
-  };
-  const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor",
-    fetchData,
-    {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
-    }
-  );
-
-  const sendMatchRequest = async (mentorId: string): Promise<boolean> => {
-    try {
-      // Thực hiện cuộc gọi API ở đây
-      const response = await fetch(`${GLOBAL_URL}/api/send-match/${mentorId}`, {
-        method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
-        headers: {
-          authorization: `Bearer ${user?.access_token}`,
-        },
-        // Các tùy chọn khác nếu cần
-      });
-      console.log(response);
-      // Xử lý kết quả
-      const data = await response.json();
-
-      return data; // Giả sử API trả về một trường success kiểu boolean
-    } catch (error) {
-      console.error("Error sending match:", error);
-      return false; // Trả về false nếu có lỗi
-    }
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
   };
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  const handleSendmatch = async (mentorId: string, isReady: boolean) => {
-    if (isReady === true) {
-      try {
-        // Gọi hàm thực hiện cuộc gọi API
-        const apiResult = await sendMatchRequest(mentorId);
-        handleClickOpen();
-
-        console.log("test Result" + apiResult);
-        // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
-        if (apiResult === true) {
-          // Thành công, chuyển hướng đến trang mới
-          showSnackbar();
-        } else {
-          // Xử lý khi có lỗi trong cuộc gọi API
-          console.error("Match request failed.");
-        }
-      } catch (error) {
-        console.error("Error sending match:", error);
-      }
-    } else {
-      showSnackbar2();
-    }
-  };
-  console.log(data);
-
-  const handleRedirect = (id: string) => {
-    router.push(`/mentor/${id}`);
-  };
-  const showSnackbar = () => {
-    setSnackbarOpen(true);
-    setTimeout(() => setSnackbarOpen(false), 10000);
-  };
-
-  const showSnackbar2 = () => {
-    setSnackbar2Open(true);
-    setTimeout(() => setSnackbar2Open(false), 10000);
-  };
-  if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          // minHeight: "100px",
-          height: "86vh",
-          alignItems: "center",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            zIndex: 2,
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div className="cube-loader">
-            <div className="cube-top"></div>
-            <div className="cube-wrapper">
-              {[0, 1, 2, 3].map((index) => (
-                <CubeSpan key={index} index={index} />
-              ))}
-            </div>
-          </div>
-        </Box>
-      </Box>
-    );
-  }
   return (
     <Box sx={{ flexGrow: 1, marginTop: "24px" }}>
       <Grid
@@ -185,235 +102,110 @@ const HomeMentor = ({ user }: IPros) => {
         {user?.user?.role?.id == 3 ? (
           <MentorAccept session={user} />
         ) : (
-          data &&
-          data?.map((mentor, index) => (
-            <Grid item container xs={12} md={6} key={mentor.userId}>
-              <Card
+          <Box
+            sx={{
+              width: "100%",
+              "& .css-1phy807": {
+                paddingY: 0,
+              },
+            }}
+          >
+            <Box>
+              {/* Header */}
+              <div className="mt-2 mb-8 w-full">
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <h2 className="px-2 text-2xl font-bold text-navy-700 dark:text-white">
+                    Người hướng dẫn
+                  </h2>
+                  <div style={{ marginLeft: "auto" }}>
+                    {" "}
+                    {/* Sử dụng margin-left: auto để đẩy Tabs sang phải */}
+                    <Tabs
+                      value={value}
+                      onChange={handleChange}
+                      aria-label="basic tabs example"
+                    >
+                      <Tab
+                        label="Gợi ý"
+                        {...a11yProps(0)}
+                        sx={{
+                          // Sử dụng sx để tùy chỉnh CSS cho label
+                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
+                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
+                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                        }}
+                      />
+                      <Tab
+                        label="Phù Hợp"
+                        {...a11yProps(1)}
+                        sx={{
+                          // Sử dụng sx để tùy chỉnh CSS cho label
+                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
+                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
+                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                        }}
+                      />
+                      <Tab
+                        label="Tất cả"
+                        {...a11yProps(2)}
+                        sx={{
+                          // Sử dụng sx để tùy chỉnh CSS cho label
+                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
+                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
+                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                        }}
+                      />
+                    </Tabs>
+                  </div>
+                </div>
+                <p className="mt-2 px-2 text-lg text-gray-600">
+                  Người hướng dẫn trong lập trình đóng vai trò quan trọng trong
+                  việc hỗ trợ người mới học. Họ cung cấp kiến thức cơ bản, giúp
+                  giải quyết vấn đề, chia sẻ kinh nghiệm và lời khuyên, cùng hỗ
+                  trợ trong việc xây dựng dự án. Nhờ sự hướng dẫn của họ, người
+                  mới học có cơ hội phát triển kỹ năng lập trình và tiếp cận một
+                  cộng đồng chia sẻ kiến thức.
+                </p>
+              </div>
+            </Box>
+            <CustomTabPanel value={value} index={0}>
+              <Box
                 sx={{
-                  background:
-                    "linear-gradient(45deg, rgba(58,180,156,0.24693627450980393) 0%, rgba(243,245,245,0.10407913165266103) 100%)",
-                  border: "10px radius",
-                  overflow: "hidden",
-                  transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
-                  "&:hover": {
-                    transform: "scale(1.02)", // Increase scale on hover
-                  },
-                  cursor: "pointer",
+                  width: "100%",
+                  padding: "20px 0px",
                 }}
               >
-                <Grid
-                  item
-                  xs={12}
-                  md={12}
-                  onClick={() => {
-                    handleRedirect(mentor?.userId);
-                  }}
+                <MentorIsReady session={user} />
+              </Box>
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={1}>
+              <Box
+                sx={{
+                  width: "100%",
+                  padding: "20px 0px",
+                }}
+              >
+                <Box
                 >
-                  <Box
-                    sx={{
-                      top: "4px",
-                      left: "4px",
-                      backgroundColor: mentor.isReady ? "#16D6B5" : "#e60839",
-                      border: "1px solid white",
-                      borderRadius: "11px",
-                      width: "fit-content",
-                      height: "18px",
-                      padding: "6px",
-                      boxSizing: "border-box",
-                      display: "flex",
-                      flexDirection: "row",
-                      alignItems: "center",
-                      position: "relative",
-                    }}
-                  >
-                    {/* Nested Box and Typography */}
-                    <Box
-                      sx={{
-                        width: "8px",
-                        height: "8px",
-                        borderRadius: "50%",
-                        backgroundColor:
-                          mentor?.isOnline?.toString() == "true"
-                            ? "#16D6B5"
-                            : "#e60839",
-                        marginRight: "8px",
-                      }}
-                    ></Box>
-                    <Typography
-                      sx={{
-                        fontSize: "16px",
-                        fontWeight: "500",
-                        color: "white",
-                      }}
-                    >
-                      {mentor?.isOnline?.toString() == "true"
-                        ? "Online"
-                        : "Offline"}
-                    </Typography>
-                  </Box>
-
-                  <Typography
-                    gutterBottom
-                    component="div"
-                    padding="5px 5px 3px 20px"
-                    textAlign="center"
-                    sx={{
-                      fontSize: "32px",
-                      fontWeight: "500",
-                      fontStyle: "bold",
-                    }}
-                  >
-                    Mentor Skill
-                  </Typography>
-                </Grid>
-                <Grid item container spacing={2} padding="5px">
-                  <Grid
-                    item
-                    xs={4}
-                    md={4}
-                    onClick={() => {
-                      handleRedirect(mentor?.userId);
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      alt="green iguana"
-                      height="180"
-                      image={mentor.profilePicUrl || "/OIP.jpg"}
-                      sx={{
-                        borderRadius: "8px",
-                        objectFit: "cover",
-                        marginLeft: "3px",
-                      }}
-                    />
-                  </Grid>
-                  <Grid
-                    item
-                    xs={8}
-                    md={8}
-                    onClick={() => {
-                      handleRedirect(mentor?.userId);
-                    }}
-                  >
-                    <CardContent>
-                      <Typography variant="body2" color="text.secondary">
-                        {mentor?.listSkillOfMentor?.map((skill, index) => (
-                          <Box key={`skill${index}`}>
-                            <Typography
-                              gutterBottom
-                              variant="h6"
-                              component="div"
-                              padding="5px 5px 3px 20px"
-                              display="flex"
-                              alignItems="center"
-                            >
-                              {skill} :
-                              <Rating name="size-medium" defaultValue={5} />
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Typography>
-                    </CardContent>
-                  </Grid>
-                  <Grid item xs={12} md={12}>
-                    <CardActions
-                      sx={{
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography
-                        gutterBottom
-                        component="div"
-                        padding="5px 5px 3px 20px"
-                        fontSize="24px"
-                        fontStyle="bold"
-                        onClick={() => {
-                          handleRedirect(mentor?.userId);
-                        }}
-                      >
-                        {mentor.firstName} {mentor.middleName} {mentor.lastName}
-                      </Typography>
-                      <Typography
-                        gutterBottom
-                        variant="h6"
-                        component="div"
-                        padding="5px 5px 3px 10px"
-                        fontSize="18px"
-                        fontStyle="bold"
-                        onClick={() => {
-                          handleRedirect(mentor?.userId);
-                        }}
-                      >
-                        {formatVND(mentor.priceMatch)}/Match
-                      </Typography>
-                      <Box
-                        sx={{
-                          background:
-                            "linear-gradient(45deg, rgba(74,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                          border: "5px ",
-                          marginRight: "12px",
-                          borderRadius: "30px",
-                          padding: "8px 16px",
-                          ":hover": {
-                            background:
-                              "linear-gradient(45deg, rgba(99,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                            boxShadow: GLOBAL_BOXSHADOW,
-                          },
-                        }}
-                        onClick={() =>
-                          handleSendmatch(mentor.userId, mentor.isReady)
-                        }
-                      >
-                        Send Match
-                      </Box>
-                    </CardActions>
-                  </Grid>
-                </Grid>
-              </Card>
-            </Grid>
-          ))
+                  <MentorSuitable session={user}/>
+                </Box>
+              </Box>
+            </CustomTabPanel>{" "}
+            <CustomTabPanel value={value} index={2}>
+              <Box
+                sx={{
+                  width: "100%",
+                  padding: "20px 0px",
+                }}
+              >
+                <Box>
+                  <AllMentor session={user} />
+                </Box>
+              </Box>
+            </CustomTabPanel>
+          </Box>
         )}
       </Grid>
-      <Snackbar
-        open={snackbarOpen}
-        message="Match request has been sent. Please wait for a response."
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        sx={{
-          color: "white",
-          backgroundColor: "#4CAF50",
-        }}
-      />
-      <Snackbar
-        open={snackbar2Open}
-        message="Mentor is not Ready "
-        autoHideDuration={3000}
-        onClose={() => setSnackbar2Open(false)}
-        sx={{
-          color: "black",
-          backgroundColor: "##e60839",
-        }}
-      />
-      <Dialog
-        open={open}
-        TransitionComponent={Transition}
-        keepMounted
-        onClose={handleClose}
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
-            Đồng hành với Mentor IT, học viên không chỉ chinh phục thách thức kỹ
-            thuật, mà còn khám phá sự phát triển chuyên sâu và mối quan hệ
-            chuyên nghiệp bền vững.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Disagree</Button>
-          <Button onClick={handleClose}>Agree</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
