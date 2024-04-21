@@ -285,13 +285,12 @@ declare global {
     gender: integer;
     isOnline: boolean;
     isReady: boolean;
-    firstName: string;
-    middleName: string;
-    lastName: string;
+    fullname: string;
     priceMatch: number;
     role: Role;
     BackgroundImageUrl: string;
     profilePicUrl: string;
+    sendStatus: boolean;
   }
 
   interface HashtagInfor {

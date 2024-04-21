@@ -10,7 +10,7 @@ import { IoIosAlert, IoIosPerson, IoMdHome } from "react-icons/io";
 import { IoDocuments, IoStar } from "react-icons/io5";
 import { MdBarChart, MdDashboard } from "react-icons/md";
 
-import { columnsDataCheck, columnsDataComplex } from "./variables/columnsData";
+import { columnsDataCheck } from "./variables/columnsData";
 
 import Widget from "@/components/admin/widget/Widget";
 import CheckTable from "./components/CheckTable";
