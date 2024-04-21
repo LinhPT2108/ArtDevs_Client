@@ -18,7 +18,7 @@ export default function SearchComponent() {
   }, [searchParams.get("keyword") as string]);
   return (
     <Paper
-      // component="form"
+      component="form"
       sx={{
         p: "2px 12px",
         margin: "0 12px",
@@ -26,15 +26,16 @@ export default function SearchComponent() {
         backgroundColor: "#eeeeee",
         borderRadius: "30px",
         alignItems: "center",
-        "@media (min-width: 600px)": {
-          width: "144px",
-        },
-        "@media (min-width: 700px)": {
-          width: "240px",
-        },
-        "@media (min-width: 1023px)": {
-          width: "300px",
-        },
+        maxWidth: { xs: "140px", sm: "220px", md: "240px", lg: "320px" },
+        // "@media (min-width: 600px)": {
+        //   width: "124px",
+        // },
+        // "@media (min-width: 700px)": {
+        //   width: "240px",
+        // },
+        // "@media (min-width: 1023px)": {
+        //   width: "300px",
+        // },
       }}
     >
       <InputBase

@@ -515,17 +515,18 @@ const HomeFriend = ({ session }: IPros) => {
                     justifyContent: "center",
                   }}
                 >
-                  <Box
+                  <Button
+                    color="success"
+                    variant="contained"
                     onClick={() =>
                       handleAcceptAddfriend(item?.userAction?.userId)
                     }
                     sx={{
                       borderRadius: "30px",
-                      backgroundColor: "red",
                     }}
                   >
                     Đồng ý
-                  </Box>
+                  </Button>
                   <Button
                     variant="outlined"
                     onClick={() =>

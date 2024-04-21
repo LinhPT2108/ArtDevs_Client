@@ -2,7 +2,7 @@ import Stomp from "stompjs";
 import SockJS from "sockjs-client";
 
 // witdh of menu
-export const DRAWER_WIDTH: number = 200;
+export const DRAWER_WIDTH: number = 240;
 export const GLOBAL_URL: string = "http://localhost:8080";
 export const GLOBAL_URL_SOCKET: string = "/wss";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";

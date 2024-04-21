@@ -39,12 +39,20 @@ import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
 import { deleteSpace, formatBirthDay } from "../utils/utils";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_SEND_FRIEND,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import { mutate } from "swr";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -138,18 +146,6 @@ const HomeProfile = ({ session }: IPros) => {
 
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
-
-  useEffect(() => {
-    if (!selectedBgImg) {
-      setPreviewBgImg(session.user.backgroundImageUrl);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(selectedBgImg);
-    setPreviewBgImg(objectUrl as any);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedBgImg]);
 
   const onSelectFile = (e: any) => {
     if (!e.target.files || e.target.files.length === 0) {
@@ -442,6 +438,7 @@ const HomeProfile = ({ session }: IPros) => {
           },
         };
         await sessionUpdate(updatedUserData);
+        setDataProfile(data);
         router.refresh();
         handleClose();
       }
@@ -453,16 +450,18 @@ const HomeProfile = ({ session }: IPros) => {
   const [dataProfile, setDataProfile] = useState<UserLogin>();
   const searchId = searchParams.get("id") as string;
   const handleDataProfile = async () => {
-    console.log(">>> check usser profile12123: ");
     if (searchParams.get("id")) {
       const user = await sendRequest<UserLogin>({
         url: GLOBAL_URL + "/api/get-user-by-id",
         method: "GET",
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
         queryParams: {
           id: searchId,
         },
       });
-      console.log(">>> check usser profile:1 ", user);
+      console.log(">>>check user friend: ", user);
 
       await setDataProfile(user);
     } else {
@@ -472,7 +471,19 @@ const HomeProfile = ({ session }: IPros) => {
 
   useEffect(() => {
     handleDataProfile();
-  }, []);
+  }, [searchParams.get("id") as string]);
+
+  useEffect(() => {
+    if (!selectedBgImg) {
+      setPreviewBgImg(session?.user?.backgroundImageUrl);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedBgImg);
+    setPreviewBgImg(objectUrl as any);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedBgImg]);
 
   console.log(">>> check usser profile:2 ", dataProfile);
   const url = searchId
@@ -495,12 +506,23 @@ const HomeProfile = ({ session }: IPros) => {
         headers: { authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
-      const data: ResPost = await response.json();
+      const data: ImageofPost = await response.json();
       console.log(data);
       if (data) {
+        const updatedUserData: User = {
+          access_token: session?.access_token,
+          refresh_token: session?.refresh_token,
+          user: {
+            ...session?.user,
+            profileImageUrl: data?.imageUrl,
+          },
+        };
+        await sessionUpdate(updatedUserData);
+        setDataProfile({ ...session?.user, profileImageUrl: data?.imageUrl });
         handleCloseBackdrop();
         handleClickAlertAvatar();
         handleCloseDialogAvatar();
+        router.refresh();
       }
     }
   };
@@ -519,15 +541,127 @@ const HomeProfile = ({ session }: IPros) => {
         headers: { authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
-      const data: ResPost = await response.json();
+      const data: ImageofPost = await response.json();
       console.log(data);
       if (data) {
+        const updatedUserData: User = {
+          access_token: session?.access_token,
+          refresh_token: session?.refresh_token,
+          user: {
+            ...session?.user,
+            backgroundImageUrl: data?.imageUrl,
+          },
+        };
+        await sessionUpdate(updatedUserData);
+        setDataProfile({
+          ...session?.user,
+          backgroundImageUrl: data?.imageUrl,
+        });
+
+        setSelectedBgImg(null);
+        // setPreviewBgImg(data?.imageUrl);
+
         handleCloseBackdrop();
         handleClickAlertBgImg();
         handleCloseDialogAvatar();
+        router.refresh();
       }
     }
   };
+  const sendAddfriend = async (UserId: string): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        `${GLOBAL_URL}/api/send-request-friend/${UserId}`,
+        {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${session?.access_token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error sending match:", error);
+      return false;
+    }
+  };
+  // const connectAndSubscribe = () => {
+  //   stompClient.connect(
+  //     {},
+  //     () => {
+  //       console.log("Connected to WebSocket server home friend");
+  //       stompClient.subscribe(
+  //         `/user/${session?.user?.userId}/friend`,
+  //         (message) => {
+  //           if (message) {
+  //             const data: RelaNotiDTO = JSON.parse(message.body);
+  //             console.log(data);
+  //             mutate(
+  //               GLOBAL_URL + "/api/get-request-friend",
+  //               fetchDataUserAction(GLOBAL_URL + "/api/get-request-friend"),
+  //               false
+  //             );
+  //           }
+  //         }
+  //       );
+  //     },
+  //     (error) => {
+  //       console.error("Error connecting to WebSocket server:", error);
+  //     }
+  //   );
+  // };
+  // useEffect(() => {
+  //   if (session) {
+  //     connectAndSubscribe();
+  //   }
+  // }, [session]);
+  const socket = new SockJS(GLOBAL_URL + "/friend");
+  const stompClient = Stomp.over(socket);
+  const [snackbar3Open, setSnackbar3Open] = useState(false);
+  const showSnackbar3 = () => {
+    setSnackbar3Open(true);
+    setTimeout(() => setSnackbar3Open(false), 10000);
+  };
+  const handsenddAddfriend = async (UserId: string) => {
+    try {
+      const apiResult = await sendAddfriend(UserId);
+      console.log("test Result: " + apiResult);
+      if (apiResult === true) {
+        showSnackbar3();
+        // setListDataUserSuitable(
+        //   listDataUserSuitable?.map((t) => {
+        //     if (t.userId == UserId) {
+        //       return { ...t, sendStatus: true };
+        //     }
+        //     return t;
+        //   })
+        // );
+        const relation: RelationNotificationDTO = {
+          userAction: session.user.userId,
+          userReceive: UserId,
+          createDate: new Date(),
+          typeRelation: false,
+        };
+        stompClient.send(
+          `${GLOBAL_SEND_FRIEND}/${UserId}`,
+          {},
+          JSON.stringify(relation)
+        );
+        // console.log(listUserSuitable);
+      } else {
+        // Xử lý khi có lỗi trong cuộc gọi API
+        console.error("Match request failed.");
+      }
+    } catch (error) {
+      console.error("Error sending match:", error);
+    }
+  };
+
+  useEffect(() => {
+    setPreviewBgImg(dataProfile?.backgroundImageUrl);
+  }, [dataProfile]);
+
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
       <Backdrop sx={{ color: "#fff", zIndex: 9999 }} open={openBackdrop}>
@@ -570,73 +704,75 @@ const HomeProfile = ({ session }: IPros) => {
         >
           {previewBgImg && <img src={previewBgImg} />}
 
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: { xs: "auto", sm: "12px" },
-              top: { xs: "12px", sm: "auto" },
-              right: "12px",
-            }}
-          >
-            {!selectedBgImg && (
-              <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                startIcon={<EditIcon />}
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "none",
-                  color: "#453c3c",
-                  "&:hover": {
-                    backgroundColor: "#cfcbcb",
-                    outline: "none",
-                    border: "none",
-                  },
-                }}
-              >
-                <VisuallyHiddenInput
-                  type="file"
-                  onChange={onSelectBgImg}
-                  accept="image/*"
-                />
-                Thay đổi ảnh bìa
-              </Button>
-            )}
-            {selectedBgImg && (
-              <Box
-                sx={{
-                  display: "flex",
-                }}
-              >
+          {!searchId && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: { xs: "auto", sm: "12px" },
+                top: { xs: "12px", sm: "auto" },
+                right: "12px",
+              }}
+            >
+              {!selectedBgImg && (
                 <Button
+                  component="label"
+                  role={undefined}
                   variant="contained"
+                  tabIndex={-1}
+                  startIcon={<EditIcon />}
                   sx={{
-                    mx: 1,
-                    bgcolor: "#787676",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "#787878",
-                      boxShadow: "none",
-                    },
+                    backgroundColor: "white",
                     boxShadow: "none",
+                    color: "#453c3c",
+                    "&:hover": {
+                      backgroundColor: "#cfcbcb",
+                      outline: "none",
+                      border: "none",
+                    },
                   }}
-                  onClick={handleCancelBgImg}
                 >
-                  Hủy
+                  <VisuallyHiddenInput
+                    type="file"
+                    onChange={onSelectBgImg}
+                    accept="image/*"
+                  />
+                  Thay đổi ảnh bìa
                 </Button>
-                <Button
-                  variant="contained"
-                  sx={{ mx: 1 }}
-                  color="primary"
-                  onClick={handleSaveBgImg}
+              )}
+              {selectedBgImg && (
+                <Box
+                  sx={{
+                    display: "flex",
+                  }}
                 >
-                  Lưu
-                </Button>
-              </Box>
-            )}
-          </Box>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      mx: 1,
+                      bgcolor: "#787676",
+                      color: "white",
+                      "&:hover": {
+                        bgcolor: "#787878",
+                        boxShadow: "none",
+                      },
+                      boxShadow: "none",
+                    }}
+                    onClick={handleCancelBgImg}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{ mx: 1 }}
+                    color="primary"
+                    onClick={handleSaveBgImg}
+                  >
+                    Lưu
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -662,7 +798,7 @@ const HomeProfile = ({ session }: IPros) => {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: { xs: "center", sm: "flex-end" },
-            alignItems: { xs: "center", sm: "flex-end" },
+            alignItems: { xs: "center", sm: "center" },
             "& img": { width: "125px", height: "125px", borderRadius: "50%" },
           }}
         >
@@ -686,6 +822,7 @@ const HomeProfile = ({ session }: IPros) => {
               display: "flex",
               flexDirection: "column",
               marginLeft: "12px",
+              // marginTop: "18px",
               justifyContent: { xs: "center", sm: "flex-start" },
               alignItems: { xs: "center", sm: "flex-start" },
             }}
@@ -696,11 +833,43 @@ const HomeProfile = ({ session }: IPros) => {
             >
               {deleteSpace(fullname)}
             </Typography>
-            <Typography component={"p"}>{/* 1.2K Friends */} </Typography>
+            {/* <Typography component={"p"}>1.2K Friends </Typography> */}
           </Box>
         </Box>
+        {searchId && dataProfile?.status == 0 ? (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Button
+              color="primary"
+              variant="outlined"
+              onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+            >
+              Thêm bạn bè
+            </Button>
+          </Box>
+        ) : (
+          searchId &&
+          dataProfile?.status == 1 && (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Button
+                color="primary"
+                variant="outlined"
+                onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+              >
+                Bạn bè
+              </Button>
+            </Box>
+          )
+        )}
       </Box>
-
+      <Snackbar
+        open={snackbar3Open}
+        message="Gừi lời mời kết bạn thành công!"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar3Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
       <Box
         sx={{
           width: "100%",
@@ -740,7 +909,7 @@ const HomeProfile = ({ session }: IPros) => {
           <Box
             sx={{
               width: "100%",
-              backgroundColor: "#F0F2F5",
+              backgroundColor: "#FBFCFE",
               padding: "20px 0px",
             }}
           >
@@ -968,18 +1137,20 @@ const HomeProfile = ({ session }: IPros) => {
                     </Box>
                   </Box>
 
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      width: "100%",
-                      fontWeight: "bold",
-                      color: "#000",
-                      marginTop: "16px",
-                    }}
-                    onClick={handleOpen}
-                  >
-                    Cập nhật thông tin
-                  </Button>
+                  {!searchId && (
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        width: "100%",
+                        fontWeight: "bold",
+                        color: "#000",
+                        marginTop: "16px",
+                      }}
+                      onClick={handleOpen}
+                    >
+                      Cập nhật thông tin
+                    </Button>
+                  )}
                   <Dialog
                     fullScreen={fullScreen}
                     open={open}

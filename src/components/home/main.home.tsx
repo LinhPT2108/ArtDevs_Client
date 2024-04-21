@@ -1,7 +1,7 @@
 import { Grid } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import AppMenu from "../left-menu/app.menu";
-const drawerWidth = 200;
+const drawerWidth = 240;
 const Main = styled("main", {
   //@ts-ignore
   shouldForwardProp: (prop) => prop !== "open",

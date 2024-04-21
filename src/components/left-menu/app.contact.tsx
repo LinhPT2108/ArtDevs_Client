@@ -131,7 +131,7 @@ const ContactMenu = (pros: IPros) => {
   );
 
   const [newD, setNewD] = React.useState<any>();
-  const socket = new SockJS("http://localhost:8080/wss");
+  const socket = new SockJS(GLOBAL_URL + "/wss");
   const stompClient = Stomp.over(socket);
   const connectAndSubscribe = () => {
     stompClient.connect(

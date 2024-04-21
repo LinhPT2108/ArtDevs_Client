@@ -39,7 +39,7 @@ const MentorAccept = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<Relation[], any> = useSWR(
-    "http://localhost:8080/api/get-match-from-user",
+    GLOBAL_URL + "/api/get-match-from-user",
     fetchData,
     {
       shouldRetryOnError: true, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -128,24 +128,6 @@ const MentorAccept = ({ session }: IPros) => {
       console.error("Error sending match:", error);
     }
   };
-  // const mentorAccept: AccountExample[] = [
-  //   { name: "Bản tin", avatar: <FeedIcon />, manualFriend: "12 bạn chung" },
-  //   {
-  //     name: "Giảng viên",
-  //     avatar: <PersonSearchIcon />,
-  //     manualFriend: "9 bạn chung",
-  //   },
-  //   {
-  //     name: "Hash tag",
-  //     avatar: <BookmarksIcon />,
-  //     manualFriend: "12 bạn chung",
-  //   },
-  //   {
-  //     name: "Trang cá nhân",
-  //     avatar: <AccountCircleIcon />,
-  //     manualFriend: "7 bạn chung",
-  //   },
-  // ];
 
   const showSnackbar = () => {
     setSnackbarOpen(true);

@@ -13,6 +13,7 @@ import React, { useEffect } from "react";
 import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 import MessageBox from "./chat.input";
 import Messsages from "./chat.messages";
+import { useRouter } from "next/navigation";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 
@@ -84,9 +85,13 @@ const ChatMessagesForm = (pros: IPros) => {
     console.log(newDataMessage);
   }, [newDataMessage]);
 
-  // if (!dataMessage) {
-  //   return;
-  // }
+  //biến chuyển hướng
+  const router = useRouter();
+  // xử lý chuyển hướng trang cá nhân
+  const handleRouterProfile = (id: string) => {
+    router.push(`/profile?id=${id}`);
+  };
+
   return (
     <Box
       sx={{
@@ -113,6 +118,7 @@ const ChatMessagesForm = (pros: IPros) => {
               margin: " 0",
               borderBottom: "1px solid #80808026",
             }}
+            onClick={() => handleRouterProfile(data?.userId)}
           >
             {data?.profilePicUrl ? (
               <Avatar

@@ -149,6 +149,7 @@ declare global {
     birthday: string;
     profileImageUrl: string;
     gender: number;
+    status?: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
     listMethod?: any;
@@ -301,10 +302,10 @@ declare global {
     timeCreate: string;
     isDel: Boolean;
   }
-  interface ReponseHashtagInfor{
+  interface ReponseHashtagInfor {
     statusCode: number;
-      message: string;
-      model: HashtagInfor;
+    message: string;
+    model: HashtagInfor;
   }
   // interface CommentToPostDTO {
   //   content: string;
@@ -449,7 +450,7 @@ declare global {
     message: string;
     model: ReportListDTO;
   }
-  
+
   interface ReportListDTO {
     listNewReport: Report[];
     listReport: Report[];

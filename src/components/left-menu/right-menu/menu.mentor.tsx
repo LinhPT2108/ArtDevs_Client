@@ -33,6 +33,7 @@ import useSWR, { SWRResponse } from "swr";
 import React, { useEffect, useState } from "react";
 import { TransitionProps } from "react-transition-group/Transition";
 import { CubeSpan } from "@/components/utils/component.global";
+import MenuMentorSkeleton from "./menu.mentor.skeleton";
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -148,43 +149,7 @@ const MenuMentor = ({ session }: IPros) => {
     setTimeout(() => setSnackbar2Open(false), 10000);
   };
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          // minHeight: "100px",
-          height: "86vh",
-          alignItems: "center",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            zIndex: 2,
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div className="cube-loader">
-            <div className="cube-top"></div>
-            <div className="cube-wrapper">
-              {[0, 1, 2, 3].map((index) => (
-                <CubeSpan key={index} index={index} />
-              ))}
-            </div>
-          </div>
-        </Box>
-      </Box>
-    );
+    return <MenuMentorSkeleton />;
   }
   return (
     <Box

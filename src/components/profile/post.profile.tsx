@@ -106,8 +106,9 @@ import {
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import InfiniteScroll from "../hash-tag/Infinite.scroll";
+import PostSkeleton from "../posts/post.skeleton";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -241,6 +242,7 @@ interface IPros {
 const PostProfile = ({
   session,
   hashTagText,
+  sessionGuest,
   profile,
   search,
   friendPost,
@@ -299,6 +301,21 @@ const PostProfile = ({
     }
   );
 
+  useEffect(() => {
+    const handleChangeSession = async () => {
+      const newData = await sendRequest<IModelPaginate<ResPost>>({
+        url: GLOBAL_URL + "/api" + url,
+        method: "GET",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        queryParams: {
+          page: 0,
+          keyword: searchParams.get("keyword") as string,
+        },
+      });
+      newData && mutate(newData, true);
+    };
+    handleChangeSession();
+  }, [sessionGuest]);
   //xử lý thao tác xóa modal report
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -1641,8 +1658,13 @@ const PostProfile = ({
         data && setPosts(data?.result);
       }
     })();
-  }, [page, data]);
+  }, [page]);
 
+  useEffect(() => {
+    if (data && !error) {
+      setPosts(data?.result);
+    }
+  }, [data]);
   // useEffect(() => {
   //   const fetchDataHashtag = async () => {
   //     try {
@@ -1669,44 +1691,14 @@ const PostProfile = ({
   //   }
   // }, [loading, dataLoading, searchValueHashtag]);
 
+  //biến chuyển hướng
+  const router = useRouter();
+  // xử lý chuyển hướng trang cá nhân
+  const handleRouterProfile = (id: string) => {
+    router.push(`/profile?id=${id}`);
+  };
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          // minHeight: "100px",
-          height: "86vh",
-          alignItems: "center",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            zIndex: 2,
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div className="cube-loader">
-            <div className="cube-top"></div>
-            <div className="cube-wrapper">
-              {[0, 1, 2, 3].map((index) => (
-                <CubeSpan key={index} index={index} />
-              ))}
-            </div>
-          </div>
-        </Box>
-      </Box>
-    );
+    return <PostSkeleton />;
   }
   console.log(">>> check posts123: ", posts);
   return (
@@ -1745,8 +1737,8 @@ const PostProfile = ({
           >
             <img
               src={`${
-                session?.user?.profileImageUrl
-                  ? session?.user?.profileImageUrl
+                sessionGuest?.profileImageUrl
+                  ? sessionGuest?.profileImageUrl
                   : "/profile/user.jpg"
               }`}
             />
@@ -2332,20 +2324,21 @@ const PostProfile = ({
                         cursor: "pointer",
                       },
                     }}
+                    onClick={() =>
+                      handleRouterProfile(item?.postId?.userPost?.userId)
+                    }
                   >
-                    <a href="#">
-                      <img
-                        src={`${
-                          url == "post-by-user-logged"
+                    <img
+                      src={`${
+                        url == "post-by-user-logged"
+                          ? session?.user?.profileImageUrl
                             ? session?.user?.profileImageUrl
-                              ? session?.user?.profileImageUrl
-                              : "/profile/user.jpg"
-                            : item.postId.userPost.profilePicUrl
-                            ? item.postId.userPost.profilePicUrl
                             : "/profile/user.jpg"
-                        }`}
-                      />
-                    </a>
+                          : item.postId.userPost.profilePicUrl
+                          ? item.postId.userPost.profilePicUrl
+                          : "/profile/user.jpg"
+                      }`}
+                    />
                   </Box>
                   <Box
                     sx={{
@@ -2359,6 +2352,9 @@ const PostProfile = ({
                         color: "#333",
                         fontWeight: "bold",
                       }}
+                      onClick={() =>
+                        handleRouterProfile(item?.postId?.userPost?.userId)
+                      }
                     >
                       {item?.postId?.userPost?.fullname}
                     </Typography>
@@ -2498,9 +2494,10 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {session?.user?.userId == item?.postId?.userPost?.userId ||
-                    //@ts-ignore
-                    session?.user?.userId == item?.userPostDto?.userId ? (
+                    {(session?.user?.userId == item?.postId?.userPost?.userId ||
+                      //@ts-ignore
+                      session?.user?.userId == item?.userPostDto?.userId) &&
+                    !searchParams.get("id") ? (
                       <Box>
                         <MenuItem
                           onClick={() => handleDeletePost(selectedItemId)}
@@ -2508,13 +2505,13 @@ const PostProfile = ({
                           <ListItemIcon>
                             <DeleteIcon fontSize="small" />
                           </ListItemIcon>
-                          Xóa bài viết
+                          Xóa bài viết{" "}
                         </MenuItem>
                         <MenuItem onClick={() => handleEditPost(postModal!)}>
                           <ListItemIcon>
                             <EditIcon fontSize="small" />
                           </ListItemIcon>
-                          Chỉnh sửa bài viết
+                          Chỉnh sửa bài viết{" "}
                         </MenuItem>
                       </Box>
                     ) : (
@@ -4183,11 +4180,13 @@ const PostProfile = ({
         autoHideDuration={2000}
         onClose={handleCloseSnackbar}
       >
-        <Alert variant="filled" severity={dataSnackbar.type}>
-          {dataSnackbar.type == "success"
-            ? dataSnackbar.contentSnackbar
-            : GLOBAL_ERROR_MESSAGE}
-        </Alert>
+        {dataSnackbar.openSnackbar && (
+          <Alert variant="filled" severity={dataSnackbar.type}>
+            {dataSnackbar.type == "success"
+              ? dataSnackbar.contentSnackbar
+              : GLOBAL_ERROR_MESSAGE}
+          </Alert>
+        )}
       </Snackbar>
     </>
   );
