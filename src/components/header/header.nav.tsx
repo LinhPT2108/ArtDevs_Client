@@ -10,7 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const IconTabs = () => {
   // gắn giá trị định hình vị trí tab đang chọn
-  const [value, setValue] = useState<number>(0);
+  const [value, setValue] = useState<number | null>(0);
 
   // lấy url hiện tại
   const currentPath = usePathname();
@@ -19,8 +19,8 @@ const IconTabs = () => {
   const router = useRouter();
 
   // xử lý khi change tab
-  const handleChangeNavTab = (newValue: number) => {
-    if (newValue == null) {
+  const handleChangeNavTab = (newValue: number | null) => {
+    if (newValue == 4) {
       if (currentPath == "/") {
         setValue(0);
       } else if (currentPath == "/friend-post") {
@@ -30,7 +30,7 @@ const IconTabs = () => {
       } else if (currentPath == "/profile") {
         setValue(3);
       } else {
-        setValue(-2);
+        setValue(4);
       }
     } else {
       if (newValue == 0 && currentPath !== "/") {
@@ -47,7 +47,7 @@ const IconTabs = () => {
   };
 
   useEffect(() => {
-    handleChangeNavTab(-1);
+    handleChangeNavTab(4);
   }, [currentPath]);
   return (
     <Tabs
