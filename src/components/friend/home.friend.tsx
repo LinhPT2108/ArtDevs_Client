@@ -61,7 +61,7 @@ const HomeFriend = ({ session }: IPros) => {
     error,
     isLoading,
   }: SWRResponse<UserAction[], any> = useSWR(
-    "http://localhost:8080/api/get-listfriend-suitable",
+    GLOBAL_URL + "/api/get-listfriend-suitable",
     fetchDataUserAction,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -560,7 +560,7 @@ const HomeFriend = ({ session }: IPros) => {
             },
           }}
         >
-          See more
+          Xem thêm
         </Button>
       </CardActions>
       <hr></hr>
@@ -572,7 +572,7 @@ const HomeFriend = ({ session }: IPros) => {
           padding: "8px",
         }}
       >
-        Prople you may know
+        Những người bạn có thể biết
       </CardContent>
       <Box
         sx={{

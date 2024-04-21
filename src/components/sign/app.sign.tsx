@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import { generateUniqueId } from "../utils/utils";
 import { useUser } from "@/lib/custom.content";
 import { truncate } from "fs/promises";
+import { GLOBAL_URL } from "../utils/veriable.global";
 
 const AppSignUp = () => {
   const { setUser } = useUser();
@@ -86,7 +87,7 @@ const AppSignUp = () => {
         const response = await sendRequest<MyLanguageProgram[]>({
           // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
           // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-          url: "http://localhost:8080/api/programingLanguage",
+          url: GLOBAL_URL + "/api/programingLanguage",
           method: "GET",
         });
         response && setProgramingLanguage(response);

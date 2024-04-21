@@ -151,8 +151,13 @@ export const formatDayVN = (
   }
 };
 
-export const formatBirthDay = (input: string | null | undefined): string => {
+export const formatBirthDay = (
+  input: string | null | undefined | Date
+): string => {
   if (input) {
+    if (input instanceof Date) {
+      input = input.toISOString();
+    }
     const dateObject = parseISO(input);
     const formattedDate = format(dateObject, "yyyy-MM-dd");
     return formattedDate;

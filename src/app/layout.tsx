@@ -1,7 +1,10 @@
+import "./globals.css";
 import "@/components/admin/calendar/MiniCalendar.css";
 import ThemeProviders from "@/providers/ThemeProvider";
 import { type Metadata } from "next";
-import "./globals.css";
+import { Inter } from "next/font/google";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Art Devs Socail",
@@ -17,7 +20,6 @@ export const metadata: Metadata = {
   ],
   themeColor: "#422AFB",
   icons: [
-    // { rel: "icon", type: 'image/svg', url: "/map/location.svg" },
     { rel: "apple-touch-icon", type: "image/png", url: "/img/horizon.png" },
   ],
   generator: "ArtDevs",
@@ -32,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <ThemeProviders>{children}</ThemeProviders>
       </body>
     </html>

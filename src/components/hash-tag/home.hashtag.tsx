@@ -92,7 +92,6 @@ const HomeHashtag = () => {
   useEffect(() => {
     (async () => {
       if (page) {
-        console.log(">>> check data: 12312312");
         const response = await sendRequest<IModelPaginate<HashtagInfor>>({
           url: GLOBAL_URL + `/api/detailhashtag`,
           method: "GET",
@@ -106,7 +105,6 @@ const HomeHashtag = () => {
       }
     })();
   }, [page, searchHashtag]);
-  console.log(">>> check data: ", data);
   if (isLoading) {
     return (
       <Box

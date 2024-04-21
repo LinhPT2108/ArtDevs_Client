@@ -57,7 +57,7 @@ const HomeMentor = ({ user }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor",
+    GLOBAL_URL + "/api/get-mentor",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi

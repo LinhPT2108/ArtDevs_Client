@@ -19,7 +19,6 @@ const BodyWrapper = ({ children, session }: IPros) => {
   let pageUrl = "home";
   const { drawerOpen } = useDrawer();
   const { widthScreen } = useWidthScreen();
-
   const router = usePathname();
   return (
     <>

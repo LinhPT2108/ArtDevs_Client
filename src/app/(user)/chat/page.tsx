@@ -50,7 +50,6 @@ export default function Message() {
   const handleChange = (newValue: number) => {
     setValue(newValue);
   };
-  console.log(">>> check user: ", user);
   const ref = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;

@@ -25,9 +25,9 @@ import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
 
-import { middleware } from "../utils/utils";
 import ForgotPassword from "./sign.forgotpasswork";
-import { NextResponse } from "next/server";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import { sendRequest } from "../utils/api";
 
 interface State extends SnackbarOrigin {
   open: boolean;
@@ -86,12 +86,13 @@ const SignIn = () => {
       const res = await signIn("credentials", {
         username: email,
         password: password,
-        redirect: true,
+        redirect: false,
       });
       if (!res?.error) {
         //@ts-ignore
         setUser(res);
         router.push("/");
+        router.refresh();
       } else {
         setLoading(false);
         setIsErrorEmail(true);
@@ -129,11 +130,11 @@ const SignIn = () => {
   const handleLoginWithSocialMedia = async (provider: string) => {
     try {
       setLoading(true);
-      signIn(provider);
-    } catch {
+      await signIn(provider);
+    } catch (error) {
       setLoading(false);
     } finally {
-      // setLoading(false);
+      setLoading(false);
     }
   };
   const handleForgotPasswordLinkClick = (

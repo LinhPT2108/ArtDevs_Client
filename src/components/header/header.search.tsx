@@ -2,15 +2,20 @@ import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SearchComponent() {
   const [search, setSearch] = useState<string>("");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const handleSearch = () => {
     router.push(`/search?keyword=${search}`);
   };
+  useEffect(() => {
+    searchParams.get("keyword") &&
+      setSearch(searchParams.get("keyword") as string);
+  }, [searchParams.get("keyword") as string]);
   return (
     <Paper
       // component="form"
@@ -33,6 +38,7 @@ export default function SearchComponent() {
       }}
     >
       <InputBase
+        value={search}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             handleSearch();

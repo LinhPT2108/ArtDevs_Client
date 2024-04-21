@@ -10,7 +10,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 const IconTabs = () => {
   // gắn giá trị định hình vị trí tab đang chọn
-  const [value, setValue] = useState<number | null>(0);
+  const [value, setValue] = useState<number>(0);
 
   // lấy url hiện tại
   const currentPath = usePathname();
@@ -19,7 +19,7 @@ const IconTabs = () => {
   const router = useRouter();
 
   // xử lý khi change tab
-  const handleChangeNavTab = (newValue: number | null) => {
+  const handleChangeNavTab = (newValue: number) => {
     if (newValue == null) {
       if (currentPath == "/") {
         setValue(0);
@@ -30,7 +30,7 @@ const IconTabs = () => {
       } else if (currentPath == "/profile") {
         setValue(3);
       } else {
-        setValue(null);
+        setValue(-2);
       }
     } else {
       if (newValue == 0 && currentPath !== "/") {
@@ -47,7 +47,7 @@ const IconTabs = () => {
   };
 
   useEffect(() => {
-    handleChangeNavTab(null);
+    handleChangeNavTab(-1);
   }, [currentPath]);
   return (
     <Tabs

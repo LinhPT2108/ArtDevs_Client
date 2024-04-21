@@ -11,6 +11,7 @@ import {
   getGlobalUser,
   setGlobalUser,
 } from "@/components/utils/veriable.global";
+
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -22,9 +23,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          // url: "https://artdevs-server.azurewebsites.net/api/login",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          url: "http://localhost:8080/api/login",
+          url: GLOBAL_URL + "/api/login",
           method: "POST",
           body: {
             email: credentials?.username,
@@ -34,7 +33,6 @@ export const authOptions: AuthOptions = {
         if (res?.userdto) {
           //@ts-ignore
           setGlobalUser(res);
-
           return res as any;
         } else {
           //@ts-ignore
@@ -59,8 +57,6 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account, profile, trigger, session }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          // url: "https://artdevs-server.azurewebsites.net/api/user-social",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
           url: GLOBAL_URL + "/api/user-social",
           method: "POST",
           body: {
@@ -83,7 +79,6 @@ export const authOptions: AuthOptions = {
             listSkillOfUser: [],
           },
         });
-        console.log(">>> check res: ", res.userdto);
         if (res.userdto) {
           if (token.picture) {
             res.userdto.profileImageUrl = token.picture;
@@ -112,7 +107,6 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, user, token }) {
-      console.log("Session:", session);
       if (token) {
         session.access_token = token.access_token;
         session.refresh_token = token.refresh_token;

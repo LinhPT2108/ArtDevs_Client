@@ -541,8 +541,8 @@ const HomeProfile = ({ session }: IPros) => {
                       },
                     }}
                   >
-                    <h3>You locked your profile</h3>
-                    <a href="#">Learn More</a>
+                    <h3>Khóa tài khoản của chính mình?</h3>
+                    <a href="#">Tìm hiểu thêm</a>
                   </Box>
                 </Box>
 
@@ -1112,18 +1112,7 @@ const HomeProfile = ({ session }: IPros) => {
                       "&hover": { textDecoration: "underline" },
                     }}
                   >
-                    <a href="#">
-                      See All
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          display: { xs: "inline", sm: "none", md: "inline" },
-                          marginLeft: "6px",
-                        }}
-                      >
-                        Photos
-                      </Typography>
-                    </a>
+                    <a href="#">Xem tất cả</a>
                   </Box>
 
                   <Box
@@ -1184,19 +1173,7 @@ const HomeProfile = ({ session }: IPros) => {
                       "&hover": { textDecoration: "underline" },
                     }}
                   >
-                    <a href="#">
-                      See All
-                      <Typography
-                        component={"span"}
-                        sx={{
-                          display: { xs: "inline", sm: "none", md: "inline" },
-                          color: "#1771E6",
-                          marginLeft: "6px",
-                        }}
-                      >
-                        Friends
-                      </Typography>
-                    </a>
+                    <a href="#">Xem tất cả</a>
                   </Box>
 
                   <Box
