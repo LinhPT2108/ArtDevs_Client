@@ -2,6 +2,11 @@
 
 import { sendRequest } from "@/components/utils/api";
 import {
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
+import {
   Box,
   Button,
   Card,
@@ -18,16 +23,11 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
-import useSWR, { SWRResponse } from "swr";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  GLOBAL_BG_BLUE_900,
-  GLOBAL_BOXSHADOW,
-  GLOBAL_URL,
-} from "@/components/utils/veriable.global";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { TransitionProps } from "react-transition-group/Transition";
-import { CubeSpan } from "@/components/utils/component.global";
+import useSWR, { SWRResponse } from "swr";
+import CardMentorSkeleton from "../home.mentor.skeleton";
 interface IPros {
   session: User;
 }
@@ -55,13 +55,14 @@ const AllMentor = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-all-mentor",
+    GLOBAL_URL + "/api/get-all-mentor",
     fetchData,
     {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
   );
+  console.log(">>> check datajjj: ", data);
 
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
@@ -130,41 +131,52 @@ const AllMentor = ({ session }: IPros) => {
   };
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          // minHeight: "100px",
-          height: "86vh",
-          alignItems: "center",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <Box
+      <Grid container columns={12} spacing={1}>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          lg={4}
           sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            zIndex: 2,
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            padding: "0px",
           }}
         >
-          <div className="cube-loader">
-            <div className="cube-top"></div>
-            <div className="cube-wrapper">
-              {[0, 1, 2, 3].map((index) => (
-                <CubeSpan key={index} index={index} />
-              ))}
-            </div>
-          </div>
-        </Box>
-      </Box>
+          <CardMentorSkeleton />
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          lg={4}
+          sx={{
+            padding: "0px",
+          }}
+        >
+          <CardMentorSkeleton />
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          lg={4}
+          sx={{
+            padding: "0px",
+          }}
+        >
+          <CardMentorSkeleton />
+        </Grid>
+        <Grid
+          item
+          xs={12}
+          md={6}
+          lg={4}
+          sx={{
+            padding: "0px",
+          }}
+        >
+          <CardMentorSkeleton />
+        </Grid>
+      </Grid>
     );
   }
   return (
@@ -176,241 +188,250 @@ const AllMentor = ({ session }: IPros) => {
         "& .MuiGrid-item": { padding: "0px" },
       }}
     >
-      {data &&
-        data?.map((mentor, index) => (
-          <Grid
-            item
-            xs={12}
-            md={6}
-            key={mentor.userId}
-            sx={{
-              padding: "0px",
-            }}
-          >
-            <Card
+      {
+        //@ts-ignore
+        !data?.statusCode &&
+          data?.map((mentor, index) => (
+            <Grid
+              item
+              xs={12}
+              md={6}
+              key={mentor.userId}
               sx={{
-                background:
-                  "linear-gradient(45deg, rgba(58,180,156,0.24693627450980393) 0%, rgba(243,245,245,0.10407913165266103) 100%)",
-                border: "40px radius",
-                overflow: "hidden",
-                transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
-                "&:hover": {
-                  transform: "scale(1.02)", // Increase scale on hover
-                },
-                cursor: "pointer",
-                margin: "15px", // Thay đổi giá trị margin của card
+                padding: "0px",
               }}
             >
-              <Grid
-                item
-                xs={12}
-                md={12}
-                onClick={() => {
-                  handleRedirect(mentor?.userId);
+              <Card
+                sx={{
+                  background:
+                    "linear-gradient(45deg, rgba(58,180,156,0.24693627450980393) 0%, rgba(243,245,245,0.10407913165266103) 100%)",
+                  border: "40px radius",
+                  overflow: "hidden",
+                  transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
+                  "&:hover": {
+                    transform: "scale(1.02)", // Increase scale on hover
+                  },
+                  cursor: "pointer",
+                  margin: "15px", // Thay đổi giá trị margin của card
                 }}
               >
-                <Box
-                  sx={{
-                    top: "4px",
-                    left: "4px",
-                    backgroundColor: mentor?.isReady ? "#16D6B5" : "#e60839",
-                    border: "1px solid white",
-                    borderRadius: "11px",
-                    width: "fit-content",
-                    height: "32px",
-                    padding: "6px",
-                    boxSizing: "border-box",
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    position: "relative",
+                <Grid
+                  item
+                  xs={12}
+                  md={12}
+                  onClick={() => {
+                    handleRedirect(mentor?.userId);
                   }}
                 >
-                  {/* Nested Box and Typography */}
                   <Box
                     sx={{
-                      width: "12px",
-                      height: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: mentor?.isReady ? "white" : "black",
-                      marginRight: "8px",
-                    }}
-                  ></Box>
-                  <Typography
-                    sx={{
-                      fontSize: "16px",
-                      fontWeight: "800",
-                      color: "white",
-                    }}
-                  >
-                    {mentor?.isReady ? "Online" : "Offline"}
-                  </Typography>
-                </Box>
-
-                <Typography
-                  gutterBottom
-                  component="div"
-                  padding="5px 5px 3px 20px"
-                  textAlign="center"
-                  sx={{
-                    fontSize: "24px",
-                    fontWeight: "500",
-                    fontStyle: "bold",
-                  }}
-                >
-                  Người Hướng Dẫn
-                </Typography>
-              </Grid>
-              <Grid item container spacing={2} padding="5px">
-                <Grid
-                  item
-                  xs={4}
-                  md={4}
-                  onClick={() => {
-                    handleRedirect(mentor?.userId);
-                  }}
-                >
-                  <CardMedia
-                    component="img"
-                    alt="green iguana"
-                    height="180"
-                    image={mentor.profilePicUrl || "/OIP.jpg"}
-                    sx={{
-                      borderRadius: "8px",
-                      objectFit: "cover",
-                      marginLeft: "5px",
-                      paddingLeft: "5px",
-                    }}
-                  />
-                </Grid>
-                <Grid
-                  item
-                  xs={8}
-                  md={8}
-                  onClick={() => {
-                    handleRedirect(mentor?.userId);
-                  }}
-                >
-                  <CardContent>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      display="flex"
-                      flexWrap="wrap"
-                    >
-                      {mentor?.listSkillOfMentor?.map((skill, index) => (
-                        <Box key={`skill${index}`} marginRight="5px">
-                          <Typography gutterBottom variant="h6" component="div">
-                            <Box
-                              sx={{
-                                width: "auto",
-                                padding: "0 12px",
-                                minWidth: "80px",
-                                textDecoration: "none",
-                                fontWeight: "bold",
-                                boxShadow: `0 0 3px 1px ${GLOBAL_BG_BLUE_900}`,
-                                textAlign: "center",
-                                color: GLOBAL_BG_BLUE_900,
-                                borderRadius: "16px",
-                                transition: "all .2s",
-                              }}
-                            >
-                              {skill}
-                            </Box>
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Typography>
-                  </CardContent>
-                </Grid>
-                <Grid item xs={12} md={12}>
-                  <CardActions
-                    sx={{
-                      justifyContent: "space-between",
+                      top: "4px",
+                      left: "4px",
+                      backgroundColor: mentor?.isReady ? "#16D6B5" : "#e60839",
+                      border: "1px solid white",
+                      borderRadius: "11px",
+                      width: "fit-content",
+                      height: "32px",
+                      padding: "6px",
+                      boxSizing: "border-box",
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      position: "relative",
                     }}
                   >
-                    <Typography
-                      gutterBottom
-                      component="div"
-                      padding="5px 5px 3px 20px"
-                      textAlign="center"
-                      sx={{
-                        fontSize: "24px",
-                        fontWeight: "500",
-                        fontStyle: "bold",
-                      }}
-                      onClick={() => {
-                        handleRedirect(mentor?.userId);
-                      }}
-                    >
-                      {mentor.fullname}
-                    </Typography>
+                    {/* Nested Box and Typography */}
                     <Box
                       sx={{
-                        background:
-                          "linear-gradient(45deg, rgba(74,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                        border: "5px ",
-                        marginRight: "12px",
-                        borderRadius: "30px",
-                        padding: "8px 16px",
-                        ":hover": {
-                          background:
-                            "linear-gradient(45deg, rgba(99,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                          boxShadow: GLOBAL_BOXSHADOW,
-                        },
+                        width: "12px",
+                        height: "12px",
+                        borderRadius: "50%",
+                        backgroundColor: mentor?.isReady
+                          ? "#f5f5f5"
+                          : "#f5f5f5",
+                        marginRight: "8px",
                       }}
-                      onClick={() =>
-                        handleClickOpen(mentor.userId, mentor.isReady)
-                      }
+                    ></Box>
+                    <Typography
+                      sx={{
+                        fontSize: "16px",
+                        fontWeight: "800",
+                        color: "white",
+                      }}
                     >
-                      Yêu Cầu Hỗ Trợ !
-                    </Box>
-                  </CardActions>
+                      {mentor?.isReady ? "Online" : "Offline"}
+                    </Typography>
+                  </Box>
+
+                  <Typography
+                    gutterBottom
+                    component="div"
+                    padding="5px 5px 3px 20px"
+                    textAlign="center"
+                    sx={{
+                      fontSize: "24px",
+                      fontWeight: "500",
+                      fontStyle: "bold",
+                    }}
+                  >
+                    Người Hướng Dẫn
+                  </Typography>
                 </Grid>
-              </Grid>
-            </Card>
-            <Snackbar
-              open={snackbarOpen}
-              message="Gửi yêu cầu hỗ trợ thành công! vui lòng đợi"
-              autoHideDuration={3000}
-              onClose={() => setSnackbarOpen(false)}
-              sx={{
-                color: "white",
-                backgroundColor: "#4CAF50",
-              }}
-            />
-            <Snackbar
-              open={snackbar2Open}
-              message="Mentor is not Ready "
-              autoHideDuration={3000}
-              onClose={() => setSnackbar2Open(false)}
-              sx={{
-                color: "black",
-                backgroundColor: "##e60839",
-              }}
-            />
-            <Dialog
-              open={open}
-              TransitionComponent={Transition}
-              keepMounted
-              onClose={handleClose}
-              aria-describedby="alert-dialog-slide-description"
-            >
-              <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
-              <DialogContent>
-                <DialogContentText id="alert-dialog-slide-description">
-                  Đồng hành với Người Hướng Dẫn IT, học viên không chỉ chinh
-                  phục thách thức kỹ thuật, mà còn khám phá sự phát triển chuyên
-                  sâu và mối quan hệ chuyên nghiệp bền vững.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleClose}>Thoát</Button>
-                <Button onClick={handleSendmatch}>Đồng ý</Button>
-              </DialogActions>
-            </Dialog>
-          </Grid>
-        ))}
+                <Grid item container spacing={2} padding="5px">
+                  <Grid
+                    item
+                    xs={4}
+                    md={4}
+                    onClick={() => {
+                      handleRedirect(mentor?.userId);
+                    }}
+                  >
+                    <CardMedia
+                      component="img"
+                      alt="green iguana"
+                      height="180"
+                      image={mentor.profilePicUrl || "/OIP.jpg"}
+                      sx={{
+                        borderRadius: "8px",
+                        objectFit: "cover",
+                        marginLeft: "5px",
+                        paddingLeft: "5px",
+                      }}
+                    />
+                  </Grid>
+                  <Grid
+                    item
+                    xs={8}
+                    md={8}
+                    onClick={() => {
+                      handleRedirect(mentor?.userId);
+                    }}
+                  >
+                    <CardContent>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        display="flex"
+                        flexWrap="wrap"
+                      >
+                        {mentor?.listSkillOfMentor?.map((skill, index) => (
+                          <Box key={`skill${index}`} marginRight="5px">
+                            <Typography
+                              gutterBottom
+                              variant="h6"
+                              component="div"
+                            >
+                              <Box
+                                sx={{
+                                  width: "auto",
+                                  padding: "0 12px",
+                                  minWidth: "80px",
+                                  textDecoration: "none",
+                                  fontWeight: "bold",
+                                  boxShadow: `0 0 3px 1px ${GLOBAL_BG_BLUE_900}`,
+                                  textAlign: "center",
+                                  color: GLOBAL_BG_BLUE_900,
+                                  borderRadius: "16px",
+                                  transition: "all .2s",
+                                }}
+                              >
+                                {skill}
+                              </Box>
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Typography>
+                    </CardContent>
+                  </Grid>
+                  <Grid item xs={12} md={12}>
+                    <CardActions
+                      sx={{
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography
+                        gutterBottom
+                        component="div"
+                        padding="5px 5px 3px 20px"
+                        textAlign="center"
+                        sx={{
+                          fontSize: "24px",
+                          fontWeight: "500",
+                          fontStyle: "bold",
+                        }}
+                        onClick={() => {
+                          handleRedirect(mentor?.userId);
+                        }}
+                      >
+                        {mentor.fullname}
+                      </Typography>
+                      <Box
+                        sx={{
+                          background:
+                            "linear-gradient(45deg, rgba(74,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
+                          border: "5px ",
+                          marginRight: "12px",
+                          borderRadius: "30px",
+                          padding: "8px 16px",
+                          ":hover": {
+                            background:
+                              "linear-gradient(45deg, rgba(99,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
+                            boxShadow: GLOBAL_BOXSHADOW,
+                          },
+                        }}
+                        onClick={() =>
+                          handleClickOpen(mentor.userId, mentor.isReady)
+                        }
+                      >
+                        Yêu Cầu Hỗ Trợ !
+                      </Box>
+                    </CardActions>
+                  </Grid>
+                </Grid>
+              </Card>
+              <Snackbar
+                open={snackbarOpen}
+                message="Gửi yêu cầu hỗ trợ thành công! vui lòng đợi"
+                autoHideDuration={3000}
+                onClose={() => setSnackbarOpen(false)}
+                sx={{
+                  color: "white",
+                  backgroundColor: "#4CAF50",
+                }}
+              />
+              <Snackbar
+                open={snackbar2Open}
+                message="Mentor is not Ready "
+                autoHideDuration={3000}
+                onClose={() => setSnackbar2Open(false)}
+                sx={{
+                  color: "black",
+                  backgroundColor: "##e60839",
+                }}
+              />
+              <Dialog
+                open={open}
+                TransitionComponent={Transition}
+                keepMounted
+                onClose={handleClose}
+                aria-describedby="alert-dialog-slide-description"
+              >
+                <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText id="alert-dialog-slide-description">
+                    Đồng hành với Người Hướng Dẫn IT, học viên không chỉ chinh
+                    phục thách thức kỹ thuật, mà còn khám phá sự phát triển
+                    chuyên sâu và mối quan hệ chuyên nghiệp bền vững.
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleClose}>Thoát</Button>
+                  <Button onClick={handleSendmatch}>Đồng ý</Button>
+                </DialogActions>
+              </Dialog>
+            </Grid>
+          ))
+      }
     </Grid>
   );
 };

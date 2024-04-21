@@ -231,6 +231,7 @@ const ariaLabel = { "aria-label": "description" };
 
 interface IPros {
   session: User;
+  sessionGuest?: UserLogin;
   hashTagText?: string;
   profile?: string;
   search?: string;
@@ -338,7 +339,6 @@ const PostProfile = ({
     }
     handleCloses();
   };
-  console.log(">>> check data posst: ", data);
   //tạo biến xử lý modal privacy
   const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
     Array(options.length).fill(null)
@@ -1542,6 +1542,8 @@ const PostProfile = ({
     setOpenLoaderPost(false);
   };
 
+  console.log(">>> check data posst: ", data);
+
   useEffect(() => {
     const fetchDataHashtag = async () => {
       try {
@@ -1578,9 +1580,11 @@ const PostProfile = ({
         const newData: ResPost[] = [...has, ...resHash];
         setPosts(newData);
         mutate({ meta: response?.meta, result: newData! }, false);
+      } else {
+        data && setPosts(data?.result);
       }
     })();
-  }, [page]);
+  }, [page, data]);
 
   // useEffect(() => {
   //   const fetchDataHashtag = async () => {
@@ -1647,7 +1651,7 @@ const PostProfile = ({
       </Box>
     );
   }
-  // console.log(">>> check posts: ", posts);
+  console.log(">>> check posts123: ", posts);
   return (
     <>
       <Box
@@ -2183,691 +2187,687 @@ const PostProfile = ({
       >
         {
           //@ts-ignore
-          !posts?.statusCode &&
-            posts?.map((item, index) => (
-              <Box
-                key={index}
-                sx={{
-                  borderRadius: "5px",
-                  boxShadow: "0px 1px 2px #3335",
-                  backgroundColor: "#fff",
-                  marginBottom: "15px",
-                  height: "auto",
-                  transition: "all 0.25s linear",
-                  "& img": {
-                    width: "100%",
-                    cursor: "pointer",
-                    objectFit: "cover",
-                  },
-                  " & a": {
-                    textDecoration: "none",
-                    color: "#000",
-                  },
-                }}
-              >
-                {item?.typePost === "share" && (
+
+          posts?.map((item, index) => (
+            <Box
+              key={index}
+              sx={{
+                borderRadius: "5px",
+                boxShadow: "0px 1px 2px #3335",
+                backgroundColor: "#fff",
+                marginBottom: "15px",
+                height: "auto",
+                transition: "all 0.25s linear",
+                "& img": {
+                  width: "100%",
+                  cursor: "pointer",
+                  objectFit: "cover",
+                },
+                " & a": {
+                  textDecoration: "none",
+                  color: "#000",
+                },
+              }}
+            >
+              {item?.typePost === "share" && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    padding: "8px 16px",
+                    boxShadow: "1px 1px 1px 1px gray",
+                    backgroundColor: "#bed1b491",
+                    borderTopLeftRadius: "5px",
+                    borderTopRightRadius: "5px",
+                  }}
+                >
                   <Box
                     sx={{
                       display: "flex",
-                      justifyContent: "center",
-                      flexDirection: "column",
-                      alignItems: "flex-start",
-                      padding: "8px 16px",
-                      boxShadow: "1px 1px 1px 1px gray",
-                      backgroundColor: "#bed1b491",
-                      borderTopLeftRadius: "5px",
-                      borderTopRightRadius: "5px",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
                     }}
+                  >
+                    <Typography
+                      component={"p"}
+                      sx={{ fontWeight: "bold", marginRight: "6px" }}
+                    >
+                      {
+                        //@ts-ignore
+                        item?.userPostDto?.fullname
+                      }
+                    </Typography>
+                    <Typography component={"p"}>
+                      {`đã chia sẻ bài viết`}
+                    </Typography>
+                  </Box>
+                  <Typography component={"p"}>{item?.content}</Typography>
+                </Box>
+              )}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "10px",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    alignItems: "center",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      borderRadius: "50%",
+                      width: "45px",
+                      height: "45px",
+                      marginRight: "4px",
+                      "& img": {
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                      },
+                    }}
+                  >
+                    <a href="#">
+                      <img
+                        src={`${
+                          url == "post-by-user-logged"
+                            ? session?.user?.profileImageUrl
+                              ? session?.user?.profileImageUrl
+                              : "/profile/user.jpg"
+                            : item.postId.userPost.profilePicUrl
+                            ? item.postId.userPost.profilePicUrl
+                            : "/profile/user.jpg"
+                        }`}
+                      />
+                    </a>
+                  </Box>
+                  <Box
+                    sx={{
+                      marginLeft: "7px",
+                    }}
+                  >
+                    <Typography
+                      component={"h2"}
+                      sx={{
+                        fontSize: "18px",
+                        color: "#333",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {item?.postId?.userPost?.fullname}
+                    </Typography>
+                    <Box
+                      sx={{
+                        color: "#3339",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {session?.user?.userId ===
+                        item?.postId?.userPost?.userId && (
+                        <React.Fragment>
+                          <List
+                            component="nav"
+                            aria-label="Device settings"
+                            sx={{ bgcolor: "background.paper", padding: 0 }}
+                          >
+                            <ListItemButton
+                              id={`lock-button-${index}`}
+                              aria-haspopup="listbox"
+                              aria-controls={`lock-menu-${index}`}
+                              aria-label="when device is locked"
+                              aria-expanded={
+                                Boolean(anchorEls[index]) ? "true" : undefined
+                              }
+                              onClick={handleClickListItem(index)}
+                              sx={{ padding: 0 }}
+                            >
+                              <LockIcon sx={{ fontSize: "18px" }} />
+                              {options[selectedIndexes[index]] ||
+                                item?.postId?.privacyPostDetails[0]
+                                  ?.namePrivacy}
+                            </ListItemButton>
+                          </List>
+                          <Menu
+                            id={`lock-menu-${index}`}
+                            anchorEl={anchorEls[index]}
+                            open={Boolean(anchorEls[index])}
+                            onClose={handleClose}
+                            MenuListProps={{
+                              "aria-labelledby": `lock-button-${index}`,
+                              role: "listbox",
+                            }}
+                          >
+                            {options.map((option, optionIndex) => (
+                              <MenuItem
+                                key={option}
+                                selected={
+                                  optionIndex === selectedIndexes[index]
+                                }
+                                onClick={handleMenuItemClick(
+                                  index,
+                                  optionIndex,
+                                  item?.postId?.postId
+                                )}
+                              >
+                                {option}
+                              </MenuItem>
+                            ))}
+                          </Menu>
+                        </React.Fragment>
+                      )}
+                      <Typography
+                        component={"span"}
+                        sx={{ textDecoration: "none", marginLeft: "6px" }}
+                      >
+                        {formatDateString(item?.postId?.time)}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    transform: "rotate(90deg)",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      textAlign: "center",
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                      transition: "all 0.2s linear",
+                      "&:hover": {
+                        backgroundColor: "#eeeeee",
+                      },
+                    }}
+                    onClick={(event) =>
+                      handleClick(event, item?.postId?.postId, item)
+                    }
                   >
                     <Box
                       sx={{
                         display: "flex",
-                        justifyContent: "flex-start",
+                        padding: "8px 4px ",
                         alignItems: "center",
+                        textAlign: "center",
                       }}
                     >
-                      <Typography
-                        component={"p"}
-                        sx={{ fontWeight: "bold", marginRight: "6px" }}
-                      >
-                        {
-                          //@ts-ignore
-                          item?.userPostDto?.fullname
-                        }
-                      </Typography>
-                      <Typography component={"p"}>
-                        {`đã chia sẻ bài viết`}
-                      </Typography>
+                      <MoreVertIcon />
                     </Box>
-                    <Typography component={"p"}>{item?.content}</Typography>
                   </Box>
-                )}
+                  <Menu
+                    anchorEl={anchorEl}
+                    id={`account-menu-${index}`}
+                    open={Boolean(anchorEl)}
+                    onClose={handleCloses}
+                    onClick={handleCloses}
+                    PaperProps={{
+                      elevation: 0,
+                      sx: {
+                        overflow: "visible",
+                        filter: "drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.32))",
+                        mt: 1.5,
+                        "& .MuiAvatar-root": {
+                          width: 32,
+                          height: 32,
+                          ml: -0.5,
+                          mr: 1,
+                        },
+                        "&::before": {
+                          content: '""',
+                          display: "block",
+                          position: "absolute",
+                          top: 0,
+                          right: 14,
+                          width: 10,
+                          height: 10,
+                          bgcolor: "background.paper",
+                          transform: "translateY(-50%) rotate(45deg)",
+                          zIndex: 0,
+                        },
+                      },
+                    }}
+                    transformOrigin={{ horizontal: "right", vertical: "top" }}
+                    anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  >
+                    {session?.user?.userId == item?.postId?.userPost?.userId ||
+                    //@ts-ignore
+                    session?.user?.userId == item?.userPostDto?.userId ? (
+                      <Box>
+                        <MenuItem
+                          onClick={() => handleDeletePost(selectedItemId)}
+                        >
+                          <ListItemIcon>
+                            <DeleteIcon fontSize="small" />
+                          </ListItemIcon>
+                          Xóa bài viết
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                          <ListItemIcon>
+                            <EditIcon fontSize="small" />
+                          </ListItemIcon>
+                          Chỉnh sửa bài viết
+                        </MenuItem>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <MenuItem
+                          onClick={() => handleOpenDialogReportPost(postModal!)}
+                        >
+                          <ReportGmailerrorredOutlinedIcon
+                            sx={{ marginRight: "6px" }}
+                          />
+                          Báo cáo bài viết
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </Menu>
+                </Box>
+              </Box>
+              <Link href={`/post?id=${item?.postId?.postId}`}>
+                <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
+                  {item?.postId?.content}
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-start",
+                    paddingX: "16px",
+                    paddingBottom: "16px",
+                    "& a": {
+                      backgroundColor: "#d6e8fa",
+                      color: "#0c3b6a",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      // fontWeight: "400",
+                      padding: "4.8px 6px",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease-in-out",
+                      margin: "0 2px 2px 0",
+                      border: "1px solid #BDC0C7",
+                      textDecoration: "none",
+                      gridArea: "auto",
+                      "&:hover": {
+                        transform: "translateY(-1px) translateX(0)",
+                        boxShadow: "0 1px 0 0 #BDC0C7",
+                      },
+                    },
+                  }}
+                >
+                  {item?.postId?.listHashtag?.map((hashtag) => (
+                    <Link
+                      key={hashtag.id}
+                      href={`/hash-tag/${hashtag?.hashtagDetailName}`}
+                    >
+                      {hashtag?.hashtagDetailName}
+                    </Link>
+                  ))}
+                </Box>
+                <Box
+                  sx={{
+                    backgroundColor: "#fff",
+                    color: "#fff",
+                    width: "100%",
+                    height: "auto",
+                    // height: `${
+                    //   item?.listImageofPost?.length > 1 ? "350px" : "auto"
+                    // }`,
+                    boxSizing: "border-box",
+                    overflow: "hidden",
+                    display: "grid",
+                    gridTemplateColumns: `${
+                      item?.postId?.listImageofPost?.length == 1
+                        ? "1fr"
+                        : "1fr 1fr"
+                    }`,
+                    gridColumnGap: `${
+                      item?.postId?.listImageofPost?.length > 1 ? "3px" : "0"
+                    }`,
+                  }}
+                >
+                  {item?.postId?.listImageofPost?.length < 3 ? (
+                    item?.postId?.listImageofPost?.map((item, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          "& img": {
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        <img src={item.imageUrl} alt="photo" />
+                      </Box>
+                    ))
+                  ) : item?.postId?.listImageofPost?.length == 3 ? (
+                    <React.Fragment key={index}>
+                      <Box
+                        sx={{
+                          "& img": {
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        <img
+                          src={item?.postId?.listImageofPost[0].imageUrl}
+                          alt="photo"
+                        />
+                      </Box>
+                      <Box>
+                        {item?.postId?.listImageofPost?.map((item, index) => (
+                          <React.Fragment key={index}>
+                            {index > 0 ? (
+                              <Box
+                                sx={{
+                                  width: "100%",
+                                  height: "50%",
+                                  backgroundColor: "#3335",
+                                  borderBottom: `${
+                                    index == 1 ? "3px solid #fff" : "0"
+                                  }`,
+                                  boxSizing: "border-box",
+                                  "& img": {
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  },
+                                }}
+                              >
+                                <img src={item?.imageUrl} alt="photo" />
+                              </Box>
+                            ) : (
+                              <React.Fragment key={index}></React.Fragment>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </Box>
+                    </React.Fragment>
+                  ) : item?.postId?.listImageofPost?.length == 4 ? (
+                    item?.postId?.listImageofPost?.map((item, index) => (
+                      <Box
+                        key={index}
+                        sx={{
+                          "& img": {
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            cursor: "pointer",
+                          },
+                        }}
+                      >
+                        <img src={item.imageUrl} alt="photo" />
+                      </Box>
+                    ))
+                  ) : (
+                    item?.postId?.listImageofPost?.map((i, index) => (
+                      <React.Fragment key={index}>
+                        {index < 3 ? (
+                          <Box
+                            sx={{
+                              "& img": {
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                cursor: "pointer",
+                              },
+                            }}
+                          >
+                            <img src={i.imageUrl} alt="photo" />
+                          </Box>
+                        ) : (
+                          <React.Fragment key={index}>
+                            {index == 4 ? (
+                              <Box
+                                sx={{
+                                  position: "relative",
+                                  "& img": {
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    cursor: "pointer",
+                                  },
+                                }}
+                              >
+                                <img src={i.imageUrl} alt="photo" />
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    top: "0px",
+                                    left: "0px",
+                                    backgroundColor: "#6d6868a3",
+                                    width: "100%",
+                                    height: "100%",
+                                    overflow: "hidden",
+                                    boxSizing: "border-box",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    fontSize: "24px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  {item?.postId?.listImageofPost?.length - 4}
+                                </Box>
+                              </Box>
+                            ) : (
+                              <React.Fragment key={index}></React.Fragment>
+                            )}
+                          </React.Fragment>
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
+                </Box>
+              </Link>
+              <Box sx={{ padding: "10px" }}>
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "10px",
                   }}
                 >
                   <Box
                     sx={{
                       display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "center",
                     }}
                   >
                     <Box
                       sx={{
+                        width: "22px",
+                        height: "22px",
+                        boxSizing: "border-box",
                         borderRadius: "50%",
-                        width: "45px",
-                        height: "45px",
-                        marginRight: "4px",
-                        "& img": {
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderRadius: "50%",
-                          cursor: "pointer",
-                        },
-                      }}
-                    >
-                      <a href="#">
-                        <img
-                          src={`${
-                            url == "post-by-user-logged"
-                              ? session?.user?.profileImageUrl
-                                ? session?.user?.profileImageUrl
-                                : "/profile/user.jpg"
-                              : item.postId.userPost.profilePicUrl
-                              ? item.postId.userPost.profilePicUrl
-                              : "/profile/user.jpg"
-                          }`}
-                        />
-                      </a>
-                    </Box>
-                    <Box
-                      sx={{
-                        marginLeft: "7px",
-                      }}
-                    >
-                      <Typography
-                        component={"h2"}
-                        sx={{
-                          fontSize: "18px",
-                          color: "#333",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {item?.postId?.userPost?.fullname}
-                      </Typography>
-                      <Box
-                        sx={{
-                          color: "#3339",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        {session?.user?.userId ===
-                          item?.postId?.userPost?.userId && (
-                          <React.Fragment>
-                            <List
-                              component="nav"
-                              aria-label="Device settings"
-                              sx={{ bgcolor: "background.paper", padding: 0 }}
-                            >
-                              <ListItemButton
-                                id={`lock-button-${index}`}
-                                aria-haspopup="listbox"
-                                aria-controls={`lock-menu-${index}`}
-                                aria-label="when device is locked"
-                                aria-expanded={
-                                  Boolean(anchorEls[index]) ? "true" : undefined
-                                }
-                                onClick={handleClickListItem(index)}
-                                sx={{ padding: 0 }}
-                              >
-                                <LockIcon sx={{ fontSize: "18px" }} />
-                                {options[selectedIndexes[index]] ||
-                                  item?.postId?.privacyPostDetails[0]
-                                    ?.namePrivacy}
-                              </ListItemButton>
-                            </List>
-                            <Menu
-                              id={`lock-menu-${index}`}
-                              anchorEl={anchorEls[index]}
-                              open={Boolean(anchorEls[index])}
-                              onClose={handleClose}
-                              MenuListProps={{
-                                "aria-labelledby": `lock-button-${index}`,
-                                role: "listbox",
-                              }}
-                            >
-                              {options.map((option, optionIndex) => (
-                                <MenuItem
-                                  key={option}
-                                  selected={
-                                    optionIndex === selectedIndexes[index]
-                                  }
-                                  onClick={handleMenuItemClick(
-                                    index,
-                                    optionIndex,
-                                    item?.postId?.postId
-                                  )}
-                                >
-                                  {option}
-                                </MenuItem>
-                              ))}
-                            </Menu>
-                          </React.Fragment>
-                        )}
-                        <Typography
-                          component={"span"}
-                          sx={{ textDecoration: "none", marginLeft: "6px" }}
-                        >
-                          {formatDateString(item?.postId?.time)}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Box
-                    sx={{
-                      transform: "rotate(90deg)",
-                    }}
-                  >
-                    <Box
-                      sx={{
+                        border: "1px solid #fff",
                         display: "flex",
+                        backgroundImage:
+                          "linear-gradient(to bottom, #11A6FC, #036FE4)",
+                        justifyContent: "center",
                         alignItems: "center",
-                        textAlign: "center",
-                        cursor: "pointer",
-                        borderRadius: "4px",
-                        transition: "all 0.2s linear",
-                        "&:hover": {
-                          backgroundColor: "#eeeeee",
-                        },
                       }}
-                      onClick={(event) =>
-                        handleClick(event, item?.postId?.postId, item)
-                      }
                     >
-                      <Box
+                      <ThumbUpOffAltIcon
                         sx={{
-                          display: "flex",
-                          padding: "8px 4px ",
-                          alignItems: "center",
-                          textAlign: "center",
+                          color: "white",
+                          fontSize: "12px",
+                          margin: "auto",
                         }}
-                      >
-                        <MoreVertIcon />
-                      </Box>
+                      />
                     </Box>
-                    <Menu
-                      anchorEl={anchorEl}
-                      id={`account-menu-${index}`}
-                      open={Boolean(anchorEl)}
-                      onClose={handleCloses}
-                      onClick={handleCloses}
-                      PaperProps={{
-                        elevation: 0,
-                        sx: {
-                          overflow: "visible",
-                          filter:
-                            "drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.32))",
-                          mt: 1.5,
-                          "& .MuiAvatar-root": {
-                            width: 32,
-                            height: 32,
-                            ml: -0.5,
-                            mr: 1,
-                          },
-                          "&::before": {
-                            content: '""',
-                            display: "block",
-                            position: "absolute",
-                            top: 0,
-                            right: 14,
-                            width: 10,
-                            height: 10,
-                            bgcolor: "background.paper",
-                            transform: "translateY(-50%) rotate(45deg)",
-                            zIndex: 0,
-                          },
-                        },
-                      }}
-                      transformOrigin={{ horizontal: "right", vertical: "top" }}
-                      anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-                    >
-                      {session?.user?.userId ==
-                        item?.postId?.userPost?.userId ||
-                      //@ts-ignore
-                      session?.user?.userId == item?.userPostDto?.userId ? (
-                        <Box>
-                          <MenuItem
-                            onClick={() => handleDeletePost(selectedItemId)}
-                          >
-                            <ListItemIcon>
-                              <DeleteIcon fontSize="small" />
-                            </ListItemIcon>
-                            Xóa bài viết
-                          </MenuItem>
-                          <MenuItem onClick={() => handleEditPost(postModal!)}>
-                            <ListItemIcon>
-                              <EditIcon fontSize="small" />
-                            </ListItemIcon>
-                            Chỉnh sửa bài viết
-                          </MenuItem>
-                        </Box>
-                      ) : (
-                        <Box>
-                          <MenuItem
-                            onClick={() =>
-                              handleOpenDialogReportPost(postModal!)
-                            }
-                          >
-                            <ReportGmailerrorredOutlinedIcon
-                              sx={{ marginRight: "6px" }}
-                            />
-                            Báo cáo bài viết
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </Menu>
+                    <Typography component={"p"} sx={{ marginLeft: "6px" }}>
+                      {item?.postId?.totalLike}
+                    </Typography>
                   </Box>
-                </Box>
-                <Link href={`/post?id=${item?.postId?.postId}`}>
-                  <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
-                    {item?.postId?.content}
-                  </Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      paddingX: "16px",
-                      paddingBottom: "16px",
-                      "& a": {
-                        backgroundColor: "#d6e8fa",
-                        color: "#0c3b6a",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        // fontWeight: "400",
-                        padding: "4.8px 6px",
-                        cursor: "pointer",
-                        transition: "all 0.3s ease-in-out",
-                        margin: "0 2px 2px 0",
-                        border: "1px solid #BDC0C7",
-                        textDecoration: "none",
-                        gridArea: "auto",
-                        "&:hover": {
-                          transform: "translateY(-1px) translateX(0)",
-                          boxShadow: "0 1px 0 0 #BDC0C7",
-                        },
-                      },
-                    }}
-                  >
-                    {item?.postId?.listHashtag?.map((hashtag) => (
-                      <Link
-                        key={hashtag.id}
-                        href={`/hash-tag/${hashtag?.hashtagDetailName}`}
-                      >
-                        {hashtag?.hashtagDetailName}
-                      </Link>
-                    ))}
-                  </Box>
-                  <Box
-                    sx={{
-                      backgroundColor: "#fff",
-                      color: "#fff",
-                      width: "100%",
-                      height: "auto",
-                      // height: `${
-                      //   item?.listImageofPost?.length > 1 ? "350px" : "auto"
-                      // }`,
-                      boxSizing: "border-box",
-                      overflow: "hidden",
-                      display: "grid",
-                      gridTemplateColumns: `${
-                        item?.postId?.listImageofPost?.length == 1
-                          ? "1fr"
-                          : "1fr 1fr"
-                      }`,
-                      gridColumnGap: `${
-                        item?.postId?.listImageofPost?.length > 1 ? "3px" : "0"
-                      }`,
-                    }}
-                  >
-                    {item?.postId?.listImageofPost?.length < 3 ? (
-                      item?.postId?.listImageofPost?.map((item, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            "& img": {
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            },
-                          }}
-                        >
-                          <img src={item.imageUrl} alt="photo" />
-                        </Box>
-                      ))
-                    ) : item?.postId?.listImageofPost?.length == 3 ? (
-                      <React.Fragment key={index}>
-                        <Box
-                          sx={{
-                            "& img": {
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            },
-                          }}
-                        >
-                          <img
-                            src={item?.postId?.listImageofPost[0].imageUrl}
-                            alt="photo"
-                          />
-                        </Box>
-                        <Box>
-                          {item?.postId?.listImageofPost?.map((item, index) => (
-                            <React.Fragment key={index}>
-                              {index > 0 ? (
-                                <Box
-                                  sx={{
-                                    width: "100%",
-                                    height: "50%",
-                                    backgroundColor: "#3335",
-                                    borderBottom: `${
-                                      index == 1 ? "3px solid #fff" : "0"
-                                    }`,
-                                    boxSizing: "border-box",
-                                    "& img": {
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                      cursor: "pointer",
-                                    },
-                                  }}
-                                >
-                                  <img src={item?.imageUrl} alt="photo" />
-                                </Box>
-                              ) : (
-                                <React.Fragment key={index}></React.Fragment>
-                              )}
-                            </React.Fragment>
-                          ))}
-                        </Box>
-                      </React.Fragment>
-                    ) : item?.postId?.listImageofPost?.length == 4 ? (
-                      item?.postId?.listImageofPost?.map((item, index) => (
-                        <Box
-                          key={index}
-                          sx={{
-                            "& img": {
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                              cursor: "pointer",
-                            },
-                          }}
-                        >
-                          <img src={item.imageUrl} alt="photo" />
-                        </Box>
-                      ))
-                    ) : (
-                      item?.postId?.listImageofPost?.map((i, index) => (
-                        <React.Fragment key={index}>
-                          {index < 3 ? (
-                            <Box
-                              sx={{
-                                "& img": {
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  cursor: "pointer",
-                                },
-                              }}
-                            >
-                              <img src={i.imageUrl} alt="photo" />
-                            </Box>
-                          ) : (
-                            <React.Fragment key={index}>
-                              {index == 4 ? (
-                                <Box
-                                  sx={{
-                                    position: "relative",
-                                    "& img": {
-                                      width: "100%",
-                                      height: "100%",
-                                      objectFit: "cover",
-                                      cursor: "pointer",
-                                    },
-                                  }}
-                                >
-                                  <img src={i.imageUrl} alt="photo" />
-                                  <Box
-                                    sx={{
-                                      position: "absolute",
-                                      top: "0px",
-                                      left: "0px",
-                                      backgroundColor: "#6d6868a3",
-                                      width: "100%",
-                                      height: "100%",
-                                      overflow: "hidden",
-                                      boxSizing: "border-box",
-                                      cursor: "pointer",
-                                      display: "flex",
-                                      justifyContent: "center",
-                                      alignItems: "center",
-                                      fontSize: "24px",
-                                      fontWeight: "bold",
-                                    }}
-                                  >
-                                    {item?.postId?.listImageofPost?.length - 4}
-                                  </Box>
-                                </Box>
-                              ) : (
-                                <React.Fragment key={index}></React.Fragment>
-                              )}
-                            </React.Fragment>
-                          )}
-                        </React.Fragment>
-                      ))
-                    )}
-                  </Box>
-                </Link>
-                <Box sx={{ padding: "10px" }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Box
+
+                  <Box sx={{ display: "flex" }}>
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
+                        color: "#3339",
                       }}
                     >
-                      <Box
-                        sx={{
-                          width: "22px",
-                          height: "22px",
-                          boxSizing: "border-box",
-                          borderRadius: "50%",
-                          border: "1px solid #fff",
-                          display: "flex",
-                          backgroundImage:
-                            "linear-gradient(to bottom, #11A6FC, #036FE4)",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <ThumbUpOffAltIcon
-                          sx={{
-                            color: "white",
-                            fontSize: "12px",
-                            margin: "auto",
-                          }}
-                        />
-                      </Box>
-                      <Typography component={"p"} sx={{ marginLeft: "6px" }}>
-                        {item?.postId?.totalLike}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ display: "flex" }}>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          color: "#3339",
-                        }}
-                      >
-                        {item?.postId?.totalComment} Bình luận
-                      </Typography>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          color: "#3339",
-                          marginLeft: "12px",
-                        }}
-                      >
-                        {item?.postId?.totalShare} Chia sẻ
-                      </Typography>
-                    </Box>
+                      {item?.postId?.totalComment} Bình luận
+                    </Typography>
+                    <Typography
+                      component={"p"}
+                      sx={{
+                        color: "#3339",
+                        marginLeft: "12px",
+                      }}
+                    >
+                      {item?.postId?.totalShare} Chia sẻ
+                    </Typography>
                   </Box>
                 </Box>
+              </Box>
 
+              <Grid
+                container
+                columns={3}
+                sx={{
+                  borderTop: " 1px solid #3333",
+                }}
+              >
                 <Grid
-                  container
-                  columns={3}
+                  item
+                  xs={1}
                   sx={{
-                    borderTop: " 1px solid #3333",
+                    // padding: "10px 0px",
+                    fontSize: "14px",
+                    textAlign: "center",
+                    color: item?.postId?.likeByUserLogged
+                      ? "#ff0000"
+                      : "#57585b",
+                    // color: "#707070",
+                    display: "flex",
+                    justifyContent: "center",
+                    paddingY: 0,
+                    alignItems: "center",
+                    transition: "all 0.2s linear",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "#E4E6E9",
+                    },
                   }}
                 >
-                  <Grid
-                    item
-                    xs={1}
+                  <IconButton
+                    aria-label="add to favorites"
                     sx={{
-                      // padding: "10px 0px",
-                      fontSize: "14px",
-                      textAlign: "center",
+                      // borderRadius: "10px",
+                      width: "100%",
+                      borderRadius: "0",
+                      // paddingY: 2,
+
                       color: item?.postId?.likeByUserLogged
                         ? "#ff0000"
                         : "#57585b",
-                      // color: "#707070",
-                      display: "flex",
-                      justifyContent: "center",
-                      paddingY: 0,
-                      alignItems: "center",
-                      transition: "all 0.2s linear",
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: "#E4E6E9",
-                      },
-                    }}
-                  >
-                    <IconButton
-                      aria-label="add to favorites"
-                      sx={{
-                        // borderRadius: "10px",
-                        width: "100%",
-                        borderRadius: "0",
-                        // paddingY: 2,
-
-                        color: item?.postId?.likeByUserLogged
-                          ? "#ff0000"
-                          : "#57585b",
-                      }}
-                      onClick={() =>
-                        item?.postId?.likeByUserLogged
-                          ? handleUnlike(item?.postId?.postId, false)
-                          : handleLike(item?.postId?.postId, item, false)
-                      }
-                      disabled={item?.postId?.isProcessingLike}
-                    >
-                      {item?.postId?.isProcessingLike ? (
-                        <CircularProgress size={24} color="secondary" />
-                      ) : (
-                        <>
-                          <ThumbUpOffAltIcon />
-                          <Typography
-                            component={"span"}
-                            sx={{ marginLeft: "5px" }}
-                          >
-                            Thích
-                          </Typography>
-                        </>
-                      )}
-                    </IconButton>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={1}
-                    sx={{
-                      // padding: "10px 0px",
-                      fontSize: "14px",
-                      textAlign: "center",
-                      color: "#707070",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      transition: "all 0.2s linear",
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: "#E4E6E9",
-                      },
-                    }}
-                  >
-                    <IconButton
-                      aria-label="comment"
-                      sx={{
-                        width: "100%",
-                        borderRadius: "0",
-                      }}
-                      onClick={() => handleOpenModalCmt(item?.postId)}
-                    >
-                      <CommentIcon />
-                      <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                        Bình luận
-                      </Typography>
-                    </IconButton>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={1}
-                    sx={{
-                      padding: "10px 0px",
-                      fontSize: "14px",
-                      textAlign: "center",
-                      color: "#707070",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      transition: "all 0.2s linear",
-                      cursor: "pointer",
-                      "&:hover": {
-                        backgroundColor: "#E4E6E9",
-                      },
                     }}
                     onClick={() =>
-                      handleClickOpenAlerts(
-                        item?.postId,
-                        "share",
-                        false,
-                        -1,
-                        false
-                      )
+                      item?.postId?.likeByUserLogged
+                        ? handleUnlike(item?.postId?.postId, false)
+                        : handleLike(item?.postId?.postId, item, false)
                     }
+                    disabled={item?.postId?.isProcessingLike}
                   >
-                    <ShareIcon />
-                    <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Chia sẻ
-                    </Typography>
-                  </Grid>
+                    {item?.postId?.isProcessingLike ? (
+                      <CircularProgress size={24} color="secondary" />
+                    ) : (
+                      <>
+                        <ThumbUpOffAltIcon />
+                        <Typography
+                          component={"span"}
+                          sx={{ marginLeft: "5px" }}
+                        >
+                          Thích
+                        </Typography>
+                      </>
+                    )}
+                  </IconButton>
                 </Grid>
-              </Box>
-            ))
+                <Grid
+                  item
+                  xs={1}
+                  sx={{
+                    // padding: "10px 0px",
+                    fontSize: "14px",
+                    textAlign: "center",
+                    color: "#707070",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    transition: "all 0.2s linear",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "#E4E6E9",
+                    },
+                  }}
+                >
+                  <IconButton
+                    aria-label="comment"
+                    sx={{
+                      width: "100%",
+                      borderRadius: "0",
+                    }}
+                    onClick={() => handleOpenModalCmt(item?.postId)}
+                  >
+                    <CommentIcon />
+                    <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                      Bình luận
+                    </Typography>
+                  </IconButton>
+                </Grid>
+                <Grid
+                  item
+                  xs={1}
+                  sx={{
+                    padding: "10px 0px",
+                    fontSize: "14px",
+                    textAlign: "center",
+                    color: "#707070",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    transition: "all 0.2s linear",
+                    cursor: "pointer",
+                    "&:hover": {
+                      backgroundColor: "#E4E6E9",
+                    },
+                  }}
+                  onClick={() =>
+                    handleClickOpenAlerts(
+                      item?.postId,
+                      "share",
+                      false,
+                      -1,
+                      false
+                    )
+                  }
+                >
+                  <ShareIcon />
+                  <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                    Chia sẻ
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          ))
         }
       </InfiniteScroll>
       <Modal

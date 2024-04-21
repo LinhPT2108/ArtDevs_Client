@@ -26,19 +26,21 @@ import {
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
+import { useRouter } from "next/navigation";
 
 interface IPros {
   session: User;
 }
 
 const HomeFriend = ({ session }: IPros) => {
-  const socket = new SockJS("http://localhost:8080/friend");
+  const socket = new SockJS(GLOBAL_URL + "/friend");
   const stompClient = Stomp.over(socket);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbar2Open, setSnackbar2Open] = useState(false);
   const [snackbar3Open, setSnackbar3Open] = useState(false);
   const [snackbar4Open, setSnackbar4Open] = useState(false);
   const [snackbar5Open, setSnackbar5Open] = useState(false);
+
   const [listDataUserSuitable, setListDataUserSuitable] = useState<
     UserAction[]
   >([]);
@@ -370,7 +372,6 @@ const HomeFriend = ({ session }: IPros) => {
     }
   }, [session]);
 
-  //Snackbar
   const showSnackbar = () => {
     setSnackbarOpen(true);
     setTimeout(() => setSnackbarOpen(false), 10000);
@@ -393,7 +394,13 @@ const HomeFriend = ({ session }: IPros) => {
     setSnackbar5Open(true);
     setTimeout(() => setSnackbar5Open(false), 10000);
   };
-  //End Snack Bar
+
+  //biến chuyển hướng
+  const router = useRouter();
+  // xử lý chuyển hướng trang cá nhân
+  const handleRouterProfile = (id: string) => {
+    router.push(`/profile?id=${id}`);
+  };
 
   if (isLoading) {
     return (
@@ -477,6 +484,7 @@ const HomeFriend = ({ session }: IPros) => {
                   sx={{ height: 300 }}
                   image={item.userAction.profilePicUrl || "/OIP.jpg"}
                   title="green iguana"
+                  onClick={() => handleRouterProfile(item?.id)}
                 />
                 <CardContent
                   sx={{
@@ -494,6 +502,7 @@ const HomeFriend = ({ session }: IPros) => {
                     sx={{
                       marginBottom: "0",
                     }}
+                    onClick={() => handleRouterProfile(item?.id)}
                   >
                     {item.userAction.fullname}
                   </Typography>
@@ -601,9 +610,10 @@ const HomeFriend = ({ session }: IPros) => {
                 }}
               >
                 <CardMedia
-                  sx={{ height: 300 }}
+                  sx={{ height: 300, cursor: "pointer" }}
                   image={item.profilePicUrl || "/OIP.jpg"}
                   title="green iguana"
+                  onClick={() => handleRouterProfile(item?.userId)}
                 />
                 <CardContent
                   sx={{
@@ -620,7 +630,9 @@ const HomeFriend = ({ session }: IPros) => {
                     component="div"
                     sx={{
                       marginBottom: "0",
+                      cursor: "pointer",
                     }}
+                    onClick={() => handleRouterProfile(item?.userId)}
                   >
                     {item.fullname}
                   </Typography>

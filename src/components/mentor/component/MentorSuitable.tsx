@@ -55,13 +55,14 @@ const MentorSuitable = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor-issuitable",
+    GLOBAL_URL + "/api/get-mentor-issuitable",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
+  console.log(">>> check data gợi ý : ", data);
 
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
@@ -193,12 +194,12 @@ const MentorSuitable = ({ session }: IPros) => {
                   "linear-gradient(45deg, rgba(58,180,156,0.24693627450980393) 0%, rgba(243,245,245,0.10407913165266103) 100%)",
                 border: "40px radius",
                 overflow: "hidden",
-                transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
+                transition: "transform 0.3s ease-in-out",
                 "&:hover": {
-                  transform: "scale(1.02)", // Increase scale on hover
+                  transform: "scale(1.02)",
                 },
                 cursor: "pointer",
-                margin: "15px", // Thay đổi giá trị margin của card
+                margin: "15px",
               }}
             >
               <Grid
@@ -232,7 +233,7 @@ const MentorSuitable = ({ session }: IPros) => {
                       width: "12px",
                       height: "12px",
                       borderRadius: "50%",
-                      backgroundColor: mentor?.isReady ? "white" : "black",
+                      backgroundColor: mentor?.isReady ? "#f5f5f5" : "#f5f5f5",
                       marginRight: "8px",
                     }}
                   ></Box>

@@ -249,7 +249,7 @@ const MenuMentor = ({ session }: IPros) => {
         {listmentor &&
           listmentor.slice(0, 5).map((item, index) => {
             return (
-              <Box>
+              <Box key={index}>
                 <Card
                   sx={{
                     maxWidth: 345,
@@ -263,7 +263,6 @@ const MenuMentor = ({ session }: IPros) => {
                       transform: "scale(1.02)", // Increase scale on hover
                     },
                   }}
-                  key={index}
                   onClick={() => {
                     handleRedirect(item?.userId);
                   }}
@@ -320,7 +319,7 @@ const MenuMentor = ({ session }: IPros) => {
                   <CardMedia
                     component="img"
                     alt="green iguana"
-                    height="80"
+                    height="200"
                     image={item.profilePicUrl || "/OIP.jpg"}
                     sx={{
                       borderRadius: "25%", // Đặt borderRadius thành 50% để bo tròn hình ảnh

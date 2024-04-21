@@ -1,45 +1,13 @@
 "use client";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Grid,
-  Rating,
-  Slide,
-  Snackbar,
-  Tab,
-  Tabs,
-} from "@mui/material";
+import { Grid, Slide, Tab, Tabs } from "@mui/material";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import Typography from "@mui/material/Typography";
-import { CubeSpan } from "../utils/component.global";
-import React, { useEffect, useState } from "react";
-import { sendRequest } from "../utils/api";
-import useSWR, { SWRResponse } from "swr";
-import { formatVND } from "../utils/utils";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  GLOBAL_BG_BLUE_900,
-  GLOBAL_BOXSHADOW,
-  GLOBAL_URL,
-} from "../utils/veriable.global";
 import { TransitionProps } from "@mui/material/transitions";
+import React, { useEffect, useState } from "react";
 import MentorAccept from "../left-menu/right-menu/menu.mentoraccept";
-import HomeFriend from "../friend/home.friend";
-import HistoryCard from "@/app/(admin)/admin/(dashboard)/nft-marketplace/components/HistoryCard";
-import TaskCard from "@/app/(admin)/admin/(dashboard)/dashboard/components/TaskCard";
-import General from "@/app/(admin)/admin/(dashboard)/profile/components/General";
-import MentorIsReady from "./component/mentorIsReady";
-import AllMentor from "./component/allMentor";
 import MentorSuitable from "./component/MentorSuitable";
-import NftCard from "../admin/card/NftCard";
+import AllMentor from "./component/allMentor";
+import MentorIsReady from "./component/mentorIsReady";
+import { useRouter, useSearchParams } from "next/navigation";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -81,47 +49,51 @@ const Transition = React.forwardRef(function Transition(
   return <Slide direction="up" ref={ref} {...props} />;
 });
 const HomeMentor = ({ user }: IPros) => {
-  const [value, setValue] = useState(0);
+  //biến lấy giá trị tab mentor
+  const [value, setValue] = useState<number>(0);
 
-  // var router = useRouter();
-  // const fetchData = async (url: string) => {
-  //   return await sendRequest<MentorInfor[]>({
-  //     url: url,
-  //     method: "GET",
-  //     headers: { authorization: `Bearer ${user?.access_token}` },
-  //   });
-  // };
-  // const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-  //   GLOBAL_URL + "/api/get-mentor",
-  //   fetchData,
-  //   {
-  //     shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-  //     revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
-  //   }
-  // );
+  //biến lấy giá trị tâb
+  const search = useSearchParams();
+  //biến chuyển hướng
+  const router = useRouter();
 
-  // const sendMatchRequest = async (mentorId: string): Promise<boolean> => {
-  //   try {
-  //     // Thực hiện cuộc gọi API ở đây
-  //     const response = await fetch(`${GLOBAL_URL}/api/send-match/${mentorId}`, {
-  //       method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
-  //       headers: {
-  //         authorization: `Bearer ${user?.access_token}`,
-  //       },
-  //       // Các tùy chọn khác nếu cần
-  //     });
-  //     console.log(response);
-  //     // Xử lý kết quả
-  //     const data = await response.json();
+  //xử lý chuyển hướng tab
+  // const handleChangeTab = (v:string)=>{
+  //   router.push("/mentor?tab="+v)
+  // }
 
-  //     return data; // Giả sử API trả về một trường success kiểu boolean
-  //   } catch (error) {
-  //     console.error("Error sending match:", error);
-  //     return false; // Trả về false nếu có lỗi
-  //   }
+  const handleChangeTab = (newValue: number | null) => {
+    if (newValue == 4) {
+      if ((search.get("tab") as string) == "suggest") {
+        setValue(0);
+      } else if ((search.get("tab") as string) == "suitable") {
+        setValue(1);
+      } else if ((search.get("tab") as string) == "all") {
+        setValue(2);
+      } else {
+        setValue(4);
+      }
+    } else {
+      if (newValue == 0 && (search.get("tab") as string) != "suggest") {
+        router.push("/mentor?tab=suggest");
+      } else if (newValue == 1 && (search.get("tab") as string) != "suitable") {
+        router.push("/mentor?tab=suitable");
+      } else if (newValue == 2 && (search.get("tab") as string) != "all") {
+        router.push("/mentor?tab=all");
+      } else {
+      }
+    }
+  };
 
+  useEffect(() => {
+    handleChangeTab(4);
+  }, [search.get("tab") as string]);
+
+  //xử lý thay đổi tab mentor
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
+
+    handleChangeTab(newValue);
   };
 
   return (
@@ -155,8 +127,7 @@ const HomeMentor = ({ user }: IPros) => {
                     Người hướng dẫn
                   </h2>
                   <div style={{ marginLeft: "auto" }}>
-                    {" "}
-                    {/* Sử dụng margin-left: auto để đẩy Tabs sang phải */}
+                    {/* tab mentor */}
                     <Tabs
                       value={value}
                       onChange={handleChange}
@@ -166,30 +137,24 @@ const HomeMentor = ({ user }: IPros) => {
                         label="Gợi ý"
                         {...a11yProps(0)}
                         sx={{
-                          // Sử dụng sx để tùy chỉnh CSS cho label
-                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
-                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
-                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                          fontSize: "16px",
+                          fontWeight: "bold",
                         }}
                       />
                       <Tab
                         label="Phù Hợp"
                         {...a11yProps(1)}
                         sx={{
-                          // Sử dụng sx để tùy chỉnh CSS cho label
-                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
-                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
-                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                          fontSize: "16px",
+                          fontWeight: "bold",
                         }}
                       />
                       <Tab
                         label="Tất cả"
                         {...a11yProps(2)}
                         sx={{
-                          // Sử dụng sx để tùy chỉnh CSS cho label
-                          fontSize: "16px", // Tùy chỉnh kích thước chữ của label
-                          fontWeight: "bold", // Tùy chỉnh độ đậm của chữ
-                          // Thêm các thuộc tính CSS khác tùy thuộc vào nhu cầu của bạn
+                          fontSize: "16px",
+                          fontWeight: "bold",
                         }}
                       />
                     </Tabs>

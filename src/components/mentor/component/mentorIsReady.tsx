@@ -55,14 +55,15 @@ const MentorIsReady = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor-isready",
+    GLOBAL_URL + "/api/get-mentor-isready",
     fetchData,
     {
-      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
-      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
     }
   );
 
+  console.log(">>> check data online : ", data);
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
   };
@@ -232,7 +233,7 @@ const MentorIsReady = ({ session }: IPros) => {
                       width: "12px",
                       height: "12px",
                       borderRadius: "50%",
-                      backgroundColor: mentor?.isReady ? "white" : "black",
+                      backgroundColor: mentor?.isReady ? "#f5f5f5" : "#f5f5f5",
                       marginRight: "8px",
                     }}
                   ></Box>

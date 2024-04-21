@@ -35,7 +35,7 @@ import { GLOBAL_URL } from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -73,11 +73,10 @@ interface IPros {
 }
 
 const HomeProfile = ({ session }: IPros) => {
+  //biến search parameters
+  const searchParams = useSearchParams();
+
   const [value, setValue] = useState(0);
-  let firstName = session?.user?.firstName ? session?.user?.firstName : "";
-  let middleName = session?.user?.middleName ? session?.user?.middleName : "";
-  let lastName = session?.user?.lastName ? session?.user?.lastName : "";
-  let fullname = firstName + " " + middleName + " " + lastName;
 
   const { data: sessions, update: sessionUpdate } = useSession();
   const router = useRouter();
@@ -321,6 +320,39 @@ const HomeProfile = ({ session }: IPros) => {
     }
   };
 
+  const [dataProfile, setDataProfile] = useState<UserLogin>();
+  const searchId = searchParams.get("id") as string;
+  const handleDataProfile = async () => {
+    console.log(">>> check usser profile12123: ");
+    if (searchParams.get("id")) {
+      const user = await sendRequest<UserLogin>({
+        url: GLOBAL_URL + "/api/get-user-by-id",
+        method: "GET",
+        queryParams: {
+          id: searchId,
+        },
+      });
+      console.log(">>> check usser profile:1 ", user);
+
+      await setDataProfile(user);
+    } else {
+      await setDataProfile(session?.user);
+    }
+  };
+
+  useEffect(() => {
+    handleDataProfile();
+  }, []);
+
+  console.log(">>> check usser profile:2 ", dataProfile);
+  const url = searchId
+    ? `/post-by-user-id/${searchId}`
+    : "/post-by-user-logged";
+
+  let firstName = dataProfile?.firstName ? dataProfile?.firstName : "";
+  let middleName = dataProfile?.middleName ? dataProfile?.middleName : "";
+  let lastName = dataProfile?.lastName ? dataProfile?.lastName : "";
+  let fullname = firstName + " " + middleName + " " + lastName;
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
       <Box
@@ -371,7 +403,7 @@ const HomeProfile = ({ session }: IPros) => {
             >
               <EditIcon />
               <Typography component={"p"} sx={{ marginLeft: "6px" }}>
-                Edit Covar Photo
+                Cập nhật ảnh bìa
               </Typography>
             </Button>
           </Box>
@@ -407,8 +439,8 @@ const HomeProfile = ({ session }: IPros) => {
           <img
             id="Profile_images"
             src={`${
-              session?.user?.profileImageUrl
-                ? session?.user?.profileImageUrl
+              dataProfile?.profileImageUrl
+                ? dataProfile?.profileImageUrl
                 : "/profile/user.jpg"
             }`}
           />
@@ -427,7 +459,7 @@ const HomeProfile = ({ session }: IPros) => {
             >
               {deleteSpace(fullname)}
             </Typography>
-            <Typography component={"p"}>1.2K Friends</Typography>
+            <Typography component={"p"}>{/* 1.2K Friends */} </Typography>
           </Box>
         </Box>
       </Box>
@@ -462,10 +494,9 @@ const HomeProfile = ({ session }: IPros) => {
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab label="Post" {...a11yProps(0)} />
-            <Tab label="About" {...a11yProps(1)} />
-            <Tab label="Media" {...a11yProps(2)} />
-            <Tab label="Like" {...a11yProps(3)} />
+            <Tab label="Bài viết" {...a11yProps(0)} />
+            <Tab label="Giới thiệu" {...a11yProps(1)} />
+            <Tab label="Ảnh" {...a11yProps(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -605,7 +636,7 @@ const HomeProfile = ({ session }: IPros) => {
                           fontSize: { xs: "16px", sm: "12px", md: "16px" },
                         }}
                       >
-                        {session?.user?.city ? session?.user?.city : ""}
+                        {dataProfile?.city ? dataProfile?.city : ""}
                       </Typography>
                     </Box>
                     <Box
@@ -630,7 +661,7 @@ const HomeProfile = ({ session }: IPros) => {
                           fontSize: { xs: "16px", sm: "12px", md: "16px" },
                         }}
                       >
-                        {session?.user?.district ? session?.user?.district : ""}
+                        {dataProfile?.district ? dataProfile?.district : ""}
                       </Typography>
                     </Box>
                     <Box
@@ -655,7 +686,7 @@ const HomeProfile = ({ session }: IPros) => {
                           fontSize: { xs: "16px", sm: "12px", md: "16px" },
                         }}
                       >
-                        {session?.user?.ward ? session?.user?.ward : ""}
+                        {dataProfile?.ward ? dataProfile?.ward : ""}
                       </Typography>
                     </Box>
                   </Box>
@@ -682,8 +713,8 @@ const HomeProfile = ({ session }: IPros) => {
                         flexWrap: "wrap",
                       }}
                     >
-                      {session?.user?.listDemandOfUser &&
-                        session?.user?.listDemandOfUser?.map((item, index) => (
+                      {dataProfile?.listDemandOfUser &&
+                        dataProfile?.listDemandOfUser?.map((item, index) => (
                           <Box
                             key={index}
                             sx={{
@@ -1215,10 +1246,13 @@ const HomeProfile = ({ session }: IPros) => {
               >
                 <Box>
                   <Box>
-                    <PostProfile
-                      session={session}
-                      profile="/post-by-user-logged"
-                    />
+                    {dataProfile && (
+                      <PostProfile
+                        sessionGuest={dataProfile}
+                        session={session}
+                        profile={url}
+                      />
+                    )}
                   </Box>
                 </Box>
               </Box>

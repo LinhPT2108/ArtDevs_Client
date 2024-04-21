@@ -245,45 +245,47 @@ const AppSearch = ({ session }: IPros) => {
   };
 
   // xử lý thay đổi nội dung tìm kiếm bài viết
-  // useEffect(() => {
-  //   const dataFilter: {
-  //     sort?: string;
-  //     sortLike?: string;
-  //     start?: string;
-  //     end?: string;
-  //   } = {};
-  //   searchParams.get("sort") &&
-  //     (dataFilter.sort =
-  //       (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
-  //   searchParams.get("sortLike") &&
-  //     (dataFilter.sortLike =
-  //       (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
-  //   searchParams.get("startDate") &&
-  //     (dataFilter.start = searchParams.get("startDate") as string);
-  //   searchParams.get("endDate") &&
-  //     (dataFilter.end = searchParams.get("endDate") as string);
+  useEffect(() => {
+    const dataFilter: {
+      sort?: string;
+      sortLike?: string;
+      start?: string;
+      end?: string;
+    } = {};
+    searchParams.get("sort") &&
+      (dataFilter.sort =
+        (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
+    searchParams.get("sortLike") &&
+      (dataFilter.sortLike =
+        (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
+    searchParams.get("startDate") &&
+      (dataFilter.start = searchParams.get("startDate") as string);
+    searchParams.get("endDate") &&
+      (dataFilter.end = searchParams.get("endDate") as string);
 
-  //   const refeshDataSearch = async () => {
-  //     const newDataSearch = await sendRequest<ResPost[]>({
-  //       url: GLOBAL_URL + "/api/search/post",
-  //       method: "GET",
-  //       headers: { authorization: `Bearer ${session?.access_token}` },
-  //       queryParams: {
-  //         page: 0,
-  //         keyword: searchParams.get("keyword") as string,
-  //         ...dataFilter,
-  //       },
-  //     });
-  //     newDataSearch && setPosts(newDataSearch);
-  //   };
-  //   refeshDataSearch();
-  // }, [
-  //   searchParams.get("keyword") as string,
-  //   searchParams.get("sort") as string,
-  //   searchParams.get("sortLike") as string,
-  //   searchParams.get("startDate") as string,
-  //   searchParams.get("endDate") as string,
-  // ]);
+    const refeshDataSearch = async () => {
+      const newDataSearch = await sendRequest<ResPost[]>({
+        url: GLOBAL_URL + "/api/search/post",
+        method: "GET",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        queryParams: {
+          page: 0,
+          keyword: searchParams.get("keyword") as string,
+          ...dataFilter,
+        },
+      });
+      console.log(">>> check seaerch: ", newDataSearch);
+
+      newDataSearch && setPosts(newDataSearch);
+    };
+    refeshDataSearch();
+  }, [
+    searchParams.get("keyword") as string,
+    searchParams.get("sort") as string,
+    searchParams.get("sortLike") as string,
+    searchParams.get("startDate") as string,
+    searchParams.get("endDate") as string,
+  ]);
 
   // xử lý thay đổi nội dung tìm kiếm mọi người
   // useEffect(() => {
@@ -384,20 +386,22 @@ const AppSearch = ({ session }: IPros) => {
 
   useEffect(() => {
     const refeshDataSearch = async () => {
-      const newDataSearch = await sendRequest<MySearch>({
-        url: GLOBAL_URL + "/api/search/all",
-        method: "GET",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        queryParams: {
-          page: 0,
-          keyword: searchParams.get("keyword") as string,
-        },
-      });
-      newDataSearch && setSearchAlls(newDataSearch);
-      console.log(">>> check newDataSearch: ", newDataSearch);
+      if (session) {
+        const newDataSearch = await sendRequest<MySearch>({
+          url: GLOBAL_URL + "/api/search/all",
+          method: "GET",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          queryParams: {
+            page: 0,
+            keyword: searchParams.get("keyword") as string,
+          },
+        });
+        newDataSearch && setSearchAlls(newDataSearch);
+        console.log(">>> check newDataSearch: ", newDataSearch);
+      }
     };
     refeshDataSearch();
-  }, [searchParams.get("keyword") as string]);
+  }, [searchParams.get("keyword") as string, session]);
   return (
     <Box sx={{ flexGrow: 1, height: "100vh", marginTop: "100px" }}>
       <Box sx={{ display: "flex", height: "100%" }}>

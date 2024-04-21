@@ -31,8 +31,7 @@ interface ip {
   listnametable: string;
 }
 const Banner = (ip: ip) => {
-
-  const { user, handlepropdata,listnametable} = ip;
+  const { user, handlepropdata, listnametable } = ip;
   const [updatedUser, setUser] = useState<UserFormAdminDTO | null>(null);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
   const [openStatusChangeDialog, setOpenStatusChangeDialog] = useState(false);
@@ -77,7 +76,7 @@ const Banner = (ip: ip) => {
         const dataupdate = response.model;
         console.log("data update", response.model);
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_TURNON_MENTOR,listnametable);
+          handlepropdata(response.model, GLOBAL_TURNON_MENTOR, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -106,7 +105,7 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_TURNOFF_MENTOR,listnametable);
+          handlepropdata(response.model, GLOBAL_TURNOFF_MENTOR, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -136,7 +135,7 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_LOCKED_ACCOUNT,listnametable);
+          handlepropdata(response.model, GLOBAL_LOCKED_ACCOUNT, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -160,7 +159,11 @@ const Banner = (ip: ip) => {
           newUserData
         );
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_UNLOCKED_ACCOUNT,listnametable);
+          handlepropdata(
+            response.model,
+            GLOBAL_UNLOCKED_ACCOUNT,
+            listnametable
+          );
         }
       } catch (error) {
         console.error("Error sending API request:", error);
