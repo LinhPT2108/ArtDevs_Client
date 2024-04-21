@@ -1327,11 +1327,68 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
         ...prevFormData,
         content: value,
       }));
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      const newTimer = setTimeout(async () => {
+        console.log("Stop typing");
+        const content = badWords(value, {
+          replacement: "*",
+          blackList: (defaultList) => [
+            ...defaultList,
+            "mẹ mày",
+            "cc",
+            "nigga",
+            "đmm",
+            "mm",
+            "đmm",
+          ],
+        });
+        console.log(content);
+        if (value.trim() != "") {
+          setFormDataComment((prevFormData) => ({
+            ...prevFormData,
+            content: content.toString(),
+          }));
+        }
+      }, 1000);
+
+      setTimer(newTimer);
     } else {
       setFormDataReplyComment((prevFormData) => ({
         ...prevFormData,
         content: value,
       }));
+
+      if (timer) {
+        clearTimeout(timer);
+      }
+
+      const newTimer = setTimeout(async () => {
+        console.log("Stop typing");
+        const content = badWords(value, {
+          replacement: "*",
+          blackList: (defaultList) => [
+            ...defaultList,
+            "mẹ mày",
+            "cc",
+            "nigga",
+            "đmm",
+            "mm",
+            "đmm",
+          ],
+        });
+        console.log(content);
+        if (value.trim() != "") {
+          setFormDataReplyComment((prevFormData) => ({
+            ...prevFormData,
+            content: content.toString(),
+          }));
+        }
+      }, 1000);
+
+      setTimer(newTimer);
     }
   };
   const handleChangePic = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -3779,7 +3836,35 @@ const PostProfile = ({ session, hashTagText, profile }: IPros) => {
                     color: "white",
                   },
                 }}
-                onChange={(e) => setContentSharePost(e.target.value)}
+                onChange={(e) => {
+                  setContentSharePost(e.target.value);
+
+                  if (timer) {
+                    clearTimeout(timer);
+                  }
+
+                  const newTimer = setTimeout(async () => {
+                    console.log("Stop typing");
+                    const content = badWords(e.target.value, {
+                      replacement: "*",
+                      blackList: (defaultList) => [
+                        ...defaultList,
+                        "mẹ mày",
+                        "cc",
+                        "nigga",
+                        "đmm",
+                        "mm",
+                        "đmm",
+                      ],
+                    });
+                    console.log(content);
+                    if (e.target.value.trim() != "") {
+                      setContentSharePost(content.toString());
+                    }
+                  }, 1000);
+
+                  setTimer(newTimer);
+                }}
               />
               <Box
                 className="block-post-share"
