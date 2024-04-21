@@ -1,17 +1,54 @@
-import * as React from "react";
+"use client";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import PhoneIcon from "@mui/icons-material/Phone";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
+import { GLOBAL_BG_NAV, GLOBAL_COLOR_NAV } from "../utils/veriable.global";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 
-const IconTabs = (pros: any) => {
-  const [value, setValue] = React.useState<number>(pros?.tabValue);
+const IconTabs = () => {
+  // gắn giá trị định hình vị trí tab đang chọn
+  const [value, setValue] = useState<number | null>(0);
 
-  React.useEffect(() => {
-    setValue(pros?.tabValue);
-  }, [pros?.tabValue]);
+  // lấy url hiện tại
+  const currentPath = usePathname();
 
+  //tạo biến router xử lý chuyển hướng tab
+  const router = useRouter();
+
+  // xử lý khi change tab
+  const handleChangeNavTab = (newValue: number | null) => {
+    if (newValue == 4) {
+      if (currentPath == "/") {
+        setValue(0);
+      } else if (currentPath == "/friend-post") {
+        setValue(1);
+      } else if (currentPath == "/mentor") {
+        setValue(2);
+      } else if (currentPath == "/profile") {
+        setValue(3);
+      } else {
+        setValue(4);
+      }
+    } else {
+      if (newValue == 0 && currentPath !== "/") {
+        router.push("/");
+      } else if (newValue == 1 && currentPath != "/friend-post") {
+        router.push("/friend-post");
+      } else if (newValue == 2 && currentPath != "/mentor") {
+        router.push("/mentor");
+      } else if (newValue == 3 && currentPath != "/profile") {
+        router.push("/profile");
+      } else {
+      }
+    }
+  };
+
+  useEffect(() => {
+    handleChangeNavTab(4);
+  }, [currentPath]);
   return (
     <Tabs
       sx={{
@@ -31,8 +68,7 @@ const IconTabs = (pros: any) => {
       }}
       value={value}
       onChange={(event, newValue) => {
-        setValue(newValue);
-        pros.handleChangeTab(newValue);
+        handleChangeNavTab(newValue);
       }}
       aria-label="icon tabs example"
     >
@@ -41,10 +77,10 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
           borderRadius: "100%",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
         }}
-        color=""
         icon={<PhoneIcon />}
         aria-label="phone"
       />
@@ -53,8 +89,9 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
           borderRadius: "100%",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
         }}
         icon={<FavoriteIcon />}
         aria-label="favorite"
@@ -64,7 +101,8 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
         icon={<PersonPinIcon />}
@@ -75,7 +113,8 @@ const IconTabs = (pros: any) => {
           minWidth: { md: "50px", lg: "50px" },
           padding: "10px 0",
           margin: "6px",
-          color: "white",
+          backgroundColor: GLOBAL_BG_NAV,
+          color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
         icon={<FavoriteIcon />}

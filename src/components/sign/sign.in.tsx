@@ -13,6 +13,7 @@ import {
   IconButton,
   InputAdornment,
   Link,
+  Modal,
   TextField,
   Typography,
 } from "@mui/material";
@@ -24,11 +25,16 @@ import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
 
+import ForgotPassword from "./sign.forgotpasswork";
+import { GLOBAL_URL } from "../utils/veriable.global";
+import { sendRequest } from "../utils/api";
+
 interface State extends SnackbarOrigin {
   open: boolean;
 }
 
 const SignIn = () => {
+  const [showForgotPassword, setForgotPassword] = useState(false);
   const { setUser } = useUser();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -86,6 +92,7 @@ const SignIn = () => {
         //@ts-ignore
         setUser(res);
         router.push("/");
+        router.refresh();
       } else {
         setLoading(false);
         setIsErrorEmail(true);
@@ -123,19 +130,27 @@ const SignIn = () => {
   const handleLoginWithSocialMedia = async (provider: string) => {
     try {
       setLoading(true);
-      signIn(provider);
-    } catch {
+      await signIn(provider);
+    } catch (error) {
       setLoading(false);
     } finally {
-      // setLoading(false);
+      setLoading(false);
     }
   };
-
+  const handleForgotPasswordLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>
+  ) => {
+    e.preventDefault();
+    setForgotPassword(true);
+  };
+  const handleForgotPasswordModalClose = () => {
+    setForgotPassword(false);
+  };
   return (
     <Box
       sx={{
         width: "100%",
-        height: "100%",
+        height: "100vh",
         backgroundColor: "#EFF2F5",
         display: "flex",
         position: "relative",
@@ -242,6 +257,9 @@ const SignIn = () => {
                 backgroundColor: "#ffffff",
                 boxShadow:
                   "0 2px 4px rgba(0, 0, 0, .1), 0 8px 16px rgba(0, 0, 0, .1)",
+                "& .sign-up": {
+                  backgroundColor: "#2e7d32",
+                },
               }}
             >
               <Box
@@ -258,6 +276,9 @@ const SignIn = () => {
                 sx={{
                   "& input:-internal-autofill-selected": {
                     WebkitBoxShadow: "0 0 0 1000px #fff inset",
+                  },
+                  "& .MuiButton-contained": {
+                    backgroundColor: "#1976d2",
                   },
                 }}
               >
@@ -329,22 +350,33 @@ const SignIn = () => {
                   textDecoration: "none",
                   "&:hover": { color: "#283593" },
                 }}
+                onClick={handleForgotPasswordLinkClick}
               >
                 Quên mật khẩu?
               </Link>
+              <Modal
+                open={showForgotPassword}
+                onClose={handleForgotPasswordModalClose}
+              >
+                <ForgotPassword
+                  openModal={showForgotPassword}
+                  onClose={handleForgotPasswordModalClose}
+                />
+              </Modal>
               <Divider sx={{ width: "100%", margin: " 20px 16px" }} />
               <Button
+                className="sign-up"
                 variant="contained"
                 color="success"
                 sx={{
                   "& a": {
                     color: "#ffffff",
                     fontSize: "17px",
-                    "&:hover": { textDecoration: "none" },
+                    textDecoration: "none",
                   },
                 }}
               >
-                <Link href="#">Tạo tài khoản mới</Link>
+                <Link href="/sign-up">Tạo tài khoản mới</Link>
               </Button>
               <Box sx={{ fontWeight: "bold", marginTop: "16px" }}>Hoặc</Box>
               <Grid

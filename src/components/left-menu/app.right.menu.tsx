@@ -1,9 +1,12 @@
 import { Box } from "@mui/material";
+import React from "react";
 import MenuAccept from "./right-menu/menu.accept";
 import MenuMentor from "./right-menu/menu.mentor";
-import MenuSuggestFriend from "./right-menu/menu.suggest.friend";
-
-const RightPost = ({session}: {session:User}) => {
+import UserAccept from "./right-menu/menu.accept";
+interface IPros {
+  session: User;
+}
+const RightPost = ({ session }: IPros) => {
   return (
     <Box
       sx={{
@@ -11,9 +14,8 @@ const RightPost = ({session}: {session:User}) => {
         maxWidth: 220,
       }}
     >
-      <MenuAccept />
-      <MenuSuggestFriend session={session}/>
-      <MenuMentor />
+      <UserAccept session={session} />
+      <MenuMentor session={session} />
     </Box>
   );
 };

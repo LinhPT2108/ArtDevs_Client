@@ -1,53 +1,102 @@
 "use client";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ClearIcon from "@mui/icons-material/Clear";
 import {
+  Avatar,
   Box,
   IconButton,
   ListItemButton,
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import React from "react";
-import ClearIcon from "@mui/icons-material/Clear";
-import Messsages from "./chat.messages";
+import React, { useEffect } from "react";
+import { GLOBAL_BG_NAV } from "../utils/veriable.global";
 import MessageBox from "./chat.input";
+import Messsages from "./chat.messages";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 
 interface IPros {
-  data?: IUser;
+  data: UserMessage | undefined;
+  dataMessage: MessageContent[] | null;
   formatTimeDifference: (startTime: Date, endTime: Date) => string;
   toggleDrawer?: (
     anchor: Anchor,
     open: boolean,
-    item: IUser | undefined
+    item: UserMessage | undefined
   ) => void;
   pageUrl: string;
+  session: User;
 }
 
 const ChatMessagesForm = (pros: IPros) => {
-  const { data, formatTimeDifference, toggleDrawer, pageUrl } = pros;
-  const [content, setContent] = React.useState<MessageContent>();
+  const {
+    data,
+    formatTimeDifference,
+    toggleDrawer,
+    pageUrl,
+    session,
+    dataMessage,
+  } = pros;
+
+  const [newDataMessage, setNewDataMessage] = React.useState<
+    MessageContent[] | null
+  >();
+  const [content, setContent] = React.useState<MessageContentToPost>();
   const [preViewImage, setPreviewImage] = React.useState<boolean>(false);
-  const handleContent = (messageContent: MessageContent) => {
-    messageContent.from = "123";
-    messageContent.to = data ? data.user.content : "";
+  const handleContent = (messageContent: MessageContentToPost) => {
+    messageContent.formUser = session?.user?.userId;
+    messageContent.toUser = data?.userId!;
     setContent(messageContent);
   };
 
   const handelPreview = (isPre: boolean) => {
     setPreviewImage(isPre);
   };
-  console.log(">>> check content messages: ", content);
+  useEffect(() => {
+    console.log(dataMessage);
+    setNewDataMessage(dataMessage);
+  }, [dataMessage]);
+  useEffect(() => {
+    if (content) {
+      // dataMessage?.push(content as any);
+      const contentNew: MessageContent = {
+        messageId: content.messageId,
+        content: content.content,
+        timeMessage: content.timeMessage.toISOString(),
+        subject: content.subject,
+        formUserId: content.formUser,
+        toUserId: content.toUser,
+        relationShipId: true,
+        pictureOfMessages: content.pictureOfMessages,
+      };
+      console.log(">>> check new content messages: ", contentNew);
+      setNewDataMessage((pre: any) => [...pre, contentNew]);
+      // if (contentNew.pictureOfMessages.length > 0) {
+      //   console.log(contentNew.pictureOfMessages);
 
+      // } else {
+      //   console.log("khoong co canh");
+      // }
+    }
+  }, [content]);
+  useEffect(() => {
+    console.log(newDataMessage);
+  }, [newDataMessage]);
+
+  // if (!dataMessage) {
+  //   return;
+  // }
   return (
     <Box
       sx={{
         width: "100%",
         maxWidth: `${pageUrl == "home" ? 320 : "auto"}`,
         height: `${pageUrl == "home" ? 400 : "86vh"}`,
-        backgroundColor: "#fff",
+        backgroundColor: GLOBAL_BG_NAV,
       }}
     >
+      {" "}
       <Box
         sx={{
           height: "100%",
@@ -65,18 +114,28 @@ const ChatMessagesForm = (pros: IPros) => {
               borderBottom: "1px solid #80808026",
             }}
           >
-            <ListItemIcon
-              sx={{
-                color: "white",
-                backgroundColor: `${data?.user.bgColor}`,
-                padding: "8px",
-                minWidth: "40px",
-                marginRight: { xs: "6px" },
-                borderRadius: "100%",
-              }}
-            >
-              {data?.user.icon}
-            </ListItemIcon>
+            {data?.profilePicUrl ? (
+              <Avatar
+                alt={data?.profilePicUrl || ""}
+                src={data?.profilePicUrl}
+                sx={{
+                  boxShadow: "0 0 2px 2px gray",
+                }}
+              />
+            ) : (
+              <ListItemIcon
+                sx={{
+                  color: "white",
+                  backgroundColor: "grey",
+                  padding: "8px",
+                  minWidth: "40px",
+                  marginRight: { xs: "6px" },
+                  borderRadius: "100%",
+                }}
+              >
+                <AccountCircleIcon />
+              </ListItemIcon>
+            )}
 
             <ListItemText
               sx={{
@@ -90,7 +149,7 @@ const ChatMessagesForm = (pros: IPros) => {
                 "& p::before": {
                   content: `""`,
                   backgroundColor: `${
-                    data?.active ? "success.main" : "#7a837e"
+                    data?.online ? "success.main" : "#7a837e"
                   }`,
                   padding: "0 6px",
                   minWidth: "6px",
@@ -99,15 +158,8 @@ const ChatMessagesForm = (pros: IPros) => {
                   marginRight: "6px",
                 },
               }}
-              primary={data?.user.content}
-              secondary={`${
-                data?.active
-                  ? "Online"
-                  : `hoạt động ${formatTimeDifference(
-                      new Date(),
-                      data?.timeActive
-                    )}`
-              }`}
+              primary={data?.fullname}
+              secondary={`${data?.online ? "Online" : "Offline"}`}
             />
             {toggleDrawer && (
               <IconButton
@@ -120,11 +172,17 @@ const ChatMessagesForm = (pros: IPros) => {
             )}
           </ListItemButton>
         )}
-        <Messsages preViewImage={preViewImage} pageUrl={pageUrl} />
+        <Messsages
+          preViewImage={preViewImage}
+          pageUrl={pageUrl}
+          dataMessage={newDataMessage!}
+          session={session}
+        />
         <MessageBox
           handleContent={handleContent}
           handelPreview={handelPreview}
           pageUrl={pageUrl}
+          session={session}
         />
       </Box>
     </Box>

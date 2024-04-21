@@ -7,9 +7,11 @@ import FacebookProvider from "next-auth/providers/facebook";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { generateUniqueId } from "@/components/utils/utils";
 import {
+  GLOBAL_URL,
   getGlobalUser,
   setGlobalUser,
 } from "@/components/utils/veriable.global";
+
 export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
@@ -21,9 +23,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials, req) {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          // url: "https://artdevs-server.azurewebsites.net/api/login",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          url: "http://localhost:8080/api/login",
+          url: GLOBAL_URL + "/api/login",
           method: "POST",
           body: {
             email: credentials?.username,
@@ -33,7 +33,6 @@ export const authOptions: AuthOptions = {
         if (res?.userdto) {
           //@ts-ignore
           setGlobalUser(res);
-
           return res as any;
         } else {
           //@ts-ignore
@@ -55,28 +54,26 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account, profile, trigger }) {
+    async jwt({ token, user, account, profile, trigger, session }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
         const res = await sendRequest<IBackendRes<UserLogin>>({
-          // url: "https://artdevs-server.azurewebsites.net/api/user-social",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/user-social",
-          url: "http://localhost:8080/api/user-social",
+          url: GLOBAL_URL + "/api/user-social",
           method: "POST",
           body: {
             lastName: "",
             middleName: "",
-            firstName: `${token.name}`,
-            email: `${token.email}`,
+            firstName: `${token?.name}`,
+            email: `${token?.email}`,
             password: "",
             dateOfBirth: "",
             provider: `${account?.provider}`,
-            profilePicUrl: `${token.picture}`,
+            profilePicUrl: `${token?.picture}`,
             city: "",
             district: "",
             ward: "",
             role: { id: 2, roleName: "user" },
             userId: generateUniqueId(),
-            username: `${token.name}`,
+            username: `${token?.name}`,
             isOnline: false,
             listDemandOfUser: [],
             listSkillOfUser: [],
@@ -84,11 +81,12 @@ export const authOptions: AuthOptions = {
         });
         if (res.userdto) {
           if (token.picture) {
-            res.userdto.profilePicUrl = token.picture;
+            res.userdto.profileImageUrl = token.picture;
           }
           token.access_token = res.token;
           token.refresh_token = res.refeshToken;
           token.user = res.userdto;
+
           //@ts-ignore
           setGlobalUser(res);
         }
@@ -102,6 +100,9 @@ export const authOptions: AuthOptions = {
         token.user = user.userdto;
         //@ts-ignore
         setGlobalUser(user);
+      }
+      if (trigger === "update") {
+        token = session;
       }
       return token;
     },

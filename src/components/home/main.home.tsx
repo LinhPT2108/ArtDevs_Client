@@ -29,14 +29,16 @@ const Main = styled("main", {
 interface IPros {
   openContact: boolean;
   children: React.ReactNode;
+  session: User;
 }
 
-const MainHome = ({ children, openContact }: IPros) => {
+const MainHome = ({ children, openContact, session }: IPros) => {
   return (
     <Main
       open={openContact}
       sx={{
-        padding: { xs: 0, sm: "16px 24px 0 24px" },
+        marginTop: "24px",
+        padding: { xs: 0, sm: "0 80px 0 80px" },
         // paddingLeft: { xs: 0, sm: "24px" },
         // paddingRight: { xs: 0, sm: "24px" },
       }}
@@ -53,7 +55,7 @@ const MainHome = ({ children, openContact }: IPros) => {
           position: "relative",
         }}
       >
-        <AppMenu />
+        <AppMenu session={session} />
       </Grid>
       {children}
       {/* </Grid> */}

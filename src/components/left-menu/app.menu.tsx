@@ -1,7 +1,13 @@
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import BookmarksIcon from "@mui/icons-material/Bookmarks";
+import FeedIcon from "@mui/icons-material/Feed";
+import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import SmsIcon from "@mui/icons-material/Sms";
 import {
   Box,
   Button,
   CardMedia,
+  Divider,
   List,
   ListItemButton,
   ListItemIcon,
@@ -11,19 +17,24 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import React, { MouseEventHandler } from "react";
-import FeedIcon from "@mui/icons-material/Feed";
-import PersonSearchIcon from "@mui/icons-material/PersonSearch";
-import BookmarksIcon from "@mui/icons-material/Bookmarks";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import SmsIcon from "@mui/icons-material/Sms";
-import Link from "next/link";
-import { NextApiRequest, NextApiResponse } from "next";
 import { getSession, signOut } from "next-auth/react";
+import Link from "next/link";
 import { sendRequest } from "../utils/api";
-import { GLOBAL_URL } from "../utils/veriable.global";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BG_NAV,
+  GLOBAL_BG_RED_300,
+  GLOBAL_BG_RED_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
+  GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -36,10 +47,22 @@ const style = {
   borderRadius: "12px",
   p: 4,
 };
-const AppMenu = () => {
-  const [open, setOpen] = React.useState(false);
+const AppMenu = ({ session }: { session: User }) => {
+  // lấy url hiện tại
+  const currentPath = usePathname();
+
+  //tạo biến router xử lý chuyển hướng tab
+  const router = useRouter();
+
+  // gắn giá trị định hình vị trí tab đang chọn
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(0);
+
+  //tạo biến xử lý modal đăng xuất
+  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  //tạo dữ liệu cứng trên menu trái
   const leftMenu = [];
   const info: ListItem[] = [
     {
@@ -51,20 +74,27 @@ const AppMenu = () => {
     },
     {
       index: 1,
-      content: "Giảng viên",
+      content: `${session?.user?.role?.id == 3 ? "Match" : "Giảng viên"}`,
       icon: <PersonSearchIcon />,
       bgColor: "#9c933c",
-      url: "/mentor",
+      url: "/mentor?tab=suggest",
     },
     {
       index: 2,
+      content: "Bạn bè",
+      icon: <BookmarksIcon />,
+      bgColor: "#1e8d10",
+      url: "/friend",
+    },
+    {
+      index: 3,
       content: "Hash tag",
       icon: <BookmarksIcon />,
       bgColor: "#1e8d10",
       url: "/hash-tag",
     },
     {
-      index: 3,
+      index: 4,
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
       bgColor: "#263797",
@@ -73,85 +103,84 @@ const AppMenu = () => {
   ];
   const recent: ListItem[] = [
     {
-      index: 4,
+      index: 5,
       content: "Hộp thư điện tử",
       icon: <SmsIcon />,
       bgColor: "#263797",
       url: "/chat",
     },
     {
-      index: 5,
-      content: "Near post",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/near-post",
-    },
-    {
       index: 6,
-      content: "Last event",
+      content: "Bài viết của bạn bè",
       icon: <FeedIcon />,
       bgColor: "#263797",
-      url: "/last-event",
+      url: "/friend-post",
     },
     {
       index: 7,
-      content: "Live",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/live",
-    },
-  ];
-  const setting: ListItem[] = [
-    {
-      index: 8,
-      content: "Cài đặt",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/setting",
-    },
-    {
-      index: 9,
-      content: "Thống kê",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
-      url: "/statistical",
-    },
-    {
-      index: 10,
-      content: "Quyền riêng tư",
+      content: "Bảo mật",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/secure",
     },
     {
-      index: 11,
+      index: 8,
+      content: "Thông tin chung",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/infor",
+    },
+    {
+      index: 9,
+      content: "Đóng góp ý kiến",
+      icon: <FeedIcon />,
+      bgColor: "#263797",
+      url: "/feedback",
+    },
+    {
+      index: 10,
       content: "Đăng xuất",
       icon: <FeedIcon />,
       bgColor: "#263797",
       url: "/",
-      // url: "/api/auth/signout",
     },
   ];
   leftMenu.push(info);
   leftMenu.push(recent);
-  leftMenu.push(setting);
-  const titleMenu = ["Thông tin", "Gần đây", "Thiết lập"];
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const titleMenu = ["Thông tin", "Gần đây"];
 
   const handleListItemClick = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
-    if (index == 11) {
+    if (index == 10) {
       handleOpen();
     }
     setSelectedIndex(index);
   };
 
+  // xử lý khi change tab
+  const handleChangeNavTab = () => {
+    if (currentPath == "/") {
+      setSelectedIndex(0);
+    } else if (currentPath == "/friend-post") {
+      setSelectedIndex(6);
+    } else if (currentPath == "/mentor") {
+      setSelectedIndex(1);
+    } else if (currentPath == "/profile") {
+      setSelectedIndex(4);
+    } else {
+      setSelectedIndex(null);
+    }
+  };
+
+  useEffect(() => {
+    handleChangeNavTab();
+  }, [currentPath]);
+
   const handler = async () => {
     try {
       const session = await getSession();
-      console.log(">>> session: ", session);
       session &&
         (await sendRequest({
           url: GLOBAL_URL + "/api/logout",
@@ -176,9 +205,9 @@ const AppMenu = () => {
       <Box
         sx={{
           position: "fixed",
-          top: { xs: "58px", sm: "85px" },
+          top: { xs: "58px", sm: "108px" },
           left: { xs: "0", sm: "12px" },
-          overflow: "auto",
+          // overflow: "auto",
           maxHeight: { xs: "calc(100vh - 120px)", md: "calc(100vh - 85px)" },
           "&::-webkit-scrollbar": {
             width: "5px",
@@ -191,22 +220,23 @@ const AppMenu = () => {
               key={index}
               sx={{
                 width: "100%",
-                bgcolor: "#293145",
-                color: "white",
+                bgcolor: GLOBAL_BG,
+                color: GLOBAL_COLOR_BLACK,
                 marginTop: "12px",
-                borderRadius: "6px",
+                borderRadius: "12px",
+                boxShadow: GLOBAL_BOXSHADOW,
               }}
               component="nav"
               aria-label="main mailbox folders"
               subheader={
                 <ListSubheader
                   sx={{
-                    bgcolor: "#293145",
-                    color: "white",
+                    bgcolor: GLOBAL_BG,
+                    color: GLOBAL_COLOR_BLACK,
                     fontWeight: "bold",
                     zIndex: "0",
                     position: "relative",
-                    borderRadius: "6px",
+                    borderRadius: "12px",
                   }}
                   component="div"
                   id="nested-list-subheader"
@@ -215,6 +245,7 @@ const AppMenu = () => {
                 </ListSubheader>
               }
             >
+              <Divider />
               {items?.map((item) => {
                 return (
                   <ListItemButton
@@ -234,7 +265,7 @@ const AppMenu = () => {
                     <Link href={`${item.url}`}>
                       <ListItemIcon
                         sx={{
-                          color: "white",
+                          color: GLOBAL_BG_NAV,
                           backgroundColor: `${item.bgColor}`,
                           padding: "8px",
                           minWidth: "40px",
@@ -247,7 +278,8 @@ const AppMenu = () => {
                       <ListItemText
                         primary={item.content}
                         sx={{
-                          color: "#ffffff",
+                          color: GLOBAL_COLOR_MENU,
+                          fontWeight: "bold",
                         }}
                       />
                     </Link>
@@ -300,12 +332,48 @@ const AppMenu = () => {
               spacing={2}
               sx={{ justifyContent: "center", marginTop: "18px" }}
             >
-              <Button variant="contained" onClick={handleClose}>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_BLUE_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_BLUE_300,
+                  },
+                }}
+                onClick={handleClose}
+              >
                 Hủy
-              </Button>
-              <Button variant="contained" color="error" onClick={handler}>
+              </Box>
+              <Box
+                sx={{
+                  minWidth: "90px",
+                  textAlign: "center",
+                  borderRadius: "30px",
+                  padding: "8px 16px",
+                  boxShadow: GLOBAL_BOXSHADOW,
+                  background: GLOBAL_BG_RED_900,
+                  fontWeight: "bold",
+                  color: GLOBAL_COLOR_WHITE,
+                  cursor: "pointer",
+                  transition: "all 0.2s",
+                  "&:hover": {
+                    transform: "scale(1.03)",
+                    backgroundColor: GLOBAL_BG_RED_300,
+                  },
+                }}
+                onClick={handler}
+              >
                 Đăng xuất
-              </Button>
+              </Box>
             </Stack>
           </Box>
         </Modal>

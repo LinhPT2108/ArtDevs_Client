@@ -1,18 +1,27 @@
-export { };
+import { DateValues } from "date-fns";
+
+export {};
 // https://bobbyhadz.com/blog/typescript-make-types-global#declare-global-types-in-typescript
 
 declare global {
+  interface UserMessage {
+    userId: string;
+    username: string;
+    profilePicUrl: string;
+    fullname: string;
+    online: boolean;
+  }
+  interface IUser {
+    user: ListItem;
+    active: boolean;
+    timeActive: Date;
+  }
   interface ListItem {
     index: number;
     content: string;
     icon: SvgIconProps;
     bgColor: string;
     url: string;
-  }
-  interface IUser {
-    user: ListItem;
-    active: boolean;
-    timeActive: Date;
   }
   interface MessageExample {
     primary: string;
@@ -34,11 +43,34 @@ declare global {
   //   totalComment: number;
   // }
   interface MessageContent {
-    content: String;
-    image?: any;
-    from: String;
-    to: String;
+    messageId: string;
+    relationShipId: boolean;
+    pictureOfMessages: any[];
+    timeMessage: string;
+    subject: string;
+    content: string;
+    formUserId: string;
+    toUserId: string;
   }
+
+  interface MessageContentToPost {
+    messageId: string;
+    pictureOfMessages: any;
+    subject: string;
+    content: string;
+    formUser: string;
+    toUser: string;
+    timeMessage: Date;
+  }
+
+  interface pictureOfMessageDTOs {
+    cloudinaryPublicId: string;
+    size: string;
+    url: string;
+    messageId: string;
+    id: number;
+  }
+
   interface IColor {
     bgColor: string;
     textColor: string;
@@ -60,13 +92,13 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
-    confirmPassword: string;
+    birthday: string;
+    confirmPassword?: string;
     profilePicUrl?: string;
     provider?: string;
     username: string;
     role: Role;
-    dateOfBirth: string;
-    gender: string;
+    gender: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
   }
@@ -91,7 +123,9 @@ declare global {
   }
   interface MyLanguageProgram {
     languageName: string;
-    id: string;
+    id: number;
+    countUserOfLanguage: number;
+    countMentorOfLanguage: number;
   }
   interface Role {
     id: number;
@@ -108,12 +142,13 @@ declare global {
     middleName: string;
     isOnline: boolean;
     password: string;
-    profilePicUrl?: string;
+    profileImageUrl?: string;
     provider?: string;
     username: string;
     role: Role;
-    dateOfBirth: string;
-    gender: string;
+    birthday: string;
+    profileImageUrl: string;
+    gender: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
     listMethod?: any;
@@ -155,6 +190,11 @@ declare global {
     refeshToken: string;
   }
 
+  interface ResponseStatus {
+    errorCode: number;
+    message: string;
+  }
+
   interface IModelPaginate<T> {
     meta: {
       current: number;
@@ -164,7 +204,17 @@ declare global {
     };
     result: T[];
   }
+
+  interface ResPost {
+    id: number;
+    typePost: string;
+    fullname: string;
+    content: string;
+    postId: Post;
+  }
+
   interface Post {
+    isProcessingLike: boolean | undefined;
     postId: string;
     content: string;
     time: string;
@@ -176,12 +226,14 @@ declare global {
     totalComment: number;
     totalLike: number;
     totalShare: number;
+    likeByUserLogged: boolean;
+    typePost: string;
   }
   interface UserPost {
     userId: string;
-    username: string;
+    fullname: string;
     profilePicUrl?: string;
-    fullname?: string;
+    fullname: string;
   }
   interface Hashtag {
     hashtagDetailName: string;
@@ -200,48 +252,263 @@ declare global {
     id: number;
     postId: string;
     privacyPostId: number;
+    namePrivacy?: string;
     status: boolean;
   }
 
   interface AddPost {
     postId: string;
     content: string;
+    userId: string;
+    time: Date;
+    timelineUserId: Date;
+    listImageofPost: File[] | null;
+    privacyPostDetails: number;
+    listHashtag: string[] | null;
+  }
+
+  interface UpdatePost {
+    postId: string;
+    content: string;
     time: Date;
     timelineUserId: Date;
     userId: string;
-    listImageofPost: string[] | null;
+    listImageofPost: File[] | null;
     privacyPostDetails: number;
-    listHashtag: number[] | null;
+    listHashtag: HashtagInfor[];
   }
 
   interface MentorInfor {
-    userID: string;
+    userId: string;
     content: string;
-    listSkill: ListSkill[];
+    listSkillOfMentor: string[];
+    gender: integer;
+    isOnline: boolean;
+    isReady: boolean;
+    fullname: string;
+    priceMatch: number;
+    role: Role;
+    BackgroundImageUrl: string;
+    profilePicUrl: string;
+    sendStatus: boolean;
   }
 
-  interface ListSkill {
-    id: number;
-    skill: string;
-  }
   interface HashtagInfor {
     id: number;
     hashtagText: string;
-    countHashtagOfDetail: number;
     description: string;
-    userCreate: string;
-    timeCreate: Date;
+    totalPostUseHashtag: number;
+    timeCreate: string;
+    isDel: Boolean;
+  }
+  interface ReponseHashtagInfor{
+    statusCode: number;
+      message: string;
+      model: HashtagInfor;
+  }
+  // interface CommentToPostDTO {
+  //   content: string;
+  //   userToPost: string;
+  //   postToPost: string;
+  // }
+
+  interface CommentToPostDTO {
+    // id:number
+    content: string;
+    listImageofComment: any;
+    userToPost: string;
+    postToPost: string;
+    userReceive: string;
+  }
+  interface CommentOfPost {
+    id: number;
+    content: string;
+    timeComment: string;
+    listImageofComment: string[] | null;
+    listReplyComment: ListReplyComment[] | null;
+    userID: UserPost;
   }
 
-  interface SuggestFriend {
+  interface ReplyCommentToPostDTO {
+    content: string;
+    listImageofComment: any;
+    commentToPost: any;
+    userToPost: string;
+    userReceive: UserPost;
+  }
+
+  interface ListReplyComment {
+    id: number;
+    content: string;
+    timeComment: string;
+    listPictureOfComment: any[] | null;
+    commentId: number;
+    userID: UserPost;
+    userReceiveDto: UserPost;
+  }
+
+  interface Relation {
     id: string;
-    fullname: string;
-    profileImageUrl: string;
+    userAction: UserAction;
+    userID2: string;
+    userID1: string;
+    timeRelation: string;
   }
 
-  interface ReponseHashTag{
-    statusCode: int;
+  interface RelationNotificationDTO {
+    userAction: string;
+    userReceive: string;
+    createDate: Date;
+    typeRelation: boolean;
+  }
+
+  interface RelaNotiDTO {
+    userAction: UserPost;
+    userReceive: string;
+    createDate: Date;
+    typeRelation: boolean;
+  }
+
+  interface UserAction {
+    userId: string;
+    username: string;
+    profilePicUrl: string;
+    fullname: string;
+    userReceiveDto: UserPost;
+    sendStatus: boolean;
+  }
+
+  interface notificationToPostDTO {
+    message: string;
+    receiverId: string;
+    senderId: string;
+    type: string;
+    postId: string;
+    shareId: string;
+  }
+
+  interface notificationToGetDTO {
+    id: number;
+    message: string;
+    receiverId: UserPost;
+    senderId: UserPost;
+    type: string;
+    postId: string;
+    shareId: string;
+    createDate: Date;
+    read: boolean;
+  }
+  interface ReponseError {
+    errorCode: number;
+    message: string;
+  }
+
+  interface ReponseSendCode {
+    statusCode: number;
+    message: string;
+    model: Verification;
+  }
+
+  interface Verification {
+    email: string;
+    verificationCode: number;
+  }
+  interface ReportDTO {
+    reportDetail: string;
+    postId: string;
+  }
+  interface ReponseReportFormAdmin {
+    statusCode: number;
+    message: string;
+    model: ReportListDTO;
+  }
+  interface ReponseHashtagFormAdmin {
+    statusCode: number;
     message: string;
     model: HashtagInfor[];
+  }
+  interface ReponseLangugeFormAdmin {
+    statusCode: number;
+    message: string;
+    model: MyLanguageProgram[];
+  }
+  interface RequestUserUpdateFormAdmin {
+    statusCode: number;
+    message: string;
+    model: UserFormAdminDTO;
+  }
+
+  interface ReponseAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: AccountListDTO;
+  }
+
+  interface ReponseReportFormAdmin {
+    statusCode: number;
+    message: string;
+    model: ReportListDTO;
+  }
+  
+  interface ReportListDTO {
+    listNewReport: Report[];
+    listReport: Report[];
+    listUserReport1: UserFormAdminDTO[];
+    listUserReport2: UserFormAdminDTO[];
+    listUserReport3: UserFormAdminDTO[];
+    listPostisDel: Post[];
+  }
+  interface Report {
+    id: number;
+    reportDetail: string;
+    reportPostId: string;
+    reportUserId: string;
+    timeReport: Date;
+    userIdActionReport: string;
+  }
+  interface AccountListDTO {
+    listBand: UserFormAdminDTO[];
+    listAllAccount: UserFormAdminDTO[];
+    listMentor: UserFormAdminDTO[];
+    listUser: UserFormAdminDTO[];
+    listNewMentor: UserFormAdminDTO[];
+    listNewUser: UserFormAdminDTO[];
+  }
+
+  interface UserFormAdminDTO {
+    email: string;
+    role: Role;
+    fullname: string;
+    createDate: Date;
+    accountNonLocked: boolean;
+    userPictureAvatar: string;
+    userPictureBackground: string;
+    totalFriend: number;
+    totalPost: number;
+    totalReport: number;
+    userId: string;
+  }
+
+  interface Reponse<T> {
+    statusCode: number;
+    message: string;
+    model: Feedback;
+  }
+
+  interface Feedback {
+    id: number;
+    title: string;
+    content: string;
+    createFeedback: Date;
+    dateHandle: Date | null;
+    status: boolean;
+    user: UserLogin;
+    listImage: File[] | null;
+  }
+  interface ImageofFeedback {
+    id: number;
+    cloudinaryPublicId: string;
+    imageOfFeedbackUrl: string;
+    time: string;
   }
 }

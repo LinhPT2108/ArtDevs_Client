@@ -3,6 +3,7 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import { Button, CardMedia, Grid } from "@mui/material";
 import BgUtils from "../utils/bg.utils";
+import { GLOBAL_COLOR_WHITE } from "../utils/veriable.global";
 
 const IntroAbout = () => {
   return (
@@ -42,7 +43,7 @@ const IntroAbout = () => {
             <Box
               sx={{
                 fontWeight: 700,
-                color: "#ffffff",
+                color: "#1976d2",
                 fontSize: { xs: "24px", sm: "36px", md: "48px" },
               }}
             >
@@ -51,7 +52,7 @@ const IntroAbout = () => {
             <Box
               sx={{
                 fontWeight: 400,
-                color: "#ffffff",
+                color: "#000",
                 mt: 1.5,
                 fontSize: { xs: "16px", sm: "22px", md: "28px" },
                 textAlign: "center",
@@ -61,12 +62,21 @@ const IntroAbout = () => {
               lập trình viên
             </Box>
           </Box>
-          <Box sx={{ marginTop: "24px", textAlign: "center" }}>
-            <Button
-              variant="contained"
+          <Box
+            sx={{
+              marginTop: "24px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <Box
               sx={{
                 backgroundColor: "#DF6312",
+                padding: "6px 16px",
                 marginX: "6px",
+                color: GLOBAL_COLOR_WHITE,
+                cursor: "pointer",
                 borderRadius: "30px",
                 fontWeight: 700,
                 marginY: { xs: "6px", sm: 0 },
@@ -79,14 +89,17 @@ const IntroAbout = () => {
               }}
             >
               Tìm hiểu thêm ...
-            </Button>
-            <Button
-              variant="contained"
+            </Box>
+            <Box
               sx={{
                 backgroundColor: "#E63C43",
+                padding: "6px 16px",
+                color: GLOBAL_COLOR_WHITE,
+                cursor: "pointer",
                 marginX: "6px",
                 borderRadius: "30px",
                 fontWeight: 700,
+                textAlign: "center",
                 marginY: { xs: "6px", sm: 0 },
                 width: "160px",
                 transition: "box-shadow .25s ease,transform .25s ease",
@@ -97,7 +110,7 @@ const IntroAbout = () => {
               }}
             >
               Tham gia ngay
-            </Button>
+            </Box>
           </Box>
         </Grid>
         <Grid

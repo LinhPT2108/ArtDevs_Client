@@ -28,7 +28,7 @@ interface IPros {
   handlePassword: (data: string) => void;
   handleConfirmPassword: (data: string) => void;
   handleDateOfBirth: (data: string) => void;
-  handleGender: (data: string) => void;
+  handleGender: (data: number) => void;
   handleCity: (data: Province) => void;
   handleDistrict: (data: District) => void;
   handleWard: (data: Ward) => void;
@@ -86,12 +86,11 @@ const InforSign = (props: IPros) => {
     setEmailExist,
   } = props;
   const { provinces, districts, wards } = address;
-  console.log(">>>> check address: ,", address);
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
-  const [gender, setGender] = useState<string>(data?.gender);
+  const [gender, setGender] = useState<number>(data?.gender);
 
   const [messageFirstName, setMessageFirstName] = useState<string>("");
   const [messageLastName, setMessageLastName] = useState<string>("");
@@ -447,12 +446,12 @@ const InforSign = (props: IPros) => {
                 name="date-of-birth"
                 autoComplete="new-date-of-birth"
                 autoFocus
-                value={data?.dateOfBirth}
+                value={data?.birthday}
                 // error={}
                 sx={{
                   marginBottom: "0",
                   "& input": {
-                    paddingLeft: `${data?.dateOfBirth ? "14px" : "100px"}`,
+                    paddingLeft: `${data?.birthday ? "14px" : "100px"}`,
                     "&:focus": {
                       paddingLeft: "14px",
                     },
@@ -471,22 +470,14 @@ const InforSign = (props: IPros) => {
                   name="row-radio-buttons-group"
                   value={gender}
                   onChange={(e) => {
-                    setGender(e.target.value);
-                    handleGender(e.target.value);
+                    setGender(+e.target.value);
+                    handleGender(+e.target.value);
                   }}
                 >
+                  <FormControlLabel value="1" control={<Radio />} label="Nam" />
+                  <FormControlLabel value="2" control={<Radio />} label="Nữ" />
                   <FormControlLabel
-                    value="male"
-                    control={<Radio />}
-                    label="Nam"
-                  />
-                  <FormControlLabel
-                    value="female"
-                    control={<Radio />}
-                    label="Nữ"
-                  />
-                  <FormControlLabel
-                    value="other"
+                    value="3"
                     control={<Radio />}
                     label="Khác"
                   />

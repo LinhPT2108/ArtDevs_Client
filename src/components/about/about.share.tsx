@@ -5,7 +5,7 @@ const ShareAbout = () => {
     <Box sx={{ flexGrow: 1 }}>
       <Box
         sx={{
-          color: "#ffffff",
+          color: "#000",
           fontWeight: 700,
           fontSize: { xs: "24px", sm: "36px", md: "48px" },
           paddingBottom: "24px",
@@ -34,7 +34,7 @@ const ShareAbout = () => {
         <Grid item xs={2} md={1}>
           <Box
             sx={{
-              color: "#ffffff",
+              color: "#000",
               fontSize: { xs: "18px", sm: "22px", md: "26px" },
               textAlign: "justify",
               marginLeft: "24px",
