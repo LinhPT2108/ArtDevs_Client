@@ -4,8 +4,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import {
+  Alert,
   Autocomplete,
+  Backdrop,
   Button,
+  CardMedia,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,15 +21,20 @@ import {
   IconButton,
   Radio,
   RadioGroup,
+  Slide,
+  SlideProps,
+  Snackbar,
+  Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from "@mui/material";
+import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import { useTheme } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
@@ -36,7 +44,7 @@ import PostProfile from "./post.profile";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -68,13 +76,98 @@ function a11yProps(index: number) {
   };
 }
 
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialogContent-root": {
+    padding: theme.spacing(2),
+  },
+  "& .MuiDialogActions-root": {
+    padding: theme.spacing(1),
+  },
+}));
+
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 interface IPros {
   session: User;
+}
+
+function SlideTransition(props: SlideProps) {
+  return <Slide {...props} direction="up" />;
 }
 
 const HomeProfile = ({ session }: IPros) => {
   //biến search parameters
   const searchParams = useSearchParams();
+  const [openDialogAvatar, setOpenDialogAvatar] = React.useState(false);
+
+  const [selectedFile, setSelectedFile] = useState<null>();
+  const [selectedBgImg, setSelectedBgImg] = useState<null>();
+  const [preview, setPreview] = useState<string>();
+  const [previewBgImg, setPreviewBgImg] = useState<string>();
+
+  const handleClickOpenDialogAvatar = () => {
+    setPreview(
+      session?.user?.profileImageUrl
+        ? session?.user?.profileImageUrl
+        : "/profile/user.jpg"
+    );
+    setOpenDialogAvatar(true);
+  };
+  const handleCloseDialogAvatar = () => {
+    setSelectedFile(null);
+    setOpenDialogAvatar(false);
+  };
+
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreview(undefined);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedFile);
+    setPreview(objectUrl as any);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedFile]);
+
+  useEffect(() => {
+    if (!selectedBgImg) {
+      setPreviewBgImg(session.user.backgroundImageUrl);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedBgImg);
+    setPreviewBgImg(objectUrl as any);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedBgImg]);
+
+  const onSelectFile = (e: any) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setSelectedFile(undefined);
+      return;
+    }
+
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const onSelectBgImg = (e: any) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setSelectedBgImg(undefined);
+      return;
+    }
+
+    setSelectedBgImg(e.target.files[0]);
+  };
 
   const [value, setValue] = useState(0);
 
@@ -89,6 +182,43 @@ const HomeProfile = ({ session }: IPros) => {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [open, setOpen] = useState<boolean>(false);
+  const [openBackdrop, setOpenBackdrop] = useState<boolean>(false);
+  const [openAlert, setOpenAlert] = React.useState({
+    open: false,
+    message: "",
+  });
+
+  const handleClickAlertAvatar = () => {
+    setOpenAlert({
+      open: true,
+      message: "Thay đổi ảnh đại diện thành công !",
+    });
+  };
+
+  const handleClickAlertBgImg = () => {
+    setOpenAlert({
+      open: true,
+      message: "Thay đổi ảnh bìa thành công !",
+    });
+  };
+  const handleCloseAlert = (
+    event: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenAlert({
+      open: false,
+      message: "",
+    });
+  };
+  const handleCloseBackdrop = () => {
+    setOpenBackdrop(false);
+  };
+  const handleOpenBackdrop = () => {
+    setOpenBackdrop(true);
+  };
 
   const handleOpen = () => {
     setOpen(true);
@@ -353,8 +483,70 @@ const HomeProfile = ({ session }: IPros) => {
   let middleName = dataProfile?.middleName ? dataProfile?.middleName : "";
   let lastName = dataProfile?.lastName ? dataProfile?.lastName : "";
   let fullname = firstName + " " + middleName + " " + lastName;
+  const handleSaveAvatar = async () => {
+    handleOpenBackdrop();
+    console.log(selectedFile);
+    const formData = new FormData();
+    if (selectedFile) {
+      formData.append("imageUrl", selectedFile! as File);
+      formData.append("positionOfPic", "true");
+      const response = await fetch(GLOBAL_URL + "/api/add-picture", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+      const data: ResPost = await response.json();
+      console.log(data);
+      if (data) {
+        handleCloseBackdrop();
+        handleClickAlertAvatar();
+        handleCloseDialogAvatar();
+      }
+    }
+  };
+  const handleCancelBgImg = () => {
+    setSelectedBgImg(null);
+  };
+  const handleSaveBgImg = async () => {
+    handleOpenBackdrop();
+    console.log(selectedBgImg);
+    const formData = new FormData();
+    if (selectedBgImg) {
+      formData.append("imageUrl", selectedBgImg! as File);
+      formData.append("positionOfPic", "false");
+      const response = await fetch(GLOBAL_URL + "/api/add-picture", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+      const data: ResPost = await response.json();
+      console.log(data);
+      if (data) {
+        handleCloseBackdrop();
+        handleClickAlertBgImg();
+        handleCloseDialogAvatar();
+      }
+    }
+  };
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
+      <Backdrop sx={{ color: "#fff", zIndex: 9999 }} open={openBackdrop}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Snackbar
+        open={openAlert.open}
+        TransitionComponent={SlideTransition}
+        autoHideDuration={3000}
+        onClose={handleCloseAlert}
+      >
+        <Alert
+          severity="success"
+          onClose={handleCloseAlert}
+          sx={{ width: "100%" }}
+        >
+          {openAlert.message}
+        </Alert>
+      </Snackbar>
       <Box
         sx={{
           width: "100%",
@@ -376,7 +568,7 @@ const HomeProfile = ({ session }: IPros) => {
             },
           }}
         >
-          <img src="/profile/cover-image.jpg" />
+          {previewBgImg && <img src={previewBgImg} />}
 
           <Box
             sx={{
@@ -386,26 +578,64 @@ const HomeProfile = ({ session }: IPros) => {
               right: "12px",
             }}
           >
-            <Button
-              variant="outlined"
-              sx={{
-                backgroundColor: "white",
-                cursor: "pointer",
-                outline: "none",
-                border: "none",
-                color: "#453c3c",
-                "&:hover": {
-                  backgroundColor: "#cfcbcb",
-                  outline: "none",
-                  border: "none",
-                },
-              }}
-            >
-              <EditIcon />
-              <Typography component={"p"} sx={{ marginLeft: "6px" }}>
-                Cập nhật ảnh bìa
-              </Typography>
-            </Button>
+            {!selectedBgImg && (
+              <Button
+                component="label"
+                role={undefined}
+                variant="contained"
+                tabIndex={-1}
+                startIcon={<EditIcon />}
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: "none",
+                  color: "#453c3c",
+                  "&:hover": {
+                    backgroundColor: "#cfcbcb",
+                    outline: "none",
+                    border: "none",
+                  },
+                }}
+              >
+                <VisuallyHiddenInput
+                  type="file"
+                  onChange={onSelectBgImg}
+                  accept="image/*"
+                />
+                Thay đổi ảnh bìa
+              </Button>
+            )}
+            {selectedBgImg && (
+              <Box
+                sx={{
+                  display: "flex",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  sx={{
+                    mx: 1,
+                    bgcolor: "#787676",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "#787878",
+                      boxShadow: "none",
+                    },
+                    boxShadow: "none",
+                  }}
+                  onClick={handleCancelBgImg}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  variant="contained"
+                  sx={{ mx: 1 }}
+                  color="primary"
+                  onClick={handleSaveBgImg}
+                >
+                  Lưu
+                </Button>
+              </Box>
+            )}
           </Box>
         </Box>
       </Box>
@@ -436,14 +666,21 @@ const HomeProfile = ({ session }: IPros) => {
             "& img": { width: "125px", height: "125px", borderRadius: "50%" },
           }}
         >
-          <img
-            id="Profile_images"
-            src={`${
-              dataProfile?.profileImageUrl
-                ? dataProfile?.profileImageUrl
-                : "/profile/user.jpg"
-            }`}
-          />
+          <Button
+            color="primary"
+            tabIndex={-1}
+            sx={{ width: "125px", height: "125px", borderRadius: "50%" }}
+            onClick={handleClickOpenDialogAvatar}
+          >
+            <img
+              id="Profile_images"
+              src={`${
+                dataProfile?.profileImageUrl
+                  ? dataProfile?.profileImageUrl
+                  : "/profile/user.jpg"
+              }`}
+            />
+          </Button>
           <Box
             sx={{
               display: "flex",
@@ -1344,6 +1581,75 @@ const HomeProfile = ({ session }: IPros) => {
           </Box>
         </CustomTabPanel>
       </Box>
+      <BootstrapDialog
+        onClose={handleCloseDialogAvatar}
+        aria-labelledby="customized-dialog-title"
+        open={openDialogAvatar}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{ m: 0, p: 2, fontWeight: "bold" }}
+          id="customized-dialog-title"
+        >
+          Chọn ảnh đại diện
+        </DialogTitle>
+        <IconButton
+          aria-label="close"
+          onClick={handleCloseDialogAvatar}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        <DialogContent dividers>
+          <Stack
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+            spacing={1}
+          >
+            <Box
+              sx={{
+                "& img": {
+                  width: "225px",
+                  height: "225px",
+                  borderRadius: "50%",
+                  border: "1px solid gray",
+                },
+              }}
+            >
+              <img id="Profile_images" src={`${preview}`} />
+            </Box>
+            <Button
+              component="label"
+              role={undefined}
+              variant="contained"
+              tabIndex={-1}
+              startIcon={<AddPhotoAlternateIcon />}
+            >
+              Tải ảnh lên
+              <VisuallyHiddenInput
+                type="file"
+                onChange={onSelectFile}
+                accept="image/*"
+              />
+            </Button>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleSaveAvatar}
+            disabled={selectedFile == null ? true : false}
+          >
+            Lưu thay đổi
+          </Button>
+        </DialogActions>
+      </BootstrapDialog>
     </Box>
   );
 };
