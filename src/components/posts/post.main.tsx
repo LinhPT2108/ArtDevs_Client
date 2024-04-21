@@ -286,8 +286,7 @@ const Post = ({ user, post }: IPros) => {
           </IconButton>
         </CardActions>
       </Card>
-      {data &&
-        data?.map((p, index) => (
+      {data && Array.isArray(data) && data.map((p, index) => (
           <Card
             sx={{
               borderRadius: "12px",

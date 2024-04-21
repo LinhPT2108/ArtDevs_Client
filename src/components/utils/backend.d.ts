@@ -228,11 +228,20 @@ declare global {
     id: number;
     hashtagText: string;
     countHashtagOfDetail: number;
+    description: string;
+    userCreate: string;
+    timeCreate: Date;
   }
 
   interface SuggestFriend {
     id: string;
     fullname: string;
     profileImageUrl: string;
+  }
+
+  interface ReponseHashTag{
+    statusCode: int;
+    message: string;
+    model: HashtagInfor[];
   }
 }

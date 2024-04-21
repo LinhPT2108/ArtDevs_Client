@@ -9,12 +9,12 @@ import { CubeSpan } from "../utils/component.global";
 
 const HomeHashtag = () => {
   const fetchData = async (url: string) => {
-    return await sendRequest<HashtagInfor[]>({
+    return await sendRequest<ReponseHashTag>({
       url: url,
       method: "GET",
     });
   };
-  const { data, error, isLoading }: SWRResponse<HashtagInfor[], any> = useSWR(
+  const { data, error, isLoading }: SWRResponse<ReponseHashTag, any> = useSWR(
     "http://localhost:8080/api/detailhashtag",
     fetchData,
     {
@@ -22,7 +22,7 @@ const HomeHashtag = () => {
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
     }
   );
-
+  console.log("Check data hashtag: ", data);
   if (isLoading) {
     return (
       <Box
@@ -66,8 +66,8 @@ const HomeHashtag = () => {
   return (
     <Box sx={{ flexGrow: 1, marginTop: "24px" }}>
     <Grid container columns={16} spacing={2}>
-      {data &&
-        data?.map((item, index) => (
+      {data?.model &&
+        data?.model?.map((item, index) => (
           <Grid item xs={12} md={8} key={index}>
 
             <Link href={`/hash-tag/${item.hashtagText}`}>
@@ -78,7 +78,7 @@ const HomeHashtag = () => {
 
                     </Avatar>
                   }
-
+                  
                   title={item.hashtagText}
                   subheader={`${item.countHashtagOfDetail} Bài đăng`}
                 />
