@@ -376,7 +376,7 @@ const ContactMenu = (pros: IPros) => {
                           },
                           "& .MuiPaper-root": {
                             top: "auto",
-                            right: `${openContact ? "210px" : 0}`,
+                            right: `${openContact ? "250px" : 0}`,
                             "@media (min-width: 600px)": {
                               bottom: "56px",
                             },

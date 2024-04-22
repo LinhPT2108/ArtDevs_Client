@@ -220,8 +220,9 @@ const MenuMentor = ({ session }: IPros) => {
                     maxWidth: 345,
                     bgcolor: GLOBAL_BG,
                     marginBottom: "10px",
-                    background: " rgba(222, 221, 218, 1)",
+                    background: GLOBAL_BG,
                     border: "50px radius",
+                    padding: "0 6px",
                     overflow: "hidden",
                     transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
                     "&:hover": {
@@ -284,13 +285,14 @@ const MenuMentor = ({ session }: IPros) => {
                   <CardMedia
                     component="img"
                     alt="green iguana"
-                    height="200"
+                    height="180"
                     image={item.profilePicUrl || "/OIP.jpg"}
                     sx={{
-                      borderRadius: "25%", // Đặt borderRadius thành 50% để bo tròn hình ảnh
+                      borderRadius: "100%", // Đặt borderRadius thành 50% để bo tròn hình ảnh
                       objectFit: "cover",
                       paddingLeft: "5px",
                       paddingRight: "5px",
+                      boxShadow: GLOBAL_BOXSHADOW,
                     }}
                   />
 

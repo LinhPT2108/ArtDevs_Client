@@ -1703,519 +1703,525 @@ const PostProfile = ({
   console.log(">>> check posts123: ", posts);
   return (
     <>
-      <Box
-        sx={{
-          borderRadius: "5px",
-          boxShadow: "0px 1px 2px #3335",
-          backgroundColor: "#fff",
-          padding: "10px",
-          marginBottom: "15px",
-          display: `${search ? "none" : "block"}`,
-        }}
-      >
+      {!searchParams.get("id") && (
         <Box
           sx={{
-            display: "flex",
-            borderBottom: "1px solid #3333",
-            paddingBottom: "10px",
+            borderRadius: "5px",
+            boxShadow: "0px 1px 2px #3335",
+            backgroundColor: "#fff",
+            padding: "10px",
+            marginBottom: "15px",
+            display: `${search ? "none" : "block"}`,
           }}
         >
           <Box
             sx={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              marginRight: "6px",
-              "& img": {
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
+              display: "flex",
+              borderBottom: "1px solid #3333",
+              paddingBottom: "10px",
+            }}
+          >
+            <Box
+              sx={{
+                width: "36px",
+                height: "36px",
                 borderRadius: "50%",
-                cursor: "pointer",
-              },
-            }}
-          >
-            <img
-              src={`${
-                sessionGuest?.profileImageUrl
-                  ? sessionGuest?.profileImageUrl
-                  : "/profile/user.jpg"
-              }`}
-            />
-          </Box>
-          <Box
-            onClick={handleOpenPost}
-            sx={{
-              position: "relative",
-              width: "100%",
-              padding: "7px 10px",
-              boxSizing: "border-box",
-              borderRadius: "25px",
-              backgroundColor: "#E4E6EB",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#D8DADF",
-              },
-            }}
-          >
-            <Typography
-              component={"span"}
-              sx={{
-                position: "absolute",
-                left: "15px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                fontSize: "15px",
-                color: "#333",
-              }}
-            >
-              Bạn đang nghĩ gì ?
-            </Typography>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-start",
-            padding: "10px 0px 0px 0px",
-          }}
-        >
-          <Box
-            sx={{
-              width: "50%",
-              maxWidth: "160px",
-              padding: "5px",
-              boxSizing: "border-box",
-              backgroundColor: "#fff",
-              borderRadius: "20px",
-              marginRight: "8px",
-              filter: "drop-shadow(0 0 0.1rem crimson)",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#E4E6EB",
-              },
-            }}
-          >
-            <Typography
-              component={"p"}
-              sx={{
-                padding: "5px 0px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#333",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <VideoFileIcon sx={{ color: "#E42645" }} />
-              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                Video
-              </Typography>
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              width: "50%",
-              padding: "5px",
-              maxWidth: "160px",
-              boxSizing: "border-box",
-              backgroundColor: "#fff",
-              borderRadius: "20px",
-              filter: "drop-shadow(0 0 0.1rem green)",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#E4E6EB",
-              },
-            }}
-          >
-            <Typography
-              component={"p"}
-              sx={{
-                padding: "5px 0px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#333",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <AddAPhotoIcon sx={{ color: "#41B35D" }} />
-              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                Photo
-              </Typography>
-            </Typography>
-          </Box>
-        </Box>
-        <Dialog
-          open={openPost}
-          TransitionComponent={Transition}
-          keepMounted
-          onClose={handleClosePost}
-          aria-describedby="alert-dialog-slide-description"
-          PaperProps={{
-            style: {
-              backgroundColor: GLOBAL_BG_NOTIFY,
-              width: "100%",
-              borderRadius: "12px",
-            },
-            component: "form",
-            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-              event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              const formJson = Object.fromEntries((formData as any).entries());
-              console.log(formJson);
-              handleClosePost();
-            },
-          }}
-        >
-          <Box className="dialog-header">
-            <DialogTitle
-              id="alert-dialog-title"
-              sx={{
-                color: GLOBAL_COLOR_MENU,
-                textAlign: "center",
-                p: "10px",
-              }}
-            >
-              Tạo bài viết
-            </DialogTitle>
-            <IconButton
-              aria-label="close"
-              onClick={handleClosePost}
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 5,
-                color: (theme) => theme.palette.grey[900],
-                backgroundColor: "#3a3b3c",
-                "&:hover": {
-                  backgroundColor: "#7d7d7d",
+                marginRight: "6px",
+                "& img": {
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  cursor: "pointer",
                 },
               }}
             >
-              <ClearIcon />
-            </IconButton>
-          </Box>
-          <Divider />
-          <DialogContent sx={{ p: "8px" }}>
-            <Card
+              <img
+                src={`${
+                  sessionGuest?.profileImageUrl
+                    ? sessionGuest?.profileImageUrl
+                    : session?.user?.profileImageUrl
+                    ? session?.user?.profileImageUrl
+                    : "/profile/user.jpg"
+                }`}
+              />
+            </Box>
+            <Box
+              onClick={handleOpenPost}
               sx={{
-                backgroundColor: "transparent",
-                boxShadow: "none",
-                color: "white",
-                border: "none",
+                position: "relative",
                 width: "100%",
+                padding: "7px 10px",
+                boxSizing: "border-box",
+                borderRadius: "25px",
+                backgroundColor: "#E4E6EB",
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: "#D8DADF",
+                },
               }}
             >
-              <CardHeader
+              <Typography
+                component={"span"}
                 sx={{
-                  color: "#000000",
-                  py: "5px",
+                  position: "absolute",
+                  left: "15px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "15px",
+                  color: "#333",
                 }}
-                avatar={
-                  <Avatar
-                    sx={{ bgcolor: red[500] }}
-                    aria-label="recipe"
-                    alt={session?.user?.lastName}
-                    src={session?.user?.profileImageUrl}
-                  ></Avatar>
-                }
-                title={
-                  <>
-                    <Typography
-                      fontSize={16}
-                      sx={{
-                        color: GLOBAL_COLOR_MENU,
-                      }}
-                    >
-                      {session?.user?.firstName +
-                        " " +
-                        session?.user?.middleName +
-                        " " +
-                        session?.user?.lastName}
-                    </Typography>
-                  </>
-                }
-                action={
-                  <>
-                    <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
-                      <Select
-                        id="demo-simple-select-autowidth"
-                        value={postData.privacyPostDetails + ""}
-                        onChange={handleChangePrivacyPost}
-                        autoWidth
-                        sx={{
-                          color: GLOBAL_COLOR_MENU,
-                          "&.MuiSelect-root": {
-                            backgroundColor: "#3a3b3c",
-                            border: "1px solid white",
-                          },
-                          "& fieldset": {
-                            border: "1px solid #323235",
-                          },
-                          "& fieldset:focus": {
-                            border: "1px solid white",
-                          },
-                          "& svg": {
-                            color: "#323235",
-                          },
-                        }}
-                      >
-                        <MenuItem value={1}>Công khai</MenuItem>
-                        <MenuItem value={2}>Riêng tư</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </>
-                }
-              />
-
-              <CardContent
-                sx={{
-                  color: "white",
-                  py: "5px",
-                }}
-                className="contentPost"
               >
-                <Input
-                  placeholder={
-                    session?.user?.firstName +
-                    " " +
-                    session?.user?.middleName +
-                    " " +
-                    session?.user?.lastName +
-                    " ơi, Bạn đang nghĩ gì thế ?"
-                  }
-                  inputProps={ariaLabel}
-                  onChange={(e) => handleContentPost(e.target.value)}
-                  multiline
-                  sx={{
-                    color: GLOBAL_COLOR_MENU,
-                    fontSize: "1.5rem",
-                  }}
-                  fullWidth
-                  disableUnderline
-                  value={postData.content}
-                />
-              </CardContent>
-              <CardContent
+                Bạn đang nghĩ gì ?
+              </Typography>
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              padding: "10px 0px 0px 0px",
+            }}
+          >
+            <Box
+              sx={{
+                width: "50%",
+                maxWidth: "160px",
+                padding: "5px",
+                boxSizing: "border-box",
+                backgroundColor: "#fff",
+                borderRadius: "20px",
+                marginRight: "8px",
+                filter: "drop-shadow(0 0 0.1rem crimson)",
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: "#E4E6EB",
+                },
+              }}
+            >
+              <Typography
+                component={"p"}
+                sx={{
+                  padding: "5px 0px",
+                  textAlign: "center",
+                  fontSize: "14px",
+                  color: "#333",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <VideoFileIcon sx={{ color: "#E42645" }} />
+                <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                  Video
+                </Typography>
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                width: "50%",
+                padding: "5px",
+                maxWidth: "160px",
+                boxSizing: "border-box",
+                backgroundColor: "#fff",
+                borderRadius: "20px",
+                filter: "drop-shadow(0 0 0.1rem green)",
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: "#E4E6EB",
+                },
+              }}
+            >
+              <Typography
+                component={"p"}
+                sx={{
+                  padding: "5px 0px",
+                  textAlign: "center",
+                  fontSize: "14px",
+                  color: "#333",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <AddAPhotoIcon sx={{ color: "#41B35D" }} />
+                <Typography component={"span"} sx={{ marginLeft: "6px" }}>
+                  Photo
+                </Typography>
+              </Typography>
+            </Box>
+          </Box>
+          <Dialog
+            open={openPost}
+            TransitionComponent={Transition}
+            keepMounted
+            onClose={handleClosePost}
+            aria-describedby="alert-dialog-slide-description"
+            PaperProps={{
+              style: {
+                backgroundColor: GLOBAL_BG_NOTIFY,
+                width: "100%",
+                borderRadius: "12px",
+              },
+              component: "form",
+              onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                const formJson = Object.fromEntries(
+                  (formData as any).entries()
+                );
+                console.log(formJson);
+                handleClosePost();
+              },
+            }}
+          >
+            <Box className="dialog-header">
+              <DialogTitle
+                id="alert-dialog-title"
                 sx={{
                   color: GLOBAL_COLOR_MENU,
-                  py: "5px",
+                  textAlign: "center",
+                  p: "10px",
                 }}
               >
-                <Autocomplete
-                  size="small"
-                  multiple
-                  freeSolo
-                  id="tags-standard"
-                  options={hashtagData as any[]}
-                  // value={postData.listHashtag as any}
-                  value={
-                    hashtagData.length > 0
-                      ? postData.listHashtag?.map((oldTag) => {
-                          const matchingTag = hashtagData.find(
-                            (newTag) => newTag.hashtagText === oldTag
-                          );
-                          return matchingTag ? matchingTag : oldTag;
-                        }) || postData.listHashtag
-                      : (postData.listHashtag as any)
-                  }
-                  getOptionLabel={(option: any) => {
-                    return formatHashtagText(
-                      typeof option === "string" ? option : option.hashtagText
-                    );
+                Tạo bài viết
+              </DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleClosePost}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 5,
+                  color: (theme) => theme.palette.grey[900],
+                  backgroundColor: "#3a3b3c",
+                  "&:hover": {
+                    backgroundColor: "#7d7d7d",
+                  },
+                }}
+              >
+                <ClearIcon />
+              </IconButton>
+            </Box>
+            <Divider />
+            <DialogContent sx={{ p: "8px" }}>
+              <Card
+                sx={{
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                  color: "white",
+                  border: "none",
+                  width: "100%",
+                }}
+              >
+                <CardHeader
+                  sx={{
+                    color: "#000000",
+                    py: "5px",
                   }}
-                  onChange={(event, values: any) =>
-                    handleHashtagPost(event, values)
+                  avatar={
+                    <Avatar
+                      sx={{ bgcolor: red[500] }}
+                      aria-label="recipe"
+                      alt={session?.user?.lastName}
+                      src={session?.user?.profileImageUrl}
+                    ></Avatar>
                   }
-                  renderOption={(props, option, { selected }) => (
-                    <Box
-                      component="li"
-                      sx={{
-                        backgroundColor: selected
-                          ? "#f5f5f5 !important"
-                          : "#fff !important",
-                        color: "white !important",
-                        "&:hover": {
-                          backgroundColor: "#f5f5f5 !important",
-                        },
-                        py: "10px !important",
-                      }}
-                      {...props}
-                      key={option.hashtagText}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography
-                          variant="body1"
-                          sx={{
-                            color: GLOBAL_COLOR_MENU,
-                          }}
-                          mr="10px"
-                        >
-                          {option.hashtagText}
-                        </Typography>
-                        {selected ? (
-                          <CheckIcon color="success" fontWeight="Bold" />
-                        ) : "" + selected ? (
-                          selected
-                        ) : (
-                          selected
-                        )}
-                        <Chip
-                          label={option?.totalPostUseHashtag + " bài viết"}
-                          variant="outlined"
-                          sx={{
-                            color: GLOBAL_COLOR_MENU,
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Hashtag"
-                      placeholder="Nhập từ khóa tìm kiếm"
-                      sx={{
-                        backgroundColor: GLOBAL_BG,
-                        color: GLOBAL_COLOR_MENU,
-                        borderRadius: "4px",
-                        "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "white" },
-                          "&:hover fieldset": { borderColor: "white" },
-                          "&.Mui-focused fieldset": { borderColor: "white" },
-                          "& .MuiInputBase-input": {
-                            color: GLOBAL_COLOR_MENU,
-                          },
-                        },
-                      }}
-                      onChange={handleTextFieldChange}
-                      value={searchValueHashtag}
-                      InputLabelProps={{
-                        style: {
+                  title={
+                    <>
+                      <Typography
+                        fontSize={16}
+                        sx={{
                           color: GLOBAL_COLOR_MENU,
-                        },
-                      }}
-                    />
-                  )}
-                  ChipProps={{
-                    style: {
-                      color: GLOBAL_COLOR_MENU,
-                      backgroundColor: GLOBAL_BG_NAV,
-                    },
-                  }}
-                  disableCloseOnSelect
-                  fullWidth
-                  loading
-                  loadingText={
-                    !searchValueHashtag
-                      ? ""
-                      : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                        }}
+                      >
+                        {session?.user?.firstName +
+                          " " +
+                          session?.user?.middleName +
+                          " " +
+                          session?.user?.lastName}
+                      </Typography>
+                    </>
+                  }
+                  action={
+                    <>
+                      <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
+                        <Select
+                          id="demo-simple-select-autowidth"
+                          value={postData.privacyPostDetails + ""}
+                          onChange={handleChangePrivacyPost}
+                          autoWidth
+                          sx={{
+                            color: GLOBAL_COLOR_MENU,
+                            "&.MuiSelect-root": {
+                              backgroundColor: "#3a3b3c",
+                              border: "1px solid white",
+                            },
+                            "& fieldset": {
+                              border: "1px solid #323235",
+                            },
+                            "& fieldset:focus": {
+                              border: "1px solid white",
+                            },
+                            "& svg": {
+                              color: "#323235",
+                            },
+                          }}
+                        >
+                          <MenuItem value={1}>Công khai</MenuItem>
+                          <MenuItem value={2}>Riêng tư</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </>
                   }
                 />
-                {postData.listHashtag?.length == 0 ? (
-                  <FormHelperText
+
+                <CardContent
+                  sx={{
+                    color: "white",
+                    py: "5px",
+                  }}
+                  className="contentPost"
+                >
+                  <Input
+                    placeholder={
+                      session?.user?.firstName +
+                      " " +
+                      session?.user?.middleName +
+                      " " +
+                      session?.user?.lastName +
+                      " ơi, Bạn đang nghĩ gì thế ?"
+                    }
+                    inputProps={ariaLabel}
+                    onChange={(e) => handleContentPost(e.target.value)}
+                    multiline
                     sx={{
                       color: GLOBAL_COLOR_MENU,
+                      fontSize: "1.5rem",
                     }}
-                  >
-                    Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
-                  </FormHelperText>
-                ) : (
-                  <></>
-                )}
-              </CardContent>
-              <CardContent
-                sx={{
-                  color: "white !important",
-                  py: "5px !important",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  display: "flex",
-                }}
-              >
-                <Button
-                  component="label"
-                  variant="contained"
+                    fullWidth
+                    disableUnderline
+                    value={postData.content}
+                  />
+                </CardContent>
+                <CardContent
                   sx={{
-                    p: "8px",
-                    // backgroundColor: "transparent",
-                    color: "white",
-                    "&:hover": {
-                      boxShadow: GLOBAL_BOXSHADOW,
-                    },
-                    boxShadow: "none",
+                    color: GLOBAL_COLOR_MENU,
+                    py: "5px",
                   }}
                 >
-                  <AddPhotoAlternate />
-                  Thêm ảnh hoặc Video
-                  <VisuallyHiddenInput
-                    type="file"
-                    accept=".jpg, .png , .mp4"
-                    onChange={(event) => handleChangePicturePost(event)}
+                  <Autocomplete
+                    size="small"
                     multiple
-                    name="listImageofComment"
+                    freeSolo
+                    id="tags-standard"
+                    options={hashtagData as any[]}
+                    // value={postData.listHashtag as any}
+                    value={
+                      hashtagData.length > 0
+                        ? postData.listHashtag?.map((oldTag) => {
+                            const matchingTag = hashtagData.find(
+                              (newTag) => newTag.hashtagText === oldTag
+                            );
+                            return matchingTag ? matchingTag : oldTag;
+                          }) || postData.listHashtag
+                        : (postData.listHashtag as any)
+                    }
+                    getOptionLabel={(option: any) => {
+                      return formatHashtagText(
+                        typeof option === "string" ? option : option.hashtagText
+                      );
+                    }}
+                    onChange={(event, values: any) =>
+                      handleHashtagPost(event, values)
+                    }
+                    renderOption={(props, option, { selected }) => (
+                      <Box
+                        component="li"
+                        sx={{
+                          backgroundColor: selected
+                            ? "#f5f5f5 !important"
+                            : "#fff !important",
+                          color: "white !important",
+                          "&:hover": {
+                            backgroundColor: "#f5f5f5 !important",
+                          },
+                          py: "10px !important",
+                        }}
+                        {...props}
+                        key={option.hashtagText}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: GLOBAL_COLOR_MENU,
+                            }}
+                            mr="10px"
+                          >
+                            {option.hashtagText}
+                          </Typography>
+                          {selected ? (
+                            <CheckIcon color="success" fontWeight="Bold" />
+                          ) : "" + selected ? (
+                            selected
+                          ) : (
+                            selected
+                          )}
+                          <Chip
+                            label={option?.totalPostUseHashtag + " bài viết"}
+                            variant="outlined"
+                            sx={{
+                              color: GLOBAL_COLOR_MENU,
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Hashtag"
+                        placeholder="Nhập từ khóa tìm kiếm"
+                        sx={{
+                          backgroundColor: GLOBAL_BG,
+                          color: GLOBAL_COLOR_MENU,
+                          borderRadius: "4px",
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": { borderColor: "white" },
+                            "&:hover fieldset": { borderColor: "white" },
+                            "&.Mui-focused fieldset": { borderColor: "white" },
+                            "& .MuiInputBase-input": {
+                              color: GLOBAL_COLOR_MENU,
+                            },
+                          },
+                        }}
+                        onChange={handleTextFieldChange}
+                        value={searchValueHashtag}
+                        InputLabelProps={{
+                          style: {
+                            color: GLOBAL_COLOR_MENU,
+                          },
+                        }}
+                      />
+                    )}
+                    ChipProps={{
+                      style: {
+                        color: GLOBAL_COLOR_MENU,
+                        backgroundColor: GLOBAL_BG_NAV,
+                      },
+                    }}
+                    disableCloseOnSelect
+                    fullWidth
+                    loading
+                    loadingText={
+                      !searchValueHashtag
+                        ? ""
+                        : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                    }
                   />
-                </Button>
-              </CardContent>
-              <Grid container rowSpacing={1} mt={1}>
-                {postData.listImageofPost?.map((url: File, index: any) => (
-                  <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
-                    <PreviewImageOfPost
-                      // key={index}
-                      url={url}
-                      index={index}
-                      handleRemoveImageOfPost={handleRemoveImageOfPost}
+                  {postData.listHashtag?.length == 0 ? (
+                    <FormHelperText
+                      sx={{
+                        color: GLOBAL_COLOR_MENU,
+                      }}
+                    >
+                      Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
+                    </FormHelperText>
+                  ) : (
+                    <></>
+                  )}
+                </CardContent>
+                <CardContent
+                  sx={{
+                    color: "white !important",
+                    py: "5px !important",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    display: "flex",
+                  }}
+                >
+                  <Button
+                    component="label"
+                    variant="contained"
+                    sx={{
+                      p: "8px",
+                      // backgroundColor: "transparent",
+                      color: "white",
+                      "&:hover": {
+                        boxShadow: GLOBAL_BOXSHADOW,
+                      },
+                      boxShadow: "none",
+                    }}
+                  >
+                    <AddPhotoAlternate />
+                    Thêm ảnh hoặc Video
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept=".jpg, .png , .mp4"
+                      onChange={(event) => handleChangePicturePost(event)}
+                      multiple
+                      name="listImageofComment"
                     />
-                  </Grid>
-                ))}
-              </Grid>
-            </Card>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleClosePost}
-              sx={{
-                color: "gray",
-              }}
-            >
-              Hủy
-            </Button>
-            {isEditPost ? (
-              <Button onClick={handleSaveEditPost}>Lưu</Button>
-            ) : (
-              <Button onClick={handlePost}>Đăng</Button>
-            )}
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openLoaderPost}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          sx={{
-            "& .MuiPaper-root": {
-              borderRadius: "12px",
-            },
-          }}
-        >
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Loader />
-              <Typography
+                  </Button>
+                </CardContent>
+                <Grid container rowSpacing={1} mt={1}>
+                  {postData.listImageofPost?.map((url: File, index: any) => (
+                    <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                      <PreviewImageOfPost
+                        // key={index}
+                        url={url}
+                        index={index}
+                        handleRemoveImageOfPost={handleRemoveImageOfPost}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Card>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                onClick={handleClosePost}
                 sx={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  marginTop: "12px ",
+                  color: "gray",
                 }}
               >
-                Đang đăng bài
-              </Typography>
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
-      </Box>
+                Hủy
+              </Button>
+              {isEditPost ? (
+                <Button onClick={handleSaveEditPost}>Lưu</Button>
+              ) : (
+                <Button onClick={handlePost}>Đăng</Button>
+              )}
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openLoaderPost}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            sx={{
+              "& .MuiPaper-root": {
+                borderRadius: "12px",
+              },
+            }}
+          >
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <Loader />
+                <Typography
+                  sx={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    marginTop: "12px ",
+                  }}
+                >
+                  Đang đăng bài
+                </Typography>
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+        </Box>
+      )}
       <InfiniteScroll
         loader={<Loader />}
         className=" my-10"

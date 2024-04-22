@@ -599,156 +599,159 @@ const HomeFriend = ({ session }: IPros) => {
           }}
         >
           {listDataUserSuitable &&
-            listDataUserSuitable?.map((item) => (
-              <Card
-                key={item.userId}
-                sx={{
-                  backgroundColor: "#c0c0d7",
-                  marginTop: "24px",
-                  marginLeft: "24px",
-                  width: { xs: "215px" },
-                  flexGrow: listDataUserSuitable.length >= 12 ? 1 : "auto",
-                }}
-              >
-                <CardMedia
-                  sx={{ height: 300, cursor: "pointer" }}
-                  image={item.profilePicUrl || "/OIP.jpg"}
-                  title="green iguana"
-                  onClick={() => handleRouterProfile(item?.userId)}
-                />
-                <CardContent
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingY: "0",
-                    marginTop: "16px",
-                  }}
-                >
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    component="div"
+            listDataUserSuitable?.map(
+              (item) =>
+                item.userId != session.user.userId && (
+                  <Card
+                    key={item.userId}
                     sx={{
-                      marginBottom: "0",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleRouterProfile(item?.userId)}
-                  >
-                    {item.fullname}
-                  </Typography>
-                </CardContent>
-                {!item.sendStatus ? (
-                  <CardActions
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
+                      backgroundColor: "#c0c0d7",
+                      marginTop: "24px",
+                      marginLeft: "24px",
+                      width: { xs: "215px" },
+                      flexGrow: listDataUserSuitable.length >= 12 ? 1 : "auto",
                     }}
                   >
-                    <Box
-                      onClick={() => handsenddAddfriend(item?.userId)}
+                    <CardMedia
+                      sx={{ height: 300, cursor: "pointer" }}
+                      image={item.profilePicUrl || "/OIP.jpg"}
+                      title="green iguana"
+                      onClick={() => handleRouterProfile(item?.userId)}
+                    />
+                    <CardContent
                       sx={{
-                        minWidth: "90px",
-                        textAlign: "center",
-                        borderRadius: "30px",
-                        padding: "8px 16px",
-                        boxShadow: GLOBAL_BOXSHADOW,
-                        background: GLOBAL_BG_BLUE_900,
-                        fontWeight: "bold",
-                        color: GLOBAL_COLOR_WHITE,
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        "&:hover": {
-                          transform: "scale(1.03)",
-                          backgroundColor: GLOBAL_BG_BLUE_300,
-                        },
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        paddingY: "0",
+                        marginTop: "16px",
                       }}
                     >
-                      Kết Bạn
-                    </Box>
-                    <Box
-                      onClick={() =>
-                        handremoveUserofListfriendSuitable(item?.userId)
-                      }
-                      sx={{
-                        minWidth: "90px",
-                        borderRadius: "30px",
-                        backgroundColor: "#eeeeee",
-                        textAlign: "center",
-                        color: "#4d3869",
-                        marginLeft: "4px",
-                        padding: "8px 16px",
-                        boxShadow: GLOBAL_BOXSHADOW,
-                        fontWeight: "bold",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        "&:hover": {
-                          transform: "scale(1.03)",
-                          backgroundColor: "#e3dede",
-                          outline: "none",
-                        },
-                      }}
-                    >
-                      Xóa
-                    </Box>
-                  </CardActions>
-                ) : (
-                  <CardActions
-                    sx={{
-                      display: "flex",
+                      <Typography
+                        gutterBottom
+                        variant="h5"
+                        component="div"
+                        sx={{
+                          marginBottom: "0",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleRouterProfile(item?.userId)}
+                      >
+                        {item?.fullname}
+                      </Typography>
+                    </CardContent>
+                    {!item.sendStatus ? (
+                      <CardActions
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Box
+                          onClick={() => handsenddAddfriend(item?.userId)}
+                          sx={{
+                            minWidth: "90px",
+                            textAlign: "center",
+                            borderRadius: "30px",
+                            padding: "8px 16px",
+                            boxShadow: GLOBAL_BOXSHADOW,
+                            background: GLOBAL_BG_BLUE_900,
+                            fontWeight: "bold",
+                            color: GLOBAL_COLOR_WHITE,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            "&:hover": {
+                              transform: "scale(1.03)",
+                              backgroundColor: GLOBAL_BG_BLUE_300,
+                            },
+                          }}
+                        >
+                          Kết Bạn
+                        </Box>
+                        <Box
+                          onClick={() =>
+                            handremoveUserofListfriendSuitable(item?.userId)
+                          }
+                          sx={{
+                            minWidth: "90px",
+                            borderRadius: "30px",
+                            backgroundColor: "#eeeeee",
+                            textAlign: "center",
+                            color: "#4d3869",
+                            marginLeft: "4px",
+                            padding: "8px 16px",
+                            boxShadow: GLOBAL_BOXSHADOW,
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            "&:hover": {
+                              transform: "scale(1.03)",
+                              backgroundColor: "#e3dede",
+                              outline: "none",
+                            },
+                          }}
+                        >
+                          Xóa
+                        </Box>
+                      </CardActions>
+                    ) : (
+                      <CardActions
+                        sx={{
+                          display: "flex",
 
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Box
-                      onClick={() =>
-                        handlerefusedAddfriend(item?.userId, false)
-                      }
-                      sx={{
-                        minWidth: "90px",
-                        textAlign: "center",
-                        borderRadius: "30px",
-                        padding: "8px 16px",
-                        boxShadow: GLOBAL_BOXSHADOW,
-                        background: GLOBAL_BG_BLUE_900,
-                        fontWeight: "bold",
-                        color: GLOBAL_COLOR_WHITE,
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                        "&:hover": {
-                          transform: "scale(1.03)",
-                          backgroundColor: GLOBAL_BG_BLUE_300,
-                        },
-                      }}
-                    >
-                      Hủy kết Bạn
-                    </Box>
-                    <Button
-                      variant="outlined"
-                      onClick={() =>
-                        handremoveUserofListfriendSuitable(item?.userId)
-                      }
-                      sx={{
-                        borderRadius: "30px",
-                        backgroundColor: "#eeeeee",
-                        color: "#4d3869",
-                        border: "none",
-                        marginLeft: "4px",
-                        "&:hover": {
-                          backgroundColor: "#c7c7c7",
-                          outline: "none",
-                          border: "none",
-                        },
-                      }}
-                    >
-                      Xóa
-                    </Button>
-                  </CardActions>
-                )}
-              </Card>
-            ))}
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Box
+                          onClick={() =>
+                            handlerefusedAddfriend(item?.userId, false)
+                          }
+                          sx={{
+                            minWidth: "90px",
+                            textAlign: "center",
+                            borderRadius: "30px",
+                            padding: "8px 16px",
+                            boxShadow: GLOBAL_BOXSHADOW,
+                            background: GLOBAL_BG_BLUE_900,
+                            fontWeight: "bold",
+                            color: GLOBAL_COLOR_WHITE,
+                            cursor: "pointer",
+                            transition: "all 0.2s",
+                            "&:hover": {
+                              transform: "scale(1.03)",
+                              backgroundColor: GLOBAL_BG_BLUE_300,
+                            },
+                          }}
+                        >
+                          Hủy kết Bạn
+                        </Box>
+                        <Button
+                          variant="outlined"
+                          onClick={() =>
+                            handremoveUserofListfriendSuitable(item?.userId)
+                          }
+                          sx={{
+                            borderRadius: "30px",
+                            backgroundColor: "#eeeeee",
+                            color: "#4d3869",
+                            border: "none",
+                            marginLeft: "4px",
+                            "&:hover": {
+                              backgroundColor: "#c7c7c7",
+                              outline: "none",
+                              border: "none",
+                            },
+                          }}
+                        >
+                          Xóa
+                        </Button>
+                      </CardActions>
+                    )}
+                  </Card>
+                )
+            )}
         </Box>
       </Box>
       <CardActions>

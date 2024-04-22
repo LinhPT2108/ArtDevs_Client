@@ -9,6 +9,7 @@ import {
   Backdrop,
   Button,
   CardMedia,
+  ClickAwayListener,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,7 +19,12 @@ import {
   FormControlLabel,
   FormLabel,
   Grid,
+  Grow,
   IconButton,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
   Radio,
   RadioGroup,
   Slide,
@@ -34,7 +40,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
@@ -619,6 +625,7 @@ const HomeProfile = ({ session }: IPros) => {
   const socket = new SockJS(GLOBAL_URL + "/friend");
   const stompClient = Stomp.over(socket);
   const [snackbar3Open, setSnackbar3Open] = useState(false);
+  const [checkRelationship, setCheckRelationship] = useState(false);
   const showSnackbar3 = () => {
     setSnackbar3Open(true);
     setTimeout(() => setSnackbar3Open(false), 10000);
@@ -628,6 +635,7 @@ const HomeProfile = ({ session }: IPros) => {
       const apiResult = await sendAddfriend(UserId);
       console.log("test Result: " + apiResult);
       if (apiResult === true) {
+        setCheckRelationship(true);
         showSnackbar3();
         // setListDataUserSuitable(
         //   listDataUserSuitable?.map((t) => {
@@ -658,10 +666,102 @@ const HomeProfile = ({ session }: IPros) => {
     }
   };
 
+  const [snackbar2Open, setSnackbar2Open] = useState(false);
+  const [snackbar5Open, setSnackbar5Open] = useState(false);
+  const showSnackbar2 = () => {
+    setSnackbar2Open(true);
+    setTimeout(() => setSnackbar2Open(false), 10000);
+  };
+  const showSnackbar5 = () => {
+    setSnackbar5Open(true);
+    setTimeout(() => setSnackbar5Open(false), 10000);
+  };
+
+  const refusedAddfriend = async (
+    UserId: string,
+    status: number
+  ): Promise<boolean> => {
+    try {
+      // Thực hiện cuộc gọi API ở đây
+      const response = await fetch(
+        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}?status=${status}`,
+        {
+          method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
+          headers: {
+            authorization: `Bearer ${session?.access_token}`,
+          },
+          // Các tùy chọn khác nếu cần
+        }
+      );
+      console.log(response);
+      // Xử lý kết quả
+      const data = await response.json();
+
+      return data; // Giả sử API trả về một trường success kiểu boolean
+    } catch (error) {
+      console.error("Error sending match:", error);
+      return false; // Trả về false nếu có lỗi
+    }
+  };
+  const handlerefusedAddfriend = async (
+    UserId: string,
+    type: boolean,
+    status: number
+  ) => {
+    try {
+      const apiResult = await refusedAddfriend(UserId, status);
+
+      console.log("test Result" + apiResult);
+      if (apiResult === true) {
+        setCheckRelationship(false);
+        if (type) {
+          showSnackbar2();
+        } else {
+          showSnackbar5();
+        }
+      } else {
+        console.log("Match request failed.");
+      }
+    } catch (error) {
+      console.error("Error sending match:", error);
+    }
+  };
+
   useEffect(() => {
     setPreviewBgImg(dataProfile?.backgroundImageUrl);
+    setCheckRelationship(
+      dataProfile?.status == -1
+        ? false
+        : dataProfile?.status == 0
+        ? false
+        : true
+    );
   }, [dataProfile]);
 
+  const [openFriend, setOpenFriend] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggleFriend = () => {
+    setOpenFriend((prevOpen) => !prevOpen);
+  };
+
+  const handleCloseFriend = (event: Event | React.SyntheticEvent) => {
+    if (
+      anchorRef.current &&
+      anchorRef.current.contains(event.target as HTMLElement)
+    ) {
+      return;
+    }
+    setOpenFriend(false);
+  };
+  function handleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setOpenFriend(false);
+    } else if (event.key === "Escape") {
+      setOpenFriend(false);
+    }
+  }
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
       <Backdrop sx={{ color: "#fff", zIndex: 9999 }} open={openBackdrop}>
@@ -836,31 +936,123 @@ const HomeProfile = ({ session }: IPros) => {
             {/* <Typography component={"p"}>1.2K Friends </Typography> */}
           </Box>
         </Box>
-        {searchId && dataProfile?.status == 0 ? (
+        {searchId && (dataProfile?.status == -1 || dataProfile?.status == 0) ? (
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Button
-              color="primary"
-              variant="outlined"
-              onClick={() => handsenddAddfriend(dataProfile?.userId!)}
-            >
-              Thêm bạn bè
-            </Button>
-          </Box>
-        ) : (
-          searchId &&
-          dataProfile?.status == 1 && (
-            <Box sx={{ display: "flex", alignItems: "center" }}>
+            {!checkRelationship && (
               <Button
                 color="primary"
                 variant="outlined"
                 onClick={() => handsenddAddfriend(dataProfile?.userId!)}
               >
-                Bạn bè
+                Thêm bạn bè
               </Button>
+            )}
+            {checkRelationship && (
+              <Button
+                color="primary"
+                variant="outlined"
+                onClick={() =>
+                  handlerefusedAddfriend(dataProfile?.userId, false, 0)
+                }
+              >
+                Hủy kết bạn
+              </Button>
+            )}
+          </Box>
+        ) : (
+          searchId &&
+          dataProfile?.status == 1 && (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              {!checkRelationship && (
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+                >
+                  Thêm bạn bè
+                </Button>
+              )}
+              {checkRelationship && (
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  ref={anchorRef}
+                  id="composition-button"
+                  aria-controls={openFriend ? "composition-menu" : undefined}
+                  aria-expanded={openFriend ? "true" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleToggleFriend}
+                >
+                  Bạn bè
+                </Button>
+              )}
+
+              <Popper
+                open={openFriend}
+                anchorEl={anchorRef.current}
+                role={undefined}
+                placement="bottom-start"
+                transition
+                disablePortal
+              >
+                {({ TransitionProps, placement }) => (
+                  <Grow
+                    {...TransitionProps}
+                    style={{
+                      transformOrigin:
+                        placement === "bottom-start"
+                          ? "left top"
+                          : "left bottom",
+                    }}
+                  >
+                    <Paper>
+                      <ClickAwayListener onClickAway={handleCloseFriend}>
+                        <MenuList
+                          autoFocusItem={openFriend}
+                          id="composition-menu"
+                          aria-labelledby="composition-button"
+                          onKeyDown={handleListKeyDown}
+                        >
+                          <MenuItem
+                            onClick={(e) => {
+                              handlerefusedAddfriend(
+                                dataProfile?.userId,
+                                true,
+                                1
+                              );
+                              handleCloseFriend(e);
+                            }}
+                          >
+                            Hủy kết bạn 1
+                          </MenuItem>
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
             </Box>
           )
         )}
       </Box>
+      <Snackbar
+        open={snackbar5Open}
+        message="Hủy gửi lời mời kết bạn!"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar5Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
+      <Snackbar
+        open={snackbar2Open}
+        message="Hủy kết bạn !"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar2Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
       <Snackbar
         open={snackbar3Open}
         message="Gừi lời mời kết bạn thành công!"
