@@ -1697,6 +1697,50 @@ const PostProfile = ({
   const handleRouterProfile = (id: string) => {
     router.push(`/profile?id=${id}`);
   };
+
+  // xử lý thay đổi nội dung tìm kiếm bài viết
+  useEffect(() => {
+    const dataFilter: {
+      sort?: string;
+      sortLike?: string;
+      start?: string;
+      end?: string;
+    } = {};
+    searchParams.get("sort") &&
+      (dataFilter.sort =
+        (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
+    searchParams.get("sortLike") &&
+      (dataFilter.sortLike =
+        (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
+    searchParams.get("startDate") &&
+      (dataFilter.start = searchParams.get("startDate") as string);
+    searchParams.get("endDate") &&
+      (dataFilter.end = searchParams.get("endDate") as string);
+
+    const refeshDataSearch = async () => {
+      const newDataSearch = await sendRequest<IModelPaginate<ResPost>>({
+        url: GLOBAL_URL + "/api/search/post",
+        method: "GET",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        queryParams: {
+          page: 0,
+          keyword: searchParams.get("keyword") as string,
+          ...dataFilter,
+        },
+      });
+      console.log(">>> check dataFilter: ", dataFilter);
+      console.log(">>> check seaerch: ", newDataSearch);
+      mutate(newDataSearch, false);
+      newDataSearch && setPosts(newDataSearch?.result);
+    };
+    refeshDataSearch();
+  }, [
+    searchParams.get("keyword") as string,
+    searchParams.get("sort") as string,
+    searchParams.get("sortLike") as string,
+    searchParams.get("startDate") as string,
+    searchParams.get("endDate") as string,
+  ]);
   if (isLoading) {
     return <PostSkeleton />;
   }
@@ -2224,7 +2268,7 @@ const PostProfile = ({
       )}
       <InfiniteScroll
         loader={<Loader />}
-        className=" my-10"
+        className=" my-5 pb-3"
         fetchMore={() => setPage((prev) => prev + 1)}
         hasMore={data && page + 1 < data?.meta?.total}
         totalPage={data ? data?.meta?.total : 1}

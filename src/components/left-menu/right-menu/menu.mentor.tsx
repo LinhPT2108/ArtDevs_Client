@@ -61,7 +61,7 @@ const MenuMentor = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    "http://localhost:8080/api/get-mentor-isready",
+    GLOBAL_URL + "/api/get-mentor-isready",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -73,7 +73,7 @@ const MenuMentor = ({ session }: IPros) => {
       setListMentor(data);
     }
   }, [data]);
-
+  console.log(">>> check data: ", data);
   const handleRedirect = (id: string) => {
     router.push(`/mentor/${id}`);
   };
@@ -152,86 +152,52 @@ const MenuMentor = ({ session }: IPros) => {
     return <MenuMentorSkeleton />;
   }
   return (
-    <Box
-      sx={{
-        width: "100%",
-        // maxWidth: 250,
-        borderRadius: "12px",
-        boxShadow: GLOBAL_BOXSHADOW,
-        bgcolor: GLOBAL_BG,
-      }}
-    >
-      <List
-        sx={{
-          width: "100%",
-          color: "white",
-          marginTop: "12px",
-          "& p": {
-            color: "white",
-          },
-        }}
-        component="nav"
-        aria-label="main mailbox folders"
-        subheader={
-          <ListSubheader
+    <>
+      {
+        //@ts-ignore
+        !listmentor?.statusCode && Array.isArray(listmentor) && (
+          <Box
             sx={{
-              bgcolor: GLOBAL_BG,
-              color: GLOBAL_COLOR_BLACK,
+              width: "100%",
+              // maxWidth: 250,
               borderRadius: "12px",
-              fontWeight: "bold",
-              zIndex: "0",
-              position: "relative",
-              "@media (min-width: 900px)": {
-                "&": {
-                  fontSize: "12px",
-                },
-              },
-              "@media (min-width: 1023px)": {
-                "&": {
-                  fontSize: "14px",
-                },
-              },
+              boxShadow: GLOBAL_BOXSHADOW,
+              bgcolor: GLOBAL_BG,
             }}
-            component="div"
-            id="nested-list-subheader"
           >
-            <Typography
-              gutterBottom
-              component="div"
-              textAlign="center"
+            <List
               sx={{
-                fontSize: "24px",
-                fontWeight: "500",
-                fontStyle: "bold",
+                width: "100%",
+                color: "white",
+                marginTop: "12px",
+                "& p": {
+                  color: "white",
+                },
               }}
-            >
-              Suggest Mentor
-            </Typography>
-          </ListSubheader>
-        }
-      >
-        <Divider />
-        {listmentor &&
-          listmentor.slice(0, 5).map((item, index) => {
-            return (
-              <Box key={index}>
-                <Card
+              component="nav"
+              aria-label="main mailbox folders"
+              subheader={
+                <ListSubheader
                   sx={{
-                    maxWidth: 345,
                     bgcolor: GLOBAL_BG,
-                    marginBottom: "10px",
-                    background: GLOBAL_BG,
-                    border: "50px radius",
-                    padding: "0 6px",
-                    overflow: "hidden",
-                    transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
-                    "&:hover": {
-                      transform: "scale(1.02)", // Increase scale on hover
+                    color: GLOBAL_COLOR_BLACK,
+                    borderRadius: "12px",
+                    fontWeight: "bold",
+                    zIndex: "0",
+                    position: "relative",
+                    "@media (min-width: 900px)": {
+                      "&": {
+                        fontSize: "12px",
+                      },
+                    },
+                    "@media (min-width: 1023px)": {
+                      "&": {
+                        fontSize: "14px",
+                      },
                     },
                   }}
-                  onClick={() => {
-                    handleRedirect(item?.userId);
-                  }}
+                  component="div"
+                  id="nested-list-subheader"
                 >
                   <Typography
                     gutterBottom
@@ -243,150 +209,195 @@ const MenuMentor = ({ session }: IPros) => {
                       fontStyle: "bold",
                     }}
                   >
-                    <Box
+                    Suggest Mentor
+                  </Typography>
+                </ListSubheader>
+              }
+            >
+              <Divider />
+              {listmentor.slice(0, 5).map((item, index) => {
+                return (
+                  <Box key={index}>
+                    <Card
                       sx={{
-                        top: "4px",
-                        left: "4px",
-                        backgroundColor: item?.isReady ? "#16D6B5" : "#e60839",
-                        border: "1px solid white",
-                        borderRadius: "11px",
-                        width: "fit-content",
-                        height: "24px",
-                        padding: "6px",
-                        boxSizing: "border-box",
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        position: "relative",
+                        maxWidth: 345,
+                        bgcolor: GLOBAL_BG,
+                        marginBottom: "10px",
+                        background: GLOBAL_BG,
+                        border: "50px radius",
+                        padding: "0 6px",
+                        overflow: "hidden",
+                        transition: "transform 0.3s ease-in-out", // Add transition for a smooth effect
+                        "&:hover": {
+                          transform: "scale(1.02)", // Increase scale on hover
+                        },
+                      }}
+                      onClick={() => {
+                        handleRedirect(item?.userId);
                       }}
                     >
-                      {/* Nested Box and Typography */}
-                      <Box
-                        sx={{
-                          width: "12px",
-                          height: "12px",
-                          borderRadius: "50%",
-                          backgroundColor: item?.isReady ? "white" : "black",
-                          marginRight: "8px",
-                        }}
-                      ></Box>
                       <Typography
+                        gutterBottom
+                        component="div"
+                        textAlign="center"
                         sx={{
-                          fontSize: "12px",
-                          fontWeight: "800",
-                          color: "white",
+                          fontSize: "24px",
+                          fontWeight: "500",
+                          fontStyle: "bold",
                         }}
                       >
-                        {item?.isReady ? "Online" : "Offline"}
+                        <Box
+                          sx={{
+                            top: "4px",
+                            left: "4px",
+                            backgroundColor: item?.isReady
+                              ? "#16D6B5"
+                              : "#e60839",
+                            border: "1px solid white",
+                            borderRadius: "11px",
+                            width: "fit-content",
+                            height: "24px",
+                            padding: "6px",
+                            boxSizing: "border-box",
+                            display: "flex",
+                            flexDirection: "row",
+                            alignItems: "center",
+                            position: "relative",
+                          }}
+                        >
+                          {/* Nested Box and Typography */}
+                          <Box
+                            sx={{
+                              width: "12px",
+                              height: "12px",
+                              borderRadius: "50%",
+                              backgroundColor: item?.isReady
+                                ? "white"
+                                : "black",
+                              marginRight: "8px",
+                            }}
+                          ></Box>
+                          <Typography
+                            sx={{
+                              fontSize: "12px",
+                              fontWeight: "800",
+                              color: "white",
+                            }}
+                          >
+                            {item?.isReady ? "Online" : "Offline"}
+                          </Typography>
+                        </Box>
+                        {item.fullname}
                       </Typography>
-                    </Box>
-                    {item.fullname}
-                  </Typography>
-                  <CardMedia
-                    component="img"
-                    alt="green iguana"
-                    height="180"
-                    image={item.profilePicUrl || "/OIP.jpg"}
-                    sx={{
-                      borderRadius: "100%", // Đặt borderRadius thành 50% để bo tròn hình ảnh
-                      objectFit: "cover",
-                      paddingLeft: "5px",
-                      paddingRight: "5px",
-                      boxShadow: GLOBAL_BOXSHADOW,
-                    }}
-                  />
+                      <CardMedia
+                        component="img"
+                        alt="green iguana"
+                        height="180"
+                        image={item.profilePicUrl || "/OIP.jpg"}
+                        sx={{
+                          borderRadius: "100%", // Đặt borderRadius thành 50% để bo tròn hình ảnh
+                          objectFit: "cover",
+                          paddingLeft: "5px",
+                          paddingRight: "5px",
+                          boxShadow: GLOBAL_BOXSHADOW,
+                        }}
+                      />
 
-                  <CardActions className="justify-center">
-                    {!item.sendStatus ? (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        sx={{
-                          borderRadius: "30px",
-                          backgroundColor: "#eeeeee",
-                          color: "#4d3869",
-                          "&:hover": {
-                            backgroundColor: "#ffffff",
-                            outline: "none",
-                            border: "none",
-                          },
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation(); // Ngăn chặn sự kiện onclick của Card
-                          handleClickOpen(item.userId, item.isReady);
-                          // Thực hiện sự kiện của nút button ở đây
-                        }}
-                      >
-                        Yêu Cầu Hỗ Trợ
-                      </Button>
-                    ) : (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        sx={{
-                          borderRadius: "30px",
-                          backgroundColor: "#eeeeee",
-                          color: "#4d3869",
-                          "&:hover": {
-                            backgroundColor: "#ffffff",
-                            outline: "none",
-                            border: "none",
-                          },
-                        }}
-                        onClick={(event) => {
-                          event.stopPropagation(); // Ngăn chặn sự kiện onclick của Card
-                        }}
-                      >
-                        Đã Gửi Yêu Cầu Hỗ Trợ
-                      </Button>
-                    )}
-                  </CardActions>
-                </Card>
-                <Snackbar
-                  open={snackbarOpen}
-                  message="Gửi yêu cầu hỗ trợ thành công! vui lòng đợi"
-                  autoHideDuration={3000}
-                  onClose={() => setSnackbarOpen(false)}
-                  sx={{
-                    color: "white",
-                    backgroundColor: "#4CAF50",
-                  }}
-                />
-                <Snackbar
-                  open={snackbar2Open}
-                  message="Mentor is not Ready "
-                  autoHideDuration={3000}
-                  onClose={() => setSnackbar2Open(false)}
-                  sx={{
-                    color: "black",
-                    backgroundColor: "##e60839",
-                  }}
-                />
-                <Dialog
-                  open={open}
-                  TransitionComponent={Transition}
-                  keepMounted
-                  onClose={handleClose}
-                  aria-describedby="alert-dialog-slide-description"
-                >
-                  <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
-                  <DialogContent>
-                    <DialogContentText id="alert-dialog-slide-description">
-                      Đồng hành với Người Hướng Dẫn IT, học viên không chỉ chinh
-                      phục thách thức kỹ thuật, mà còn khám phá sự phát triển
-                      chuyên sâu và mối quan hệ chuyên nghiệp bền vững.
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={handleClose}>Thoát</Button>
-                    <Button onClick={handleSendmatch}>Đồng ý</Button>
-                  </DialogActions>
-                </Dialog>
-              </Box>
-            );
-          })}
-      </List>
-    </Box>
+                      <CardActions className="justify-center">
+                        {!item.sendStatus ? (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            sx={{
+                              borderRadius: "30px",
+                              backgroundColor: "#eeeeee",
+                              color: "#4d3869",
+                              "&:hover": {
+                                backgroundColor: "#ffffff",
+                                outline: "none",
+                                border: "none",
+                              },
+                            }}
+                            onClick={(event) => {
+                              event.stopPropagation(); // Ngăn chặn sự kiện onclick của Card
+                              handleClickOpen(item.userId, item.isReady);
+                              // Thực hiện sự kiện của nút button ở đây
+                            }}
+                          >
+                            Yêu Cầu Hỗ Trợ
+                          </Button>
+                        ) : (
+                          <Button
+                            size="small"
+                            variant="contained"
+                            sx={{
+                              borderRadius: "30px",
+                              backgroundColor: "#eeeeee",
+                              color: "#4d3869",
+                              "&:hover": {
+                                backgroundColor: "#ffffff",
+                                outline: "none",
+                                border: "none",
+                              },
+                            }}
+                            onClick={(event) => {
+                              event.stopPropagation(); // Ngăn chặn sự kiện onclick của Card
+                            }}
+                          >
+                            Đã Gửi Yêu Cầu Hỗ Trợ
+                          </Button>
+                        )}
+                      </CardActions>
+                    </Card>
+                    <Snackbar
+                      open={snackbarOpen}
+                      message="Gửi yêu cầu hỗ trợ thành công! vui lòng đợi"
+                      autoHideDuration={3000}
+                      onClose={() => setSnackbarOpen(false)}
+                      sx={{
+                        color: "white",
+                        backgroundColor: "#4CAF50",
+                      }}
+                    />
+                    <Snackbar
+                      open={snackbar2Open}
+                      message="Mentor is not Ready "
+                      autoHideDuration={3000}
+                      onClose={() => setSnackbar2Open(false)}
+                      sx={{
+                        color: "black",
+                        backgroundColor: "##e60839",
+                      }}
+                    />
+                    <Dialog
+                      open={open}
+                      TransitionComponent={Transition}
+                      keepMounted
+                      onClose={handleClose}
+                      aria-describedby="alert-dialog-slide-description"
+                    >
+                      <DialogTitle>{"Bạn có muốn Match?"}</DialogTitle>
+                      <DialogContent>
+                        <DialogContentText id="alert-dialog-slide-description">
+                          Đồng hành với Người Hướng Dẫn IT, học viên không chỉ
+                          chinh phục thách thức kỹ thuật, mà còn khám phá sự
+                          phát triển chuyên sâu và mối quan hệ chuyên nghiệp bền
+                          vững.
+                        </DialogContentText>
+                      </DialogContent>
+                      <DialogActions>
+                        <Button onClick={handleClose}>Thoát</Button>
+                        <Button onClick={handleSendmatch}>Đồng ý</Button>
+                      </DialogActions>
+                    </Dialog>
+                  </Box>
+                );
+              })}
+            </List>
+          </Box>
+        )
+      }
+    </>
   );
 };
 export default MenuMentor;
