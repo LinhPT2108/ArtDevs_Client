@@ -17,10 +17,25 @@ import {
   DialogContentText,
   DialogTitle,
   Switch,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { HiLockClosed } from "react-icons/hi";
 import useSWR, { SWRResponse } from "swr";
-
+// CSS cho ToggleButton
+const toggleButtonStyles = {
+  backgroundColor: "#f2f2f2",
+  color: "#333333",
+  border: "1px solid #cccccc",
+  "&:hover": {
+    backgroundColor: "#e6e6e6",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "#007bff",
+    color: "#ffffff",
+  },
+};
 interface ip {
   user: UserFormAdminDTO;
   handlepropdata: (
@@ -31,11 +46,32 @@ interface ip {
   listnametable: string;
 }
 const Banner = (ip: ip) => {
-
-  const { user, handlepropdata,listnametable} = ip;
+  const { user, handlepropdata, listnametable } = ip;
   const [updatedUser, setUser] = useState<UserFormAdminDTO | null>(null);
   const [openConfirmationDialog, setOpenConfirmationDialog] = useState(false);
+  const [openConfirmaAdminDialog, setOpenConfirmaAdminDialog] = useState(false);
   const [openStatusChangeDialog, setOpenStatusChangeDialog] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(
+    user.role.roleName.toString()
+  );
+  useEffect(() => {
+    setSelectedRole(user.role.roleName.toString());
+  }, [user]);
+
+  const handleChange = (
+    event: React.MouseEvent<HTMLElement>,
+    newRole: string
+  ) => {
+    if (newRole !== null) {
+      // Thực hiện hàm xử lý khi role thay đổi ở đây
+      console.log("Bạn đã chọn ToggleButton có giá trị là: ", newRole);
+      if (newRole === "admin") {
+        setOpenConfirmaAdminDialog(true);
+      } else {
+        setOpenConfirmationDialog(true);
+      }
+    }
+  };
 
   const handleOpenConfirmationDialog = () => {
     setOpenConfirmationDialog(true);
@@ -49,11 +85,12 @@ const Banner = (ip: ip) => {
   // Function to close all Dialogs
   const handleCloseDialogs = () => {
     setOpenConfirmationDialog(false);
+    setOpenConfirmaAdminDialog(false);
     setOpenStatusChangeDialog(false);
   };
 
   const handleMentorSwitchChange = async () => {
-    if (user.role.id === 2) {
+    if (user.role.id === 2 || user.role.id === 1) {
       const newUserData: UserFormAdminDTO = {
         ...user,
         role: {
@@ -71,18 +108,19 @@ const Banner = (ip: ip) => {
           });
         };
         const response = await fetchData(
-          `${GLOBAL_URL}/api/admin/update-user`,
+          `${GLOBAL_URL}/api/admin/update-user-role`,
           newUserData
         );
+        console.log("mentor ne", response);
         const dataupdate = response.model;
         console.log("data update", response.model);
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_TURNON_MENTOR,listnametable);
+          handlepropdata(response.model, GLOBAL_TURNON_MENTOR, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
       }
-    } else if (user.role.id === 3) {
+    } else if (user.role.id === 3 || user.role.id === 1) {
       const newUserData: UserFormAdminDTO = {
         ...user,
         role: {
@@ -102,11 +140,12 @@ const Banner = (ip: ip) => {
           });
         };
         const response = await fetchData(
-          `${GLOBAL_URL}/api/admin/update-user`,
+          `${GLOBAL_URL}/api/admin/update-user-role`,
           newUserData
         );
+        console.log("mentor ne", response);
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_TURNOFF_MENTOR,listnametable);
+          handlepropdata(response.model, GLOBAL_TURNOFF_MENTOR, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -114,9 +153,37 @@ const Banner = (ip: ip) => {
     }
     handleCloseDialogs();
   };
+  const handleAdminSwitchChange = async () => {
+    const newUserData: UserFormAdminDTO = {
+      ...user,
+      role: {
+        id: 1,
+        roleName: "admin",
+      },
+    };
 
+    try {
+      const fetchData = async (url: string, userData: UserFormAdminDTO) => {
+        return await sendRequest<RequestUserUpdateFormAdmin>({
+          url: url,
+          method: "POST",
+          body: userData,
+        });
+      };
+      const response = await fetchData(
+        `${GLOBAL_URL}/api/admin/update-user-role`,
+        newUserData
+      );
+      const dataupdate = response.model;
+      if (response.statusCode == 200) {
+        handlepropdata(response.model, GLOBAL_TURNON_MENTOR, listnametable);
+      }
+    } catch (error) {
+      console.error("Error sending API request:", error);
+    }
+    handleCloseDialogs();
+  };
   const handleLockSwitchChange = async () => {
-    // Logic khi switch "Account is Locked" thay đổi
     if (user.accountNonLocked == true) {
       const newUserData: UserFormAdminDTO = {
         ...user, // Giữ nguyên các giá trị từ user ban đầu
@@ -132,11 +199,12 @@ const Banner = (ip: ip) => {
           });
         };
         const response = await fetchData(
-          `${GLOBAL_URL}/api/admin/update-user`,
+          `${GLOBAL_URL}/api/admin/update-user-isLocket`,
           newUserData
         );
+        console.log("locked", response);
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_LOCKED_ACCOUNT,listnametable);
+          handlepropdata(response.model, GLOBAL_LOCKED_ACCOUNT, listnametable);
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -156,11 +224,16 @@ const Banner = (ip: ip) => {
           });
         };
         const response = await fetchData(
-          `${GLOBAL_URL}/api/admin/update-user`,
+          `${GLOBAL_URL}/api/admin/update-user-isLocket`,
           newUserData
         );
+        console.log("locked", response);
         if (response.statusCode == 200) {
-          handlepropdata(response.model, GLOBAL_UNLOCKED_ACCOUNT,listnametable);
+          handlepropdata(
+            response.model,
+            GLOBAL_UNLOCKED_ACCOUNT,
+            listnametable
+          );
         }
       } catch (error) {
         console.error("Error sending API request:", error);
@@ -210,18 +283,36 @@ const Banner = (ip: ip) => {
         </div>
       </div>
       <div className="mt-4 flex items-center gap-3">
-        <Switch
-          id="switch2"
-          checked={user.role.id === 3}
-          onChange={handleOpenConfirmationDialog}
-        />
-        <label
-          htmlFor="switch2"
-          className="text-base font-medium text-navy-700 dark:text-white cursor-pointer"
+        <ToggleButtonGroup
+          value={selectedRole}
+          exclusive
+          onChange={handleChange}
+          aria-label="Choose Role"
         >
-          Account is Mentor
-        </label>
+          <ToggleButton
+            value="admin"
+            className="toggle-button"
+            sx={toggleButtonStyles}
+          >
+            Admin
+          </ToggleButton>
+          <ToggleButton
+            value="mentor"
+            className="toggle-button"
+            sx={toggleButtonStyles}
+          >
+            Mentor
+          </ToggleButton>
+          <ToggleButton
+            value="user"
+            className="toggle-button"
+            sx={toggleButtonStyles}
+          >
+            User
+          </ToggleButton>
+        </ToggleButtonGroup>
       </div>
+
       <div className="mt-4 flex items-center gap-3">
         <Switch
           id="switch2"
@@ -230,9 +321,9 @@ const Banner = (ip: ip) => {
         />
         <label
           htmlFor="switch2"
-          className="text-base font-medium text-navy-700 dark:text-white cursor-pointer"
+          className="grid grid-cols-[auto,auto] gap-2 text-base font-medium text-navy-700 dark:text-white cursor-pointer"
         >
-          Account is Locked
+          <span>Account is Locked</span>
         </label>
       </div>
       <Dialog
@@ -250,6 +341,25 @@ const Banner = (ip: ip) => {
         <DialogActions>
           <Button onClick={handleCloseDialogs}>Hủy bỏ</Button>
           <Button onClick={handleMentorSwitchChange} autoFocus>
+            Xác Nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={openConfirmaAdminDialog}
+        onClose={handleCloseDialogs}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Thông báo</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Bạn có chắc là muốn thay đổi vai trò của account này ?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialogs}>Hủy bỏ</Button>
+          <Button onClick={handleAdminSwitchChange} autoFocus>
             Xác Nhận
           </Button>
         </DialogActions>

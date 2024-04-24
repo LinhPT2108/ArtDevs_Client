@@ -443,7 +443,20 @@ declare global {
     message: string;
     model: AccountListDTO;
   }
-
+  interface ReponseCountAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: CountAccountDTO;
+  }
+  interface CountAccountDTO{
+    listBand: number;
+    listMentor:number;
+    listUser: number;
+    listNewMentor: number;
+    listAllAccount :  number;
+    listNewUser: number;
+    listAdmin:  number;
+  }
   interface ReponseReportFormAdmin {
     statusCode: number;
     message: string;
@@ -471,8 +484,8 @@ declare global {
     listAllAccount: UserFormAdminDTO[];
     listMentor: UserFormAdminDTO[];
     listUser: UserFormAdminDTO[];
-    listNewMentor: UserFormAdminDTO[];
-    listNewUser: UserFormAdminDTO[];
+    listAdmin: UserFormAdminDTO[];
+
   }
 
   interface UserFormAdminDTO {

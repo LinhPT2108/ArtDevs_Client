@@ -14,6 +14,7 @@ import {
 import { sendRequest } from "@/components/utils/api";
 import { GLOBAL_URL } from "@/components/utils/veriable.global";
 import useSWR, { SWRResponse } from "swr";
+import { Badge } from "@mui/material";
 
 type Props = {
   columnsData: any[];
@@ -35,6 +36,12 @@ function TopCreatorTable(props: Props) {
     props.onRowClick(rowData);
   };
 
+  const checkIfNew = (createDate: Date) => {
+    const now = new Date();
+    const diffInHours =
+      Math.abs(now.getTime() - createDate.getTime()) / (1000 * 3600); // Tính khoảng thời gian trong giờ
+    return diffInHours <= 72;
+  };
   useEffect(() => {
     console.log("check data 3", tableData);
     setdataPresent(tableData);
@@ -76,7 +83,7 @@ function TopCreatorTable(props: Props) {
   } = tableInstance;
 
   return (
-    <Card className={"h-[600px] w-full pb-5  relative "}>
+    <Card className={"h-[650px] w-full pb-5  relative "}>
       {/* Top Creator Header */}
       <div className="flex h-fit w-full items-center justify-between rounded-t-2xl bg-white px-4 pt-4 pb-[20px] shadow-2xl shadow-gray-100 dark:!bg-navy-700 dark:shadow-none">
         <h4 className="text-lg font-bold text-navy-700 dark:text-white">
@@ -156,6 +163,13 @@ function TopCreatorTable(props: Props) {
           <tbody {...getTableBodyProps()} className="px-4">
             {page.map((row, index) => {
               prepareRow(row);
+              // Kiểm tra xem liệu hàng có phải là hàng mới hay không
+              const createDate =
+                row.original.createDate instanceof Date
+                  ? row.original.createDate // Nếu là đối tượng Date, sử dụng trực tiếp
+                  : new Date(row.original.createDate);
+              const isNewRow = checkIfNew(createDate);
+
               return (
                 <tr
                   {...row.getRowProps()}
@@ -165,24 +179,48 @@ function TopCreatorTable(props: Props) {
                     onRowClick(row.original);
                   }}
                   // Đặt lớp CSS để chỉ định hàng được chọn
-                  className={row === selectedRow ? "bg-gray-200" : ""}
+                  className={`${row === selectedRow ? "bg-gray-200" : ""}`}
                 >
                   {row.cells.map((cell, index) => {
                     let renderData;
                     if (cell.column.Header === "UserID") {
                       renderData = (
                         <div className="flex items-center gap-2">
-                          <div className="h-[30px] w-[30px] rounded-full">
-                            <img
-                              src={
-                                row.original.userPictureAvatar
-                                  ? row.original.userPictureAvatar
-                                  : "/OIP.jpg"
-                              }
-                              className="h-full w-full rounded-full"
-                              alt=""
-                            />
-                          </div>
+                          {isNewRow ? (
+                            <Badge
+                              color="error"
+                              badgeContent="New"
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "left",
+                              }}
+                              style={{ fontSize: "0.1rem"}}
+                            >
+                              <div className="h-[30px] w-[30px] rounded-full">
+                                <img
+                                  src={
+                                    row.original.userPictureAvatar
+                                      ? row.original.userPictureAvatar
+                                      : "/OIP.jpg"
+                                  }
+                                  className="h-full w-full rounded-full"
+                                  alt=""
+                                />
+                              </div>
+                            </Badge>
+                          ) : (
+                            <div className="h-[30px] w-[30px] rounded-full">
+                              <img
+                                src={
+                                  row.original.userPictureAvatar
+                                    ? row.original.userPictureAvatar
+                                    : "/OIP.jpg"
+                                }
+                                className="h-full w-full rounded-full"
+                                alt=""
+                              />
+                            </div>
+                          )}
                           <p className="text-sm font-medium text-navy-700 dark:text-white">
                             {row.original.userId}
                           </p>
@@ -191,7 +229,7 @@ function TopCreatorTable(props: Props) {
                     } else if (cell.column.Header === "createDate") {
                       const formattedDate = moment(
                         row.original.createDate
-                      ).format("MMMM Do YYYY, h:mm:ss a");
+                      ).format("MMMM Do YYYY");
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
                           {formattedDate}
