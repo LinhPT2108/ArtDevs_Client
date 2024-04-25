@@ -107,21 +107,6 @@ export default function HomeFeedback({ session }: IPros) {
     }
   };
 
-  //xử lý thay đổi file
-  const handleChangePictureFeedback = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const fileInput = event.target as HTMLInputElement;
-    const selected = fileInput.files;
-    setDataFeedback((prevData) => ({
-      ...prevData,
-      listImage: [
-        ...(prevData.listImage || []),
-        ...(selected ? Array.from(selected) : []),
-      ] as File[],
-    }));
-  };
-
   //xử lý gửi ý kiến
   const handleSendFeedback = async () => {
     if (dataFeedback?.title && dataFeedback?.content) {
@@ -142,8 +127,8 @@ export default function HomeFeedback({ session }: IPros) {
         )
       );
 
-      if (dataFeedback.listImage) {
-        dataFeedback.listImage.forEach((file: any, index: any) => {
+      if (selectedFiles) {
+        selectedFiles.forEach((file: any, index: any) => {
           formData.append("listImage", file);
         });
       } else {

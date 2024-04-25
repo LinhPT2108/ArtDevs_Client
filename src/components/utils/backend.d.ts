@@ -432,6 +432,11 @@ declare global {
     message: string;
     model: MyLanguageProgram[];
   }
+  interface ReponseFeedbackFormAdmin {
+    statusCode: number;
+    message: string;
+    model: FeedbackDTO[];
+  }
   interface RequestUserUpdateFormAdmin {
     statusCode: number;
     message: string;
@@ -523,5 +528,15 @@ declare global {
     cloudinaryPublicId: string;
     imageOfFeedbackUrl: string;
     time: string;
+  }
+  interface FeedbackDTO {
+    id: number;
+    title: string;
+    content: string;
+    createFeedback: Date;
+    dateHandle: Date | null;
+    status: boolean;
+    userId: string;
+    listImage: ImageofFeedback[] | null;
   }
 }

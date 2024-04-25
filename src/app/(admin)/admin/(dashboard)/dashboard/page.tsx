@@ -177,7 +177,10 @@ const DashboardPage: FC<Props> = () => {
           subtitle={
             CountAccount?.model?.listAllAccount.toString() || "Loading..."
           }
-          newAccount={CountAccount?.model?.listNewMentor + CountAccount?.model?.listNewUser}
+          newAccount={
+            CountAccount?.model?.listNewMentor +
+            CountAccount?.model?.listNewUser
+          }
           onWidgetClick={() =>
             handleWidgetClick(
               dataGetAll?.model?.listAllAccount ?? [],
