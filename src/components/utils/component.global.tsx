@@ -27,7 +27,6 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import ClearIcon from "@mui/icons-material/Clear";
 import "../../style/loading.css";
-
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
   "@keyframes fadeIn": {

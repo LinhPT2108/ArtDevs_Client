@@ -36,6 +36,7 @@ import {
 } from "@/components/utils/veriable.global";
 import TopCreatorTable from "./components/table/TableTopCreators";
 import Banner from "./components/table/Banner";
+import { SessionProvider, useSession } from "next-auth/react";
 
 const MiniCalendar = dynamic(
   () => import("@/components/admin/calendar/MiniCalendar"),
@@ -61,7 +62,7 @@ const DashboardPage: FC<Props> = () => {
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
   };
-
+  const { data: sessions, update: sessionUpdate } = useSession();
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseAllUserFormAdmin>({
       url: url,

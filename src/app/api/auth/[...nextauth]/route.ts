@@ -75,7 +75,7 @@ export const authOptions: AuthOptions = {
             userId: generateUniqueId(),
             username: `${token?.name}`,
             isOnline: false,
-            listDemandOfUser: [],
+            listDemandOfUser: ["C"],
             listSkillOfUser: [],
           },
         });

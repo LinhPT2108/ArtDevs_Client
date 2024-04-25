@@ -2,18 +2,20 @@ import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function SearchComponent() {
   const [search, setSearch] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const path = usePathname();
   const handleSearch = () => {
-    router.push(`/search?keyword=${search}`);
+    router.push(`/search?tabfilter=post&keyword=${search}`);
   };
   useEffect(() => {
-    searchParams.get("keyword") &&
+    path == "/search" &&
+      searchParams.get("keyword") &&
       setSearch(searchParams.get("keyword") as string);
   }, [searchParams.get("keyword") as string]);
   return (
