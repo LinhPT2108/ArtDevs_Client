@@ -207,11 +207,16 @@ declare global {
   }
 
   interface ResPost {
-    id: number;
+    id: string;
     typePost: string;
-    fullname: string;
+    userPostDto: UserPost;
     content: string;
     postId: Post;
+    timeCreate: string;
+    totalLike: number;
+    totalComment: number;
+    likeByUserLogged: boolean;
+    isProcessingLike: boolean | undefined;
   }
 
   interface Post {

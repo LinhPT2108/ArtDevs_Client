@@ -165,11 +165,14 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string): Promise<boolean> => {
+  const refusedAddfriend = async (
+    UserId: string,
+    status: number
+  ): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
-        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}`,
+        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}?status=${status}`,
         {
           method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
           headers: {
@@ -189,9 +192,13 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string, type: boolean) => {
+  const handlerefusedAddfriend = async (
+    UserId: string,
+    type: boolean,
+    status: number
+  ) => {
     try {
-      const apiResult = await refusedAddfriend(UserId);
+      const apiResult = await refusedAddfriend(UserId, status);
 
       console.log("test Result" + apiResult);
       if (apiResult === true) {
@@ -530,7 +537,7 @@ const HomeFriend = ({ session }: IPros) => {
                   <Button
                     variant="outlined"
                     onClick={() =>
-                      handlerefusedAddfriend(item?.userAction?.userId, true)
+                      handlerefusedAddfriend(item?.userAction?.userId, true, 0)
                     }
                     sx={{
                       borderRadius: "30px",
@@ -706,7 +713,7 @@ const HomeFriend = ({ session }: IPros) => {
                       >
                         <Box
                           onClick={() =>
-                            handlerefusedAddfriend(item?.userId, false)
+                            handlerefusedAddfriend(item?.userId, false, 0)
                           }
                           sx={{
                             minWidth: "90px",
@@ -791,6 +798,7 @@ const HomeFriend = ({ session }: IPros) => {
         onClose={() => setSnackbar2Open(false)}
         sx={{
           color: "black",
+          bgcolor: "white",
         }}
       />
       <Snackbar
@@ -800,6 +808,7 @@ const HomeFriend = ({ session }: IPros) => {
         onClose={() => setSnackbar3Open(false)}
         sx={{
           color: "black",
+          bgcolor: "white",
         }}
       />
       <Snackbar
@@ -809,6 +818,7 @@ const HomeFriend = ({ session }: IPros) => {
         onClose={() => setSnackbar4Open(false)}
         sx={{
           color: "black",
+          bgcolor: "white",
         }}
       />
       <Snackbar
@@ -818,8 +828,9 @@ const HomeFriend = ({ session }: IPros) => {
         onClose={() => setSnackbar5Open(false)}
         sx={{
           color: "black",
+          bgcolor: "white",
         }}
-      />
+      ></Snackbar>
     </Box>
   );
 };

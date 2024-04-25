@@ -1023,7 +1023,7 @@ const HomeProfile = ({ session }: IPros) => {
                               handleCloseFriend(e);
                             }}
                           >
-                            Hủy kết bạn 1
+                            Hủy kết bạn
                           </MenuItem>
                         </MenuList>
                       </ClickAwayListener>
@@ -1126,54 +1126,6 @@ const HomeProfile = ({ session }: IPros) => {
                   display: { xs: "none", sm: "block" },
                 }}
               >
-                <Box
-                  sx={{
-                    borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 5fr",
-                    padding: "10px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      padding: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#1771E6",
-                      width: "50px",
-                      height: "50px",
-                      color: "white",
-                    }}
-                  >
-                    <VpnKeyIcon />
-                  </Box>
-                  <Box
-                    sx={{
-                      "& h3": {
-                        fontSize: "15px",
-                        color: "#333",
-                        marginTop: "7px",
-                        marginLeft: "10px",
-                      },
-                      "& a": {
-                        textDecoration: "none",
-                        fontSize: "13px",
-                        marginLeft: "10px",
-                        marginTop: "2px",
-                        fontWeight: "bold",
-                        color: "#1771E6",
-                        "&hover": {
-                          textDecoration: "underline",
-                        },
-                      },
-                    }}
-                  >
-                    <h3>Khóa tài khoản của chính mình?</h3>
-                    <a href="#">Tìm hiểu thêm</a>
-                  </Box>
-                </Box>
 
                 <Box
                   sx={{
