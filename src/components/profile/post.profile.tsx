@@ -267,14 +267,14 @@ const PostProfile = ({
   });
   let url = profile
     ? profile
-    : hashTagText
-    ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
-    : search
-    ? search
-    : friendPost
-    ? friendPost
-    : "/news-feed";
-
+    : // : hashTagText
+      // ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
+      // : search
+      // ? search
+      // : friendPost
+      // ? friendPost
+      "/news-feed";
+  console.log(">>> check url: ", url);
   const searchParams = useSearchParams();
 
   //get data bài đăng
@@ -303,6 +303,7 @@ const PostProfile = ({
 
   useEffect(() => {
     const handleChangeSession = async () => {
+      console.log(">>> check url1111: ", url);
       const newData = await sendRequest<IModelPaginate<ResPost>>({
         url: GLOBAL_URL + "/api" + url,
         method: "GET",
@@ -1619,27 +1620,9 @@ const PostProfile = ({
   console.log(">>> check data posst: ", data);
 
   useEffect(() => {
-    const fetchDataHashtag = async () => {
-      try {
-        const getHashtag = await sendRequest<HashtagInfor[]>({
-          url: GLOBAL_URL + "/api/search-detailhashtag",
-          method: "GET",
-          queryParams: {
-            keyword: searchValueHashtag,
-          },
-        });
-        console.log(getHashtag);
-
-        setHashtagData(getHashtag);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    if (searchValueHashtag) {
-      fetchDataHashtag();
-    }
     (async () => {
       if (page) {
+        console.log(">>> check url234234: ", url);
         const response = await sendRequest<IModelPaginate<ResPost>>({
           url: GLOBAL_URL + "/api" + url,
           method: "GET",
@@ -1665,31 +1648,31 @@ const PostProfile = ({
       setPosts(data?.result);
     }
   }, [data]);
-  // useEffect(() => {
-  //   const fetchDataHashtag = async () => {
-  //     try {
-  //       const getHashtag = await sendRequest<HashtagInfor[]>({
-  //         url: GLOBAL_URL + "/api/search-detailhashtag",
-  //         method: "GET",
-  //         queryParams: {
-  //           keyword: searchValueHashtag,
-  //         },
-  //       });
-  //       console.log(getHashtag);
+  useEffect(() => {
+    const fetchDataHashtag = async () => {
+      try {
+        const getHashtag = await sendRequest<HashtagInfor[]>({
+          url: GLOBAL_URL + "/api/search-detailhashtag",
+          method: "GET",
+          queryParams: {
+            keyword: searchValueHashtag,
+          },
+        });
+        console.log(getHashtag);
 
-  //       setHashtagData(getHashtag);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
-  //   if (searchValueHashtag) {
-  //     fetchDataHashtag();
-  //   }
+        setHashtagData(getHashtag);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    if (searchValueHashtag) {
+      fetchDataHashtag();
+    }
 
-  //   if (data && !error) {
-  //     setPosts(data?.result);
-  //   }
-  // }, [loading, dataLoading, searchValueHashtag]);
+    // if (data && !error) {
+    //   setPosts(data?.result);
+    // }
+  }, [loading, dataLoading, searchValueHashtag]);
 
   //biến chuyển hướng
   const router = useRouter();
@@ -1699,48 +1682,49 @@ const PostProfile = ({
   };
 
   // xử lý thay đổi nội dung tìm kiếm bài viết
-  useEffect(() => {
-    const dataFilter: {
-      sort?: string;
-      sortLike?: string;
-      start?: string;
-      end?: string;
-    } = {};
-    searchParams.get("sort") &&
-      (dataFilter.sort =
-        (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
-    searchParams.get("sortLike") &&
-      (dataFilter.sortLike =
-        (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
-    searchParams.get("startDate") &&
-      (dataFilter.start = searchParams.get("startDate") as string);
-    searchParams.get("endDate") &&
-      (dataFilter.end = searchParams.get("endDate") as string);
+  // useEffect(() => {
+  //   const dataFilter: {
+  //     sort?: string;
+  //     sortLike?: string;
+  //     start?: string;
+  //     end?: string;
+  //   } = {};
+  //   searchParams.get("sort") &&
+  //     (dataFilter.sort =
+  //       (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("sortLike") &&
+  //     (dataFilter.sortLike =
+  //       (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("startDate") &&
+  //     (dataFilter.start = searchParams.get("startDate") as string);
+  //   searchParams.get("endDate") &&
+  //     (dataFilter.end = searchParams.get("endDate") as string);
 
-    const refeshDataSearch = async () => {
-      const newDataSearch = await sendRequest<IModelPaginate<ResPost>>({
-        url: GLOBAL_URL + "/api/search/post",
-        method: "GET",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        queryParams: {
-          page: 0,
-          keyword: searchParams.get("keyword") as string,
-          ...dataFilter,
-        },
-      });
-      console.log(">>> check dataFilter: ", dataFilter);
-      console.log(">>> check seaerch: ", newDataSearch);
-      mutate(newDataSearch, false);
-      newDataSearch && setPosts(newDataSearch?.result);
-    };
-    refeshDataSearch();
-  }, [
-    searchParams.get("keyword") as string,
-    searchParams.get("sort") as string,
-    searchParams.get("sortLike") as string,
-    searchParams.get("startDate") as string,
-    searchParams.get("endDate") as string,
-  ]);
+  //   const refeshDataSearch = async () => {
+  //     const newDataSearch = await sendRequest<IModelPaginate<ResPost>>({
+  //       url: GLOBAL_URL + "/api" + url,
+  //       method: "GET",
+  //       headers: { authorization: `Bearer ${session?.access_token}` },
+  //       queryParams: {
+  //         page: 0,
+  //         keyword: searchParams.get("keyword") as string,
+  //         ...dataFilter,
+  //       },
+  //     });
+  //     console.log(">>> check dataFilter: ", dataFilter);
+  //     console.log(">>> check seaerch: ", newDataSearch);
+  //     mutate(newDataSearch, false);
+  //     newDataSearch && setPosts(newDataSearch?.result);
+  //     console.log(">>> check newDataSearch: ", newDataSearch);
+  //   };
+  //   refeshDataSearch();
+  // }, [
+  //   searchParams.get("keyword") as string,
+  //   searchParams.get("sort") as string,
+  //   searchParams.get("sortLike") as string,
+  //   searchParams.get("startDate") as string,
+  //   searchParams.get("endDate") as string,
+  // ]);
   if (isLoading) {
     return <PostSkeleton />;
   }
