@@ -3114,7 +3114,7 @@ const PostProfile = ({
                           },
                         }}
                         onClick={(event) =>
-                          handleClick(event, item?.postId?.postId, item)
+                          handleClick(event, item?.postId?.postId, item, index)
                         }
                       >
                         <Box
@@ -3128,12 +3128,11 @@ const PostProfile = ({
                           <MoreVertIcon />
                         </Box>
                       </Box>
-                      <Menu
-                        anchorEl={anchorEl}
-                        id={`account-menu-${index}`}
-                        open={Boolean(anchorEl)}
-                        onClose={handleCloses}
-                        onClick={handleCloses}
+                      <Menu anchorEl={anchorEl[index]}
+                    id={`account-menu-${index}`}
+                    open={Boolean(anchorEl[index])}
+                    onClose={() => handleCloses(index)}
+                    onClick={() => handleCloses(index)}
                         PaperProps={{
                           elevation: 0,
                           sx: {
@@ -3177,7 +3176,7 @@ const PostProfile = ({
                         !searchParams.get("id") ? (
                           <Box>
                             <MenuItem
-                              onClick={() => handleDeletePost(selectedItemId)}
+                              onClick={() => handleDeletePost(selectedItemId, index)}
                             >
                               <ListItemIcon>
                                 <DeleteIcon fontSize="small" />

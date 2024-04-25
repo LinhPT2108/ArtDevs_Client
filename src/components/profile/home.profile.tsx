@@ -1023,7 +1023,7 @@ const HomeProfile = ({ session }: IPros) => {
                               handleCloseFriend(e);
                             }}
                           >
-                            Hủy kết bạn
+                            Hủy kết bạn 
                           </MenuItem>
                         </MenuList>
                       </ClickAwayListener>
@@ -1126,7 +1126,6 @@ const HomeProfile = ({ session }: IPros) => {
                   display: { xs: "none", sm: "block" },
                 }}
               >
-
                 <Box
                   sx={{
                     borderRadius: "5px",
