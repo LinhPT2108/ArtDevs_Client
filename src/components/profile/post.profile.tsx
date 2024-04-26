@@ -97,6 +97,7 @@ import postCommentApi, {
   isImage,
   postReplyCommentApi,
 } from "../utils/utils";
+
 import {
   GLOBAL_BG,
   GLOBAL_BG_NAV,
@@ -248,7 +249,8 @@ interface IPros {
   search?: string;
   friendPost?: string;
 }
-
+const socket = new SockJS("http://localhost:8080/wss");
+const stompClient = Stomp.over(socket);
 const PostProfile = ({
   session,
   hashTagText,
@@ -257,6 +259,8 @@ const PostProfile = ({
   search,
   friendPost,
 }: IPros) => {
+   
+    console.log(stompClient);
   const themeS = useTheme();
   const [activeStep, setActiveStep] = React.useState(0);
 
@@ -271,8 +275,6 @@ const PostProfile = ({
   const handleStepChange = (step: number) => {
     setActiveStep(step);
   };
-  const socket = new SockJS("http://localhost:8080/wss");
-  const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<
     ((EventTarget & HTMLElement) | null)[]
@@ -571,6 +573,10 @@ const PostProfile = ({
   const [page, setPage] = useState<number>(0);
   const [posts, setPosts] = useState<ResPost[]>([]);
   const [comment, setComment] = useState<CommentOfPost[]>([]);
+  const [commentOfShare, setCommentOfShare] = useState<
+    CommentOfShareToGetDTO[]
+  >([]);
+  const [share, setShare] = useState<boolean>(false);
   const [openModalCmt, setOpenModalCmt] = useState(false);
   const [selectPost, setSelectPost] = useState<any>();
   const [showAllComments, setShowAllComments] = useState([]);
@@ -1044,14 +1050,17 @@ const PostProfile = ({
         formData.append("listImageofComment", "");
       }
       try {
-        const response = await fetch(
-          GLOBAL_URL + "/api/comment/" + commentObject.id,
-          {
-            method: "PUT",
-            headers: { authorization: `Bearer ${session?.access_token}` },
-            body: formData,
-          }
-        );
+        const response = share
+          ? await fetch(GLOBAL_URL + "/api/share/comment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            })
+          : await fetch(GLOBAL_URL + "/api/comment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            });
 
         if (response.status == 200) {
           setEditingIndexComment("");
@@ -1084,14 +1093,20 @@ const PostProfile = ({
         formData.append("listImageofComment", "");
       }
       try {
-        const response = await fetch(
-          GLOBAL_URL + "/api/replyComment/" + commentObject.id,
-          {
-            method: "PUT",
-            headers: { authorization: `Bearer ${session?.access_token}` },
-            body: formData,
-          }
-        );
+        const response = share
+          ? await fetch(
+              GLOBAL_URL + "/api/share/replyComment/" + commentObject.id,
+              {
+                method: "PUT",
+                headers: { authorization: `Bearer ${session?.access_token}` },
+                body: formData,
+              }
+            )
+          : await fetch(GLOBAL_URL + "/api/replyComment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            });
 
         if (response.status == 200) {
           setEditingIndexReplyComment("");
@@ -1099,8 +1114,8 @@ const PostProfile = ({
           setEditedImageReplyComment("");
           const data = await response.json();
           console.log(data);
-          setComment((prevComments) => {
-            return prevComments.map((comment) => {
+          setComment((prevComments: any) => {
+            return prevComments.map((comment: CommentOfPost) => {
               if (comment.id === data.commentID) {
                 return {
                   ...comment,
@@ -1129,7 +1144,11 @@ const PostProfile = ({
   ) => {
     console.log("Delete:", commentObject);
     const url = isComment2
-      ? GLOBAL_URL + "/api/comment/" + commentObject.id
+      ? share
+        ? GLOBAL_URL + "/api/share/comment/" + commentObject.id
+        : GLOBAL_URL + "/api/comment/" + commentObject.id
+      : share
+      ? GLOBAL_URL + "/api/share/replyComment/" + commentObject.id
       : GLOBAL_URL + "/api/replyComment/" + commentObject.id;
 
     const response = await sendRequest<boolean>({
@@ -1181,6 +1200,14 @@ const PostProfile = ({
       postToPost: "",
       userReceive: "",
     });
+  const [formDataCommentOfShare, setFormDataCommentOfShare] =
+    React.useState<CommentOfShareToPostDTO>({
+      content: "",
+      listImageofComment: null,
+      userToPost: session?.user?.userId,
+      shareId: "",
+      userReceive: "",
+    });
   const [formDataReplyComment, setFormDataReplyComment] =
     React.useState<ReplyCommentToPostDTO>({
       content: "",
@@ -1192,30 +1219,76 @@ const PostProfile = ({
   const handleCloseModalCmt = () => {
     setOpenModalCmt(false);
     setIsShowReplies(null);
-  };
-  const handleOpenModalCmt = async (post: Post) => {
-    setIsComment(true);
+    setShare(false);
+    setEditedContentComment("");
+    setEditedContentReplyComment("");
     setFormDataComment({
       content: "",
       listImageofComment: null,
       postToPost: "",
+      userToPost: "",
+      userReceive: "",
     } as CommentToPostDTO);
+    setFormDataCommentOfShare({
+      content: "",
+      listImageofComment: null,
+      shareId: "",
+      userToPost: "",
+      userReceive: "",
+    } as CommentOfShareToPostDTO);
+  };
+  const handleOpenModalCmt = async (
+    post: Post,
+    resPost: ResPost,
+    isShare: boolean
+  ) => {
+    setIsComment(true);
     setOpenModalCmt(true);
-    setSelectPost(post.userPost.fullname);
-
-    const getCommentOfPost = await sendRequest<CommentOfPost[]>({
-      url: GLOBAL_URL + "/api/comment/" + post.postId,
-      method: "GET",
-      queryParams: {
-        page: 0,
-      },
-    });
-    setComment(getCommentOfPost);
-    setFormDataComment((prevData) => ({
-      ...prevData,
-      postToPost: post?.postId,
-      userReceive: post.userPost.userId,
-    }));
+    setShare(isShare);
+    if (isShare) {
+      //share
+      setSelectPost(post.userPost.fullname);
+      const newData = await sendRequest<IModelPaginate<CommentOfShareToGetDTO>>(
+        {
+          url: GLOBAL_URL + "/api/share/comment/" + resPost.id,
+          method: "GET",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          queryParams: {
+            page: 0,
+            // keyword: searchParams.get("keyword") as string,
+          },
+        }
+      );
+      console.log(newData);
+      // setCommentOfShare(newData?.result);
+      setComment(newData?.result);
+      setFormDataCommentOfShare((prevData) => ({
+        ...prevData,
+        shareId: resPost?.id,
+        userReceive: post.userPost.userId,
+      }));
+    } else {
+      //comment
+      setFormDataComment({
+        content: "",
+        listImageofComment: null,
+        postToPost: "",
+      } as CommentToPostDTO);
+      setSelectPost(post.userPost.fullname);
+      const getCommentOfPost = await sendRequest<CommentOfPost[]>({
+        url: GLOBAL_URL + "/api/comment/" + post.postId,
+        method: "GET",
+        queryParams: {
+          page: 0,
+        },
+      });
+      setComment(getCommentOfPost);
+      setFormDataComment((prevData) => ({
+        ...prevData,
+        postToPost: post?.postId,
+        userReceive: post.userPost.userId,
+      }));
+    }
   };
   const toggleShowReplyCmt = (cmtId: any) => {
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
@@ -1271,7 +1344,7 @@ const PostProfile = ({
                 : resPost
             )
           );
-          console.log(data);
+          // console.log(data);
           if (session?.user?.userId != item?.userPostDto.userId) {
             const notificationToPostDTO: notificationToPostDTO = {
               message: "likeShare",
@@ -1454,9 +1527,7 @@ const PostProfile = ({
   };
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
     console.log(cmt);
-
     console.log(user);
-
     setIsComment(false);
     setFormDataReplyComment((prevData) => {
       return {
@@ -1469,10 +1540,17 @@ const PostProfile = ({
 
   const handleChangeContentComment = (value: string) => {
     if (isComment) {
-      setFormDataComment((prevFormData) => ({
-        ...prevFormData,
-        content: value,
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevFormData) => ({
+          ...prevFormData,
+          content: value,
+        }));
+      } else {
+        setFormDataComment((prevFormData) => ({
+          ...prevFormData,
+          content: value,
+        }));
+      }
       if (timer) {
         clearTimeout(timer);
       }
@@ -1542,13 +1620,23 @@ const PostProfile = ({
     console.log(fileInput.files);
     const selected = fileInput.files;
     if (isComment) {
-      setFormDataComment((prevData) => ({
-        ...prevData,
-        listImageofComment: [
-          ...(prevData.listImageofComment || []),
-          ...(selected ? Array.from(selected) : []),
-        ] as File[],
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevData) => ({
+          ...prevData,
+          listImageofComment: [
+            ...(prevData.listImageofComment || []),
+            ...(selected ? Array.from(selected) : []),
+          ] as File[],
+        }));
+      } else {
+        setFormDataComment((prevData) => ({
+          ...prevData,
+          listImageofComment: [
+            ...(prevData.listImageofComment || []),
+            ...(selected ? Array.from(selected) : []),
+          ] as File[],
+        }));
+      }
     } else {
       setFormDataReplyComment((prevData) => ({
         ...prevData,
@@ -1561,17 +1649,26 @@ const PostProfile = ({
   };
   const handleRemoveImage = (index: number, isComment: boolean) => {
     const newSelectedFiles = isComment
-      ? [...formDataComment.listImageofComment]
+      ? share
+        ? [...formDataCommentOfShare.listImageofComment]
+        : [...formDataComment.listImageofComment]
       : [...formDataReplyComment.listImageofComment];
     newSelectedFiles.splice(index, 1);
     setSelectedFiles(newSelectedFiles);
     console.log(newSelectedFiles);
 
     if (isComment) {
-      setFormDataComment((prevData) => ({
-        ...prevData,
-        listImageofComment: newSelectedFiles,
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevData) => ({
+          ...prevData,
+          listImageofComment: newSelectedFiles,
+        }));
+      } else {
+        setFormDataComment((prevData) => ({
+          ...prevData,
+          listImageofComment: newSelectedFiles,
+        }));
+      }
     } else {
       setFormDataReplyComment((prevData) => ({
         ...prevData,
@@ -1597,41 +1694,182 @@ const PostProfile = ({
     console.log(newSelectedFiles);
   };
   const handleCancelReplyComment = () => setIsComment(true);
+
+  const postReplyCommentOfShareApi = async (
+    replyCommentToPostDTO: ReplyCommentToPostDTO,
+    session: User
+  ) => {
+    const formData = new FormData();
+    formData.append(
+      "repcommentDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: replyCommentToPostDTO.content,
+            commentToPost: replyCommentToPostDTO.commentToPost.id,
+            userToPost: replyCommentToPostDTO.userToPost,
+            userReceive: replyCommentToPostDTO.userReceive.userId,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (replyCommentToPostDTO.listImageofComment) {
+      replyCommentToPostDTO.listImageofComment.forEach(
+        (file: any, index: any) => {
+          formData.append("listImageofComment", file);
+        }
+      );
+    } else {
+      formData.append("listImageofComment", "");
+    }
+    console.log(formData.getAll("listImageofComment"));
+
+    try {
+      // let urlThis =
+      //   GLOBAL_URL +
+      //   "/api/share/repcomment/" +
+      //   replyCommentToPostDTO.commentToPost.id;
+      const response = await fetch(
+        `${GLOBAL_URL}/api/share/repcomment/${replyCommentToPostDTO.commentToPost.id}`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+      return responseData;
+    } catch (error) {
+      console.error("Error uploading content and files: ", error);
+      throw error;
+    }
+  };
+
+  const postCommentOfShareApi = async (
+    commentToPostDTO: CommentOfShareToPostDTO,
+    session: User
+  ) => {
+    const formData = new FormData();
+    formData.append(
+      "commentOfShareToPostDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: commentToPostDTO.content,
+            shareId: commentToPostDTO.shareId,
+            userToPost: commentToPostDTO.userToPost,
+            userReceive: commentToPostDTO.userReceive,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (commentToPostDTO.listImageofComment) {
+      commentToPostDTO.listImageofComment.forEach((file: any, index: any) => {
+        formData.append("listImageofComment", file);
+      });
+    } else {
+      formData.append("listImageofComment", "");
+    }
+    console.log(formData.getAll("listImageofComment"));
+
+    try {
+      const response = await fetch(GLOBAL_URL + "/api/share/comment", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+      return responseData;
+    } catch (error) {
+      console.error("Error uploading content and files: ", error);
+      throw error;
+    }
+  };
   const handlePostComment = async () => {
     if (isComment) {
       console.log(formDataComment);
       setIsLoadingComment(true);
-      const response = await postCommentApi(formDataComment, session);
+      const response = share
+        ? await postCommentOfShareApi(formDataCommentOfShare, session)
+        : await postCommentApi(formDataComment, session);
 
       if (response != false) {
         setComment((preData) => [response, ...preData]);
-        setFormDataComment({
-          content: "",
-          listImageofComment: null,
-          postToPost: "",
-        } as CommentToPostDTO);
         setIsLoadingComment(false);
-        if (session?.user?.userId !== formDataComment?.userReceive) {
-          const notificationToPostDTO: notificationToPostDTO = {
-            message: "comment",
-            receiverId: `${formDataComment?.userReceive}`,
-            senderId: session?.user?.userId,
-            postId: formDataComment?.postToPost,
+        if (share) {
+          if (session?.user?.userId !== formDataCommentOfShare?.userReceive) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "commentShare",
+              receiverId: `${formDataCommentOfShare?.userReceive}`,
+              senderId: session?.user?.userId,
+              postId: "",
+              shareId: formDataCommentOfShare?.shareId,
+              type: "commentSharev",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          if (session?.user?.userId !== formDataComment?.userReceive) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "comment",
+              receiverId: `${formDataComment?.userReceive}`,
+              senderId: session?.user?.userId,
+              postId: formDataComment?.postToPost,
+              shareId: "",
+              type: "comment",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${formDataCommentOfShare?.userReceive}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        }
+        if (share) {
+          setFormDataCommentOfShare({
+            content: "",
+            listImageofComment: null,
             shareId: "",
-            type: "comment",
-          };
-          stompClient.send(
-            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
-            {},
-            JSON.stringify(notificationToPostDTO)
-          );
+            userToPost: "",
+            userReceive: "",
+          } as CommentOfShareToPostDTO);
+        } else {
+          setFormDataComment({
+            content: "",
+            listImageofComment: null,
+            postToPost: "",
+            userToPost: "",
+            userReceive: "",
+          } as CommentToPostDTO);
         }
       }
       setIsComment(true);
     } else {
       console.log(formDataReplyComment);
       setIsLoadingComment(true);
-      const response = await postReplyCommentApi(formDataReplyComment, session);
+      const response = share
+        ? await postReplyCommentOfShareApi(formDataReplyComment, session)
+        : await postReplyCommentApi(formDataReplyComment, session);
       console.log(response);
       if (response != false) {
         setFormDataReplyComment(
@@ -1644,8 +1882,8 @@ const PostProfile = ({
               // commentToPost: null as unknown as number,
             } as ReplyCommentToPostDTO)
         );
-        setComment((prevComments) => {
-          return prevComments.map((comment) => {
+        setComment((prevComments: any) => {
+          return prevComments.map((comment: CommentOfPost) => {
             if (comment.id === response.commentID) {
               return {
                 ...comment,
@@ -1763,7 +2001,7 @@ const PostProfile = ({
     setOpenLoaderPost(false);
   };
 
-  console.log(">>> check data posst: ", data);
+  // console.log(">>> check data posst: ", data);
 
   useEffect(() => {
     (async () => {
@@ -1891,7 +2129,7 @@ const PostProfile = ({
   if (isLoading) {
     return <PostSkeleton />;
   }
-  console.log(">>> check posts123: ", posts);
+  // console.log(">>> check posts123: ", posts);
   return (
     <>
       {!searchParams.get("id") && (
@@ -3128,11 +3366,12 @@ const PostProfile = ({
                           <MoreVertIcon />
                         </Box>
                       </Box>
-                      <Menu anchorEl={anchorEl[index]}
-                    id={`account-menu-${index}`}
-                    open={Boolean(anchorEl[index])}
-                    onClose={() => handleCloses(index)}
-                    onClick={() => handleCloses(index)}
+                      <Menu
+                        anchorEl={anchorEl[index]}
+                        id={`account-menu-${index}`}
+                        open={Boolean(anchorEl[index])}
+                        onClose={() => handleCloses(index)}
+                        onClick={() => handleCloses(index)}
                         PaperProps={{
                           elevation: 0,
                           sx: {
@@ -3176,7 +3415,9 @@ const PostProfile = ({
                         !searchParams.get("id") ? (
                           <Box>
                             <MenuItem
-                              onClick={() => handleDeletePost(selectedItemId, index)}
+                              onClick={() =>
+                                handleDeletePost(selectedItemId, index)
+                              }
                             >
                               <ListItemIcon>
                                 <DeleteIcon fontSize="small" />
@@ -3396,7 +3637,9 @@ const PostProfile = ({
                           width: "100%",
                           borderRadius: "0",
                         }}
-                        onClick={() => handleOpenModalCmt(item?.postId)}
+                        onClick={() =>
+                          handleOpenModalCmt(item?.postId, item, true)
+                        }
                       >
                         <CommentIcon />
                         <Typography
@@ -3529,7 +3772,9 @@ const PostProfile = ({
                           width: "100%",
                           borderRadius: "0",
                         }}
-                        onClick={() => handleOpenModalCmt(item?.postId)}
+                        onClick={() =>
+                          handleOpenModalCmt(item?.postId, item, false)
+                        }
                       >
                         <CommentIcon />
                         <Typography
@@ -4008,7 +4253,7 @@ const PostProfile = ({
                                 >
                                   <Avatar
                                     alt=""
-                                    src={rl.userID.profilePicUrl}
+                                    src={rl.userAction.profilePicUrl}
                                     sx={{ width: 30, height: 30 }}
                                   />
                                   {editingIndexReplyComment !=
@@ -4035,7 +4280,7 @@ const PostProfile = ({
                                             style={{ textDecoration: "none" }}
                                           >
                                             <CardHeader
-                                              title={rl.userID.fullname}
+                                              title={rl.userAction.fullname}
                                               subheader={""}
                                               sx={{
                                                 fontSize: "10px",
@@ -4113,11 +4358,7 @@ const PostProfile = ({
                                                 md={4}
                                                 lg={3}
                                               >
-                                                <ImageViewer
-                                                  imageUrl={
-                                                    item2.imageOfCommentUrl
-                                                  }
-                                                />
+                                                <ImageViewer imageUrl={item2} />
                                               </Grid>
                                             )
                                           )}
@@ -4165,14 +4406,17 @@ const PostProfile = ({
                                           <Button
                                             size="small"
                                             onClick={() =>
-                                              handleReplyComment(c, rl.userID)
+                                              handleReplyComment(
+                                                c,
+                                                rl.userAction
+                                              )
                                             }
                                           >
                                             Phản hồi
                                           </Button>
                                         </Box>
                                       </Box>
-                                      {rl.userID.userId ==
+                                      {rl.userAction.userId ==
                                         session?.user?.userId && (
                                         <div>
                                           <Button
@@ -4493,7 +4737,9 @@ const PostProfile = ({
                       InputProps={{ sx: { color: "white" } }}
                       value={
                         isComment
-                          ? formDataComment.content
+                          ? share
+                            ? formDataCommentOfShare.content
+                            : formDataComment.content
                           : formDataReplyComment.content
                       }
                       onChange={(e) =>
@@ -4533,7 +4779,10 @@ const PostProfile = ({
                       onClick={handlePostComment}
                       disabled={
                         (isComment
-                          ? !formDataComment.content || isLoadingComment
+                          ? share
+                            ? !formDataCommentOfShare.content ||
+                              isLoadingComment
+                            : !formDataComment.content || isLoadingComment
                           : !formDataReplyComment.content) || isLoadingComment
                       }
                     >
@@ -4545,17 +4794,29 @@ const PostProfile = ({
                     </IconButton>
                   </Box>
                   {isComment
-                    ? formDataComment.listImageofComment?.map(
-                        (url: File, index: any) => (
-                          <PreviewImage
-                            key={index}
-                            url={url}
-                            index={index}
-                            isComment={true}
-                            handleRemoveImage={handleRemoveImage}
-                          />
+                    ? share
+                      ? formDataCommentOfShare.listImageofComment?.map(
+                          (url: File, index: any) => (
+                            <PreviewImage
+                              key={index}
+                              url={url}
+                              index={index}
+                              isComment={true}
+                              handleRemoveImage={handleRemoveImage}
+                            />
+                          )
                         )
-                      )
+                      : formDataComment.listImageofComment?.map(
+                          (url: File, index: any) => (
+                            <PreviewImage
+                              key={index}
+                              url={url}
+                              index={index}
+                              isComment={true}
+                              handleRemoveImage={handleRemoveImage}
+                            />
+                          )
+                        )
                     : formDataReplyComment.listImageofComment?.map(
                         (url: File, index: any) => (
                           <PreviewImage
@@ -4603,18 +4864,23 @@ const PostProfile = ({
             <>
               <TextField
                 autoFocus
-                required
                 margin="dense"
                 name="content"
                 hiddenLabel
                 fullWidth
                 variant="standard"
-                label="Bạn nghĩ gì về bài viết này ?"
+                label="Nội dung chia sẻ ?"
+                autoComplete="off"
                 InputLabelProps={{
                   style: {
                     color: "white",
                   },
                 }}
+                // InputProps={{
+                //   style:{
+                //     color:"white"
+                //   }
+                // }}
                 onChange={(e) => {
                   setContentSharePost(e.target.value);
 
@@ -4764,37 +5030,6 @@ const PostProfile = ({
                       )
                     )}
                   </Swiper>
-                  {/* <ImageList
-                  variant="masonry"
-                    cols={2}
-                  >
-                    {actionDialog.data?.post?.listImageofPost?.map(
-                      (item: any, index: number) => (
-                        <ImageListItem key={item.id}>
-                          <CardMedia
-                            loading="lazy"
-                            key={index + item.id}
-                            component={
-                              isImage(item.imageUrl) === "image"
-                                ? "img"
-                                : isImage(item.imageUrl) === "video"
-                                ? "video"
-                                : "div"
-                            }
-                            controls={isImage(item.imageUrl) === "video"}
-                            image={item?.imageUrl}
-                            alt={item?.postID}
-                            sx={{
-                              objectFit: "cover",
-                              maxWidth: "100%",
-                              width: ` 100%`,
-                              borderRadius: "16px",
-                            }}
-                          />
-                        </ImageListItem>
-                      )
-                    )}
-                  </ImageList> */}
                 </Box>
               </Box>
             </>

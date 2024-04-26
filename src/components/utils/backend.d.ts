@@ -343,7 +343,7 @@ declare global {
     userReceive: UserPost;
   }
 
-  interface ListReplyComment {
+  interface ListReplyCommentOfShare {
     id: number;
     content: string;
     timeComment: string;
@@ -353,6 +353,31 @@ declare global {
     userReceiveDto: UserPost;
   }
 
+  interface CommentOfShareToGetDTO {
+    id: number;
+    content: string;
+    listImageofComment: string[];
+    timeComment: string;
+    userID: UserPost;
+    userReceiveDto: UserPost;
+    listReplyComment: ListReplyComment[] | null;
+  }
+  interface CommentOfShareToPostDTO {
+    listImageofComment: any;
+    content: string;
+    userToPost: string;
+    userReceive: string;
+    shareId: string;
+  }
+  interface ListReplyComment {
+    id: number;
+    content: string;
+    timeComment: string;
+    listPictureOfComment: any[] | null;
+    commentId: number;
+    userAction: UserPost;
+    userReceiveDto: UserPost;
+  }
   interface Relation {
     id: string;
     userAction: UserAction;
@@ -459,14 +484,14 @@ declare global {
     message: string;
     model: CountAccountDTO;
   }
-  interface CountAccountDTO{
+  interface CountAccountDTO {
     listBand: number;
-    listMentor:number;
+    listMentor: number;
     listUser: number;
     listNewMentor: number;
-    listAllAccount :  number;
+    listAllAccount: number;
     listNewUser: number;
-    listAdmin:  number;
+    listAdmin: number;
   }
   interface ReponseReportFormAdmin {
     statusCode: number;
@@ -496,7 +521,6 @@ declare global {
     listMentor: UserFormAdminDTO[];
     listUser: UserFormAdminDTO[];
     listAdmin: UserFormAdminDTO[];
-
   }
 
   interface UserFormAdminDTO {
