@@ -12,12 +12,16 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   Grid,
+  IconButton,
   Slide,
+  Typography,
 } from "@mui/material";
 import { sendRequest } from "../utils/api";
 import { GLOBAL_URL } from "../utils/veriable.global";
 import { TransitionProps } from "@mui/material/transitions";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface ForgotPasswordProps {
   openModal: boolean;
@@ -135,8 +139,6 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
     } else {
       alert("Password reset ko giống nhau đmm");
     }
-
-   
   };
 
   const validateEmail = (email: string) => {
@@ -177,7 +179,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 800,
+            width: 500,
             bgcolor: "background.paper",
             p: 4,
             margin: "auto",
@@ -188,8 +190,26 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
             boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
           }}
         >
-          <Grid container spacing={2}>
-            <Grid item xs={8}>
+          <Box sx={{ paddingBottom: "12px" }}>
+            <Typography sx={{ fontWeight: "bold", fontSize: 20 }}>
+              Quên mật khẩu?
+            </Typography>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseModal}
+              sx={{
+                position: "absolute",
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[900],
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Divider />
+          <Grid container sx={{ alignItems: "center" }}>
+            <Grid item xs={12} sx={{ flexGrow: 1 }}>
               <TextField
                 label="Email"
                 variant="outlined"
@@ -201,11 +221,17 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({
                 helperText={emailError}
               />
             </Grid>
-            <Grid item xs={4} sx={{ display: "flex", alignItems: "flex-end" }}>
+            <Grid
+              item
+              xs={4}
+              sx={{ display: "flex", alignItems: "flex-end", flexGrow: 1 }}
+            >
               <Button
+                fullWidth
                 variant="contained"
                 onClick={handleSendCode}
                 disabled={isButtonDisabled}
+                sx={{ lineHeight: 1.5 }}
               >
                 {`Gửi mã (${countdown})`}
               </Button>

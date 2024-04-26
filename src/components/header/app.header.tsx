@@ -808,7 +808,7 @@ export default function AppHeader(pros: IPros) {
         sx={{
           bgcolor: GLOBAL_BG,
           color: "text.white",
-          padding: { xs: "0px", lg: "0 64px" },
+          padding: { xs: "0px", lg: "8px 64px" },
           zIndex: "1202",
         }}
       >
@@ -831,7 +831,7 @@ export default function AppHeader(pros: IPros) {
           >
             <Link href="/">
               <CardMedia
-                sx={{ width: { xs: "60px", sm: "100px" } }}
+                sx={{ width: { xs: "180px", sm: "240px" } }}
                 component="img"
                 image="/Art_Devs_y-removebg-preview.png"
                 alt="logo"

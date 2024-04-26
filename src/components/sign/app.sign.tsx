@@ -1,16 +1,12 @@
 "use client";
 import SignUp from "@/components/sign/sing.up";
 import { sendRequest } from "@/components/utils/api";
+import { useUser } from "@/lib/custom.content";
 import NextAuthWrapper from "@/lib/next.auth.provider";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 import { generateUniqueId } from "../utils/utils";
-import { useUser } from "@/lib/custom.content";
-import { truncate } from "fs/promises";
 import { GLOBAL_URL } from "../utils/veriable.global";
 
 const AppSignUp = () => {
@@ -30,8 +26,6 @@ const AppSignUp = () => {
     const fetchDataProvince = async () => {
       try {
         const province = await sendRequest<Result<Province[]>>({
-          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
           url: "https://vapi.vnappmob.com/api/province/",
           method: "GET",
         });
@@ -85,8 +79,6 @@ const AppSignUp = () => {
     const fetchDataDemand = async () => {
       try {
         const response = await sendRequest<MyLanguageProgram[]>({
-          // url: "https://artdevs-server.azurewebsites.net/api/programingLanguage",
-          // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
           url: GLOBAL_URL + "/api/programingLanguage",
           method: "GET",
         });
@@ -102,14 +94,11 @@ const AppSignUp = () => {
   useEffect(() => {
     const fetchDataSignUp = async () => {
       try {
-        // <IBackendRes<UserLogin>></IBackendRes>
         if (data) {
           data && (data.userId = generateUniqueId());
           const { gender, confirmPassword, ...restData } = data;
           console.log(">>> check data register: ", data);
           const response = await sendRequest<IBackendRes<UserLogin>>({
-            // url: "https://artdevs-server.azurewebsites.net/api/register",
-            // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/register",
             url: "http://localhost:8080/api/register",
             method: "POST",
             body: { ...restData },

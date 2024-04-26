@@ -95,6 +95,7 @@ import {
   GLOBAL_BOXSHADOW,
   GLOBAL_COLOR_BLACK,
   GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_NOTIFI,
@@ -1763,7 +1764,6 @@ const PostProfile = ({
           <Box
             sx={{
               display: "flex",
-              borderBottom: "1px solid #3333",
               paddingBottom: "10px",
             }}
           >
@@ -1818,85 +1818,11 @@ const PostProfile = ({
                   color: "#333",
                 }}
               >
-                Bạn đang nghĩ gì ?
+                Chia sẻ kinh nghiệm hoặc câu hỏi của bạn
               </Typography>
             </Box>
           </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              padding: "10px 0px 0px 0px",
-            }}
-          >
-            <Box
-              sx={{
-                width: "50%",
-                maxWidth: "160px",
-                padding: "5px",
-                boxSizing: "border-box",
-                backgroundColor: "#fff",
-                borderRadius: "20px",
-                marginRight: "8px",
-                filter: "drop-shadow(0 0 0.1rem crimson)",
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: "#E4E6EB",
-                },
-              }}
-            >
-              <Typography
-                component={"p"}
-                sx={{
-                  padding: "5px 0px",
-                  textAlign: "center",
-                  fontSize: "14px",
-                  color: "#333",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <VideoFileIcon sx={{ color: "#E42645" }} />
-                <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                  Video
-                </Typography>
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                width: "50%",
-                padding: "5px",
-                maxWidth: "160px",
-                boxSizing: "border-box",
-                backgroundColor: "#fff",
-                borderRadius: "20px",
-                filter: "drop-shadow(0 0 0.1rem green)",
-                cursor: "pointer",
-                "&:hover": {
-                  backgroundColor: "#E4E6EB",
-                },
-              }}
-            >
-              <Typography
-                component={"p"}
-                sx={{
-                  padding: "5px 0px",
-                  textAlign: "center",
-                  fontSize: "14px",
-                  color: "#333",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <AddAPhotoIcon sx={{ color: "#41B35D" }} />
-                <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                  Photo
-                </Typography>
-              </Typography>
-            </Box>
-          </Box>
+
           <Dialog
             open={openPost}
             TransitionComponent={Transition}
@@ -1940,7 +1866,8 @@ const PostProfile = ({
                   right: 8,
                   top: 5,
                   color: (theme) => theme.palette.grey[900],
-                  backgroundColor: "#3a3b3c",
+                  backgroundColor: "#c4c4c4",
+                  transition: "all .2s linear",
                   "&:hover": {
                     backgroundColor: "#7d7d7d",
                   },
@@ -1955,7 +1882,7 @@ const PostProfile = ({
                 sx={{
                   backgroundColor: "transparent",
                   boxShadow: "none",
-                  color: "white",
+                  color: GLOBAL_COLOR_BLACK,
                   border: "none",
                   width: "100%",
                 }}
@@ -1978,7 +1905,7 @@ const PostProfile = ({
                       <Typography
                         fontSize={16}
                         sx={{
-                          color: GLOBAL_COLOR_MENU,
+                          color: GLOBAL_COLOR_BLACK,
                         }}
                       >
                         {session?.user?.firstName +
@@ -2000,7 +1927,7 @@ const PostProfile = ({
                           sx={{
                             color: GLOBAL_COLOR_MENU,
                             "&.MuiSelect-root": {
-                              backgroundColor: "#3a3b3c",
+                              backgroundColor: GLOBAL_BG_NOTIFY,
                               border: "1px solid white",
                             },
                             "& fieldset": {
@@ -2024,20 +1951,13 @@ const PostProfile = ({
 
                 <CardContent
                   sx={{
-                    color: "white",
+                    color: GLOBAL_COLOR_BLACK,
                     py: "5px",
                   }}
                   className="contentPost"
                 >
                   <Input
-                    placeholder={
-                      session?.user?.firstName +
-                      " " +
-                      session?.user?.middleName +
-                      " " +
-                      session?.user?.lastName +
-                      " ơi, Bạn đang nghĩ gì thế ?"
-                    }
+                    placeholder="Chia sẻ kinh nghiệm hoặc câu hỏi của bạn"
                     inputProps={ariaLabel}
                     onChange={(e) => handleContentPost(e.target.value)}
                     multiline
@@ -2085,12 +2005,13 @@ const PostProfile = ({
                       <Box
                         component="li"
                         sx={{
+                          transition: "all .2s linear",
                           backgroundColor: selected
-                            ? "#f5f5f5 !important"
+                            ? "#gray !important"
                             : "#fff !important",
-                          color: "white !important",
+                          color: "black !important",
                           "&:hover": {
-                            backgroundColor: "#f5f5f5 !important",
+                            backgroundColor: "gray !important",
                           },
                           py: "10px !important",
                         }}
@@ -2130,13 +2051,17 @@ const PostProfile = ({
                         label="Hashtag"
                         placeholder="Nhập từ khóa tìm kiếm"
                         sx={{
-                          backgroundColor: GLOBAL_BG,
+                          backgroundColor: GLOBAL_BG_NOTIFY,
                           color: GLOBAL_COLOR_MENU,
                           borderRadius: "4px",
                           "& .MuiOutlinedInput-root": {
-                            "& fieldset": { borderColor: "white" },
-                            "&:hover fieldset": { borderColor: "white" },
-                            "&.Mui-focused fieldset": { borderColor: "white" },
+                            "& fieldset": { borderColor: GLOBAL_BG_NAV },
+                            "&:hover fieldset": {
+                              borderColor: GLOBAL_BG_NAV,
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: GLOBAL_BG_NAV,
+                            },
                             "& .MuiInputBase-input": {
                               color: GLOBAL_COLOR_MENU,
                             },
@@ -2193,7 +2118,7 @@ const PostProfile = ({
                     sx={{
                       p: "8px",
                       // backgroundColor: "transparent",
-                      color: "white",
+                      color: GLOBAL_COLOR_WHITE,
                       "&:hover": {
                         boxShadow: GLOBAL_BOXSHADOW,
                       },
@@ -2227,17 +2152,30 @@ const PostProfile = ({
             </DialogContent>
             <DialogActions>
               <Button
+                color="error"
+                variant="outlined"
                 onClick={handleClosePost}
-                sx={{
-                  color: "gray",
-                }}
               >
                 Hủy
               </Button>
               {isEditPost ? (
-                <Button onClick={handleSaveEditPost}>Lưu</Button>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  onClick={handleSaveEditPost}
+                  sx={{ minWidth: "120px" }}
+                >
+                  Lưu
+                </Button>
               ) : (
-                <Button onClick={handlePost}>Đăng</Button>
+                <Button
+                  color="primary"
+                  variant="contained"
+                  onClick={handlePost}
+                  sx={{ minWidth: "120px" }}
+                >
+                  Đăng
+                </Button>
               )}
             </DialogActions>
           </Dialog>
@@ -2578,12 +2516,30 @@ const PostProfile = ({
                   </Box>
                 </Link>
               )}
+              {item?.typePost !== "share" &&
+                item?.postId?.listHashtag.length > 0 && (
+                  <Typography
+                    sx={{
+                      fontSize: "14px",
+                      color: GLOBAL_COLOR_MENU,
+                      fontStyle: "italic",
+                      display: "block",
+                      marginX: "16px",
+                      borderBottom: "1px solid gray",
+                      width: "50px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    hashtag
+                  </Typography>
+                )}
               {item?.typePost !== "share" && (
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "flex-start",
                     paddingX: "16px",
+                    flexWrap: "wrap",
                     paddingBottom: "16px",
                     "& a": {
                       backgroundColor: "#d6e8fa",
@@ -2678,6 +2634,7 @@ const PostProfile = ({
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "400px",
                             objectFit: "cover",
                             cursor: "pointer",
                           },
@@ -2694,6 +2651,7 @@ const PostProfile = ({
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "440px",
                             objectFit: "cover",
                             cursor: "pointer",
                           },
@@ -2713,6 +2671,7 @@ const PostProfile = ({
                                 sx={{
                                   width: "100%",
                                   height: "50%",
+                                  maxHeight: "220px",
                                   backgroundColor: "#3335",
                                   borderBottom: `${
                                     index == 1 ? "3px solid #fff" : "0"
@@ -2721,6 +2680,7 @@ const PostProfile = ({
                                   "& img": {
                                     width: "100%",
                                     height: "100%",
+                                    maxHeight: "220px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   },
@@ -2744,6 +2704,7 @@ const PostProfile = ({
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "220px",
                             objectFit: "cover",
                             cursor: "pointer",
                           },
@@ -2762,6 +2723,7 @@ const PostProfile = ({
                               "& img": {
                                 width: "100%",
                                 height: "100%",
+                                maxHeight: "220px",
                                 objectFit: "cover",
                                 cursor: "pointer",
                               },
@@ -2779,6 +2741,7 @@ const PostProfile = ({
                                   "& img": {
                                     width: "100%",
                                     height: "100%",
+                                    maxHeight: "220px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   },
@@ -3074,12 +3037,30 @@ const PostProfile = ({
                     </Box>
                   </Link>
                 )}
+                {item?.typePost === "share" &&
+                  item?.postId?.listHashtag.length > 0 && (
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        color: GLOBAL_COLOR_MENU,
+                        fontStyle: "italic",
+                        display: "block",
+                        marginX: "16px",
+                        borderBottom: "1px solid gray",
+                        width: "50px",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      hashtag
+                    </Typography>
+                  )}
                 {item?.typePost === "share" && (
                   <Box
                     sx={{
                       display: "flex",
                       justifyContent: "flex-start",
                       paddingX: "16px",
+                      flexWrap: "wrap",
                       paddingBottom: "16px",
                       "& a": {
                         backgroundColor: "#d6e8fa",
@@ -3140,7 +3121,7 @@ const PostProfile = ({
                     >
                       <ThumbUpOffAltIcon
                         sx={{
-                          color: "white",
+                          color: GLOBAL_COLOR_WHITE,
                           fontSize: "12px",
                           margin: "auto",
                         }}
@@ -3326,8 +3307,9 @@ const PostProfile = ({
               left: "50%",
               transform: "translate(-50%, -50%)",
               width: 700,
-              bgcolor: "#1c1e21",
+              bgcolor: GLOBAL_BG,
               borderRadius: "12px",
+              overflow: "hidden",
               boxShadow: 24,
               "@media (max-width: 768px)": {
                 width: "90%",
@@ -3342,7 +3324,11 @@ const PostProfile = ({
           >
             <React.Fragment>
               <AppBar
-                sx={{ backgroundColor: "#1c1e21", padding: "0px !important" }}
+                sx={{
+                  backgroundColor: GLOBAL_BG,
+                  color: GLOBAL_COLOR_BLACK,
+                  padding: "0px !important",
+                }}
               >
                 <Toolbar
                   sx={{ display: "flex", justifyContent: "space-between" }}
@@ -3358,7 +3344,12 @@ const PostProfile = ({
                     aria-expanded={openModalCmt ? "true" : undefined}
                   >
                     <Avatar
-                      sx={{ width: 32, height: 32, backgroundColor: "gray" }}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: "gray",
+                        border: "1px solid gray",
+                      }}
                     >
                       <ClearIcon />
                     </Avatar>
@@ -3370,10 +3361,10 @@ const PostProfile = ({
                 sx={{
                   maxHeight: "500px",
                   overflowY: "auto",
-                  backgroundColor: "#1c1e21",
+                  backgroundColor: GLOBAL_BG,
                 }}
               >
-                <Box sx={{ my: 2, color: "white" }}>
+                <Box sx={{ my: 2, color: GLOBAL_COLOR_BLACK }}>
                   {comment &&
                     comment?.map((c: CommentOfPost, index) => (
                       <Box key={"comment" + index + c.id}>
@@ -3398,36 +3389,34 @@ const PostProfile = ({
                               >
                                 <Card
                                   sx={{
-                                    backgroundColor: "#3A3B3C",
+                                    backgroundColor: GLOBAL_BG_NOTIFY,
                                     ml: "7px",
-                                    color: "white",
+                                    color: GLOBAL_COLOR_BLACK,
                                     display: "inline-block ",
                                     borderRadius: "15px",
+                                    padding: "0 12px",
                                   }}
                                 >
                                   <Link
-                                    href="/1"
+                                    href={`/profile?userId=${c.userID}`}
                                     style={{ textDecoration: "none" }}
                                   >
-                                    <CardHeader
-                                      title={c.userID.fullname}
-                                      subheader={""}
+                                    <Typography
                                       sx={{
-                                        fontSize: "10px",
                                         paddingY: "7px",
-                                        color: "white !important",
+                                        color: GLOBAL_COLOR_MENU,
+                                        fontWeight: "700",
                                         mb: "0px",
                                         paddingBottom: "0px",
                                       }}
-                                      titleTypographyProps={{
-                                        fontSize: "1rem",
-                                      }}
-                                    />
+                                    >
+                                      {c.userID.fullname}
+                                    </Typography>
                                   </Link>
                                   <CardContent
                                     sx={{
                                       paddingBottom: "7px !important",
-                                      paddingTop: "0px ",
+                                      padding: "0px ",
                                     }}
                                   >
                                     <Typography variant="body1">
@@ -3583,9 +3572,9 @@ const PostProfile = ({
                                 >
                                   <Card
                                     sx={{
-                                      backgroundColor: "#3A3B3C",
+                                      backgroundColor: GLOBAL_BG_NOTIFY,
                                       ml: "7px",
-                                      color: "white",
+                                      color: GLOBAL_COLOR_BLACK,
                                       display: "flex",
                                       borderRadius: "15px",
                                       width: "100%",
@@ -3603,7 +3592,9 @@ const PostProfile = ({
                                       }
                                       variant="filled"
                                       size="small"
-                                      InputProps={{ sx: { color: "white" } }}
+                                      InputProps={{
+                                        sx: { color: GLOBAL_COLOR_BLACK },
+                                      }}
                                       sx={{
                                         color: "white !important",
                                         width: "100%",
@@ -3616,7 +3607,7 @@ const PostProfile = ({
                                       sx={{
                                         p: "0px",
                                         backgroundColor: "transparent",
-                                        color: "white",
+                                        color: GLOBAL_COLOR_BLACK,
                                         "&:hover": {
                                           backgroundColor: "transparent",
                                           boxShadow: "none",
@@ -3671,18 +3662,23 @@ const PostProfile = ({
                                       mx: "15px",
                                       display: "flex",
                                       alignItems: "center",
+                                      marginBottom: "12px",
                                     }}
                                   >
                                     <Button
+                                      color="error"
+                                      variant="outlined"
                                       size="small"
-                                      sx={{ color: "gray" }}
                                       onClick={() =>
                                         handleCancelEditComment(true, index)
                                       }
+                                      sx={{ marginRight: "6px" }}
                                     >
                                       Hủy
                                     </Button>
                                     <Button
+                                      variant="contained"
+                                      color="primary"
                                       size="small"
                                       onClick={() =>
                                         handleSaveEditComment(
@@ -3749,9 +3745,9 @@ const PostProfile = ({
                                       >
                                         <Card
                                           sx={{
-                                            backgroundColor: "#3A3B3C",
+                                            backgroundColor: GLOBAL_BG_NOTIFY,
                                             ml: "7px",
-                                            color: "white",
+                                            color: GLOBAL_COLOR_BLACK,
                                             display: "inline-block ",
                                             borderRadius: "15px",
                                           }}
@@ -3760,19 +3756,17 @@ const PostProfile = ({
                                             href="/1"
                                             style={{ textDecoration: "none" }}
                                           >
-                                            <CardHeader
-                                              title={rl.userID.fullname}
-                                              subheader={""}
+                                            <Typography
                                               sx={{
-                                                fontSize: "10px",
-                                                paddingY: "7px",
-                                                color: "white !important",
+                                                fontSize: "16px",
+                                                padding: "8px 16px",
+                                                color: GLOBAL_COLOR_MENU,
                                                 paddingBottom: "0px",
+                                                fontWeight: 700,
                                               }}
-                                              titleTypographyProps={{
-                                                fontSize: "1rem",
-                                              }}
-                                            />
+                                            >
+                                              {rl.userID.fullname}
+                                            </Typography>
                                           </Link>
                                           <CardContent
                                             sx={{
@@ -3815,7 +3809,7 @@ const PostProfile = ({
                                                 display: "inline-flex",
                                                 flexDirection: "row-reverse",
                                                 alignItems: "center",
-                                                color: "white",
+                                                color: GLOBAL_COLOR_BLACK,
                                                 px: "5px",
                                               }}
                                             />
@@ -3989,9 +3983,9 @@ const PostProfile = ({
                                         >
                                           <Card
                                             sx={{
-                                              backgroundColor: "#3A3B3C",
+                                              backgroundColor: GLOBAL_BG_NOTIFY,
                                               ml: "7px",
-                                              color: "white",
+                                              color: GLOBAL_COLOR_BLACK,
                                               display: "flex",
                                               borderRadius: "15px",
                                               width: "100%",
@@ -4012,7 +4006,9 @@ const PostProfile = ({
                                               variant="filled"
                                               size="small"
                                               InputProps={{
-                                                sx: { color: "white" },
+                                                sx: {
+                                                  color: GLOBAL_COLOR_BLACK,
+                                                },
                                               }}
                                               sx={{
                                                 color: "white !important",
@@ -4026,7 +4022,7 @@ const PostProfile = ({
                                               sx={{
                                                 p: "0px",
                                                 backgroundColor: "transparent",
-                                                color: "white",
+                                                color: GLOBAL_COLOR_BLACK,
                                                 "&:hover": {
                                                   backgroundColor:
                                                     "transparent",
@@ -4136,7 +4132,7 @@ const PostProfile = ({
               <Paper
                 elevation={2}
                 sx={{
-                  backgroundColor: "#1c1e21",
+                  backgroundColor: GLOBAL_BG,
                   padding: "16px",
                   display: "flex",
                 }}
@@ -4177,13 +4173,13 @@ const PostProfile = ({
                       }
                       onDelete={handleCancelReplyComment}
                       sx={{
-                        backgroundColor: "gray",
+                        backgroundColor: GLOBAL_BG_NOTIFY,
                         px: "5px",
                         mb: "8px",
                         display: "inline-flex",
                         flexDirection: "row-reverse",
                         alignItems: "center",
-                        color: "white",
+                        color: GLOBAL_COLOR_BLACK,
                         "& .MuiChip-label": {
                           paddingX: "5px",
                           color: "black",
@@ -4205,18 +4201,22 @@ const PostProfile = ({
                       rows={3}
                       fullWidth
                       sx={{
-                        backgroundColor: "#1c1e21",
+                        backgroundColor: GLOBAL_BG,
                         borderRadius: "7px",
-                        color: "white",
-                        "& label.Mui-focused": { color: "white" },
+                        color: GLOBAL_COLOR_BLACK,
+                        "& label.Mui-focused": { color: GLOBAL_COLOR_BLACK },
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "white" },
-                          "&:hover fieldset": { borderColor: "white" },
-                          "&.Mui-focused fieldset": { borderColor: "white" },
+                          "& fieldset": { borderColor: GLOBAL_COLOR_BLACK },
+                          "&:hover fieldset": {
+                            borderColor: GLOBAL_COLOR_BLACK,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: GLOBAL_COLOR_BLACK,
+                          },
                         },
-                        "& label": { color: "white" },
+                        "& label": { color: GLOBAL_COLOR_BLACK },
                       }}
-                      InputProps={{ sx: { color: "white" } }}
+                      InputProps={{ sx: { color: GLOBAL_COLOR_BLACK } }}
                       value={
                         isComment
                           ? formDataComment.content
@@ -4233,7 +4233,7 @@ const PostProfile = ({
                       sx={{
                         p: "0px",
                         backgroundColor: "transparent",
-                        color: "white",
+                        color: GLOBAL_COLOR_BLACK,
                         "&:hover": {
                           backgroundColor: "transparent",
                           boxShadow: "none",
@@ -4307,13 +4307,18 @@ const PostProfile = ({
         aria-describedby="alert-dialog-description"
         PaperProps={{
           style: {
-            backgroundColor: "#3e4042",
+            backgroundColor: GLOBAL_BG_NOTIFY,
+          },
+        }}
+        sx={{
+          "& .css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
+            borderRadius: "12px",
           },
         }}
       >
         <DialogTitle
           id="alert-dialog-title"
-          sx={{ color: "white", textAlign: "center" }}
+          sx={{ color: GLOBAL_COLOR_BLACK, textAlign: "center" }}
         >
           {actionDialog.actionType == "deleteCmt"
             ? "Xóa bình luận?"
@@ -4322,55 +4327,11 @@ const PostProfile = ({
         <Divider />
         <DialogContent id="alert-dialog-description">
           {actionDialog.actionType == "deleteCmt" ? (
-            <Typography sx={{ color: "white" }}>
+            <Typography sx={{ color: GLOBAL_COLOR_BLACK }}>
               Bạn có chắc chắn muốn xóa bình luận này không?
             </Typography>
           ) : (
             <>
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                name="content"
-                hiddenLabel
-                fullWidth
-                variant="standard"
-                label="Bạn nghĩ gì về bài viết này ?"
-                InputLabelProps={{
-                  style: {
-                    color: "white",
-                  },
-                }}
-                onChange={(e) => {
-                  setContentSharePost(e.target.value);
-
-                  if (timer) {
-                    clearTimeout(timer);
-                  }
-
-                  const newTimer = setTimeout(async () => {
-                    console.log("Stop typing");
-                    const content = badWords(e.target.value, {
-                      replacement: "*",
-                      blackList: (defaultList) => [
-                        ...defaultList,
-                        "mẹ mày",
-                        "cc",
-                        "nigga",
-                        "đmm",
-                        "mm",
-                        "đmm",
-                      ],
-                    });
-                    console.log(content);
-                    if (e.target.value.trim() != "") {
-                      setContentSharePost(content.toString());
-                    }
-                  }, 1000);
-
-                  setTimer(newTimer);
-                }}
-              />
               <Box
                 className="block-post-share"
                 sx={{
@@ -4378,7 +4339,7 @@ const PostProfile = ({
                   borderRadius: "16px",
                   minWidth: "320px",
                   mt: "8px",
-                  backgroundColor: "gray",
+                  backgroundColor: "#fff",
                 }}
               >
                 <CardHeader
@@ -4396,7 +4357,6 @@ const PostProfile = ({
                   title={actionDialog.data?.post?.userPost?.fullname}
                   subheader={formatDateString(actionDialog.data?.post?.time)}
                 />
-
                 <CardContent
                   sx={{
                     pt: 0,
@@ -4409,6 +4369,16 @@ const PostProfile = ({
                     {actionDialog.data?.post?.content}
                   </Typography>
                 </CardContent>
+                <Typography
+                  sx={{
+                    borderBottom: "1px solid gray",
+                    width: "60px",
+                    margin: "0 16px 6px 16px",
+                    fontStyle: "italic",
+                  }}
+                >
+                  hashtag
+                </Typography>
                 <Box
                   sx={{
                     display: "flex",
@@ -4472,14 +4442,72 @@ const PostProfile = ({
                   {/* </Slider> */}
                 </Box>
               </Box>
+              <TextField
+                autoFocus
+                required
+                margin="dense"
+                name="content"
+                hiddenLabel
+                fullWidth
+                variant="standard"
+                label="Nhập nội dung chia sẻ ?"
+                InputLabelProps={{
+                  style: {
+                    color: GLOBAL_COLOR_BLACK,
+                  },
+                }}
+                onChange={(e) => {
+                  setContentSharePost(e.target.value);
+
+                  if (timer) {
+                    clearTimeout(timer);
+                  }
+
+                  const newTimer = setTimeout(async () => {
+                    console.log("Stop typing");
+                    const content = badWords(e.target.value, {
+                      replacement: "*",
+                      blackList: (defaultList) => [
+                        ...defaultList,
+                        "mẹ mày",
+                        "cc",
+                        "nigga",
+                        "đmm",
+                        "mm",
+                        "đmm",
+                      ],
+                    });
+                    console.log(content);
+                    if (e.target.value.trim() != "") {
+                      setContentSharePost(content.toString());
+                    }
+                  }, 1000);
+
+                  setTimer(newTimer);
+                }}
+              />
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAlerts} sx={{ color: "gray" }}>
+          <Button
+            color={`${
+              actionDialog.actionType === "deleteCmt" ? "primary" : "error"
+            }`}
+            variant="outlined"
+            onClick={handleCloseAlerts}
+          >
             Không
           </Button>
-          <Button onClick={handleAgreeAlerts} autoFocus>
+          <Button
+            color={`${
+              actionDialog.actionType === "deleteCmt" ? "error" : "primary"
+            }`}
+            variant="contained"
+            onClick={handleAgreeAlerts}
+            autoFocus
+            sx={{ minWidth: "80px" }}
+          >
             {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
           </Button>
         </DialogActions>
@@ -4493,7 +4521,7 @@ const PostProfile = ({
         fullWidth
       >
         <DialogTitle
-          sx={{ m: 0, p: 2 }}
+          sx={{ m: 0, p: 2, color: GLOBAL_COLOR_BLACK }}
           id="customized-dialog-title"
           fontSize={"18px"}
         >

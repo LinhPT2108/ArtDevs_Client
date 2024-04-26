@@ -17,9 +17,10 @@ import { sendRequest } from "../utils/api";
 import { preconnect } from "react-dom";
 import "../../style/loading.css";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import { checkAge } from "../utils/utils";
 // import { SHA256 } from "crypto-js";
 
-const steps = [`Thông tin cá nhân`, "Vai trò", "Kiến thức"];
+const steps = [`Thông tin cá nhân`, "Danh mục quan tâm"];
 
 interface MyData {
   programingLanguage: MyLanguageProgram[];
@@ -68,6 +69,10 @@ const SignUp = (props: MyData) => {
     useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
+  const [errorDemand, setErrorDemand] = useState<boolean>(false);
+  const [messageDemand, setMessageDemand] = useState<string>("");
+  const [errorDateOfBirth, setErrorDateOfBirth] = useState<boolean>(false);
+  const [messageDateOfBirth, setMessageDateOfBirth] = useState<string>("");
   const [state, setState] = useState<State>({
     open: false,
     vertical: "top",
@@ -153,6 +158,18 @@ const SignUp = (props: MyData) => {
     }));
   };
   const handleDateOfBirth = (value: string) => {
+    if (value) {
+      if (checkAge(value)) {
+        setErrorDateOfBirth(false);
+        setMessageDateOfBirth("");
+      } else {
+        setErrorDateOfBirth(true);
+        setMessageDateOfBirth("Bạn chưa đủ 14 tuổi");
+      }
+    } else {
+      setErrorDateOfBirth(true);
+      setMessageDateOfBirth("Không được để trống ngày sinh !");
+    }
     setData((prevData) => ({
       ...prevData,
       birthday: value,
@@ -218,6 +235,13 @@ const SignUp = (props: MyData) => {
       arrayOfValues = Object.values(myLanguageProgram).map(
         (item) => item.languageName
       );
+    }
+    if (myLanguageProgram.length > 0) {
+      setErrorDemand(false);
+      setMessageDemand("");
+    } else {
+      setErrorDemand(true);
+      setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
     }
     setData((prevData) => ({
       ...prevData,
@@ -298,9 +322,19 @@ const SignUp = (props: MyData) => {
   };
 
   const handleSignUp = () => {
-    setFinish(true);
-    setDataRegister(data);
-    setLoading(true);
+    if (
+      (data && !data?.listDemandOfUser) ||
+      (data?.listDemandOfUser && data?.listDemandOfUser.length > 0)
+    ) {
+      setErrorDemand(false);
+      setMessageDemand("");
+      setFinish(true);
+      setDataRegister(data);
+      setLoading(true);
+    } else {
+      setErrorDemand(true);
+      setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+    }
   };
 
   const handleClick = () => {
@@ -371,6 +405,11 @@ const SignUp = (props: MyData) => {
         setDisableButton(true);
         return;
       }
+      if (!data.birthday || errorDateOfBirth) {
+        setDisableButton(true);
+        return;
+      }
+
       setDisableButton(false);
     };
     handleButtonContinue();
@@ -478,7 +517,7 @@ const SignUp = (props: MyData) => {
               <CardMedia
                 sx={{ width: { xs: "60px", sm: "100px" } }}
                 component="img"
-                image="/Art_Devs_y-removebg-preview.png"
+                image="/Art_Devs_aboutFooter.png"
                 alt="logo"
               />
             </Link>
@@ -538,11 +577,8 @@ const SignUp = (props: MyData) => {
                   emailExist={emailExist}
                   setEmailExist={setEmailExist}
                   errorRegister={errorRegister}
-                />
-              ) : activeStep === 1 ? (
-                <RoleSign
-                  handleRole={handleRole}
-                  roleName={data.role.roleName}
+                  messageDateOfBirth={messageDateOfBirth}
+                  errorDateOfBirth={errorDateOfBirth}
                 />
               ) : (
                 <KnowlegdeSign
@@ -551,6 +587,8 @@ const SignUp = (props: MyData) => {
                   handleListDemandOfUser={handleListDemandOfUser}
                   handleListSkillOfUser={handleListSkillOfUser}
                   data={data}
+                  errorDemand={errorDemand}
+                  messageDemand={messageDemand}
                 />
               )}
             </Box>
@@ -619,11 +657,6 @@ const SignUp = (props: MyData) => {
               const labelProps: {
                 optional?: React.ReactNode;
               } = {};
-              //   if (isStepOptional(index)) {
-              //     labelProps.optional = (
-              //       <Typography variant="caption">Optional</Typography>
-              //     );
-              //   }
               if (isStepSkipped(index)) {
                 stepProps.completed = false;
               }

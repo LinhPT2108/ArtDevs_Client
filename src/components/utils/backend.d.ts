@@ -512,4 +512,11 @@ declare global {
     imageOfFeedbackUrl: string;
     time: string;
   }
+  interface Demand {
+    id: number;
+    description: string;
+    desiredTime: string;
+    priority: number;
+    programingLanguage: string;
+  }
 }

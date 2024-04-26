@@ -48,10 +48,6 @@ export const authOptions: AuthOptions = {
       clientId: process.env.GOOGLE_ID!,
       clientSecret: process.env.GOOGLE_SECRET!,
     }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_ID!,
-      clientSecret: process.env.FACEBOOK_SECRET!,
-    }),
   ],
   callbacks: {
     async jwt({ token, user, account, profile, trigger, session }) {
@@ -80,7 +76,7 @@ export const authOptions: AuthOptions = {
           },
         });
         if (res.userdto) {
-          if (token.picture) {
+          if (!res.userdto.profileImageUrl && token.picture) {
             res.userdto.profileImageUrl = token.picture;
           }
           token.access_token = res.token;

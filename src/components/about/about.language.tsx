@@ -34,7 +34,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/Clogo.png"
+            image="/language-program/C_other.png"
             alt="C#-logo.png"
           />
         </Grid>
@@ -45,7 +45,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/Java-logo.png"
+            image="/language-program/Java.png"
             alt="Java-logo.png"
           />
         </Grid>
@@ -56,7 +56,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/javascript-logo.png"
+            image="/language-program/javascript.png"
             alt="javascript-logo.png"
           />
         </Grid>
@@ -67,7 +67,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/python-logo.png"
+            image="/language-program/python.png"
             alt="python-logo.png"
           />
         </Grid>{" "}
@@ -78,7 +78,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/PHP-logo.png"
+            image="/language-program/PHP.png"
             alt="PHP-logo.png"
           />
         </Grid>
@@ -89,7 +89,7 @@ const LanguageAbout = () => {
               width: "100px",
             }}
             component="img"
-            image="/language-program/program.png"
+            image="/language-program/ruby.png"
             alt="program.png"
           />
         </Grid>

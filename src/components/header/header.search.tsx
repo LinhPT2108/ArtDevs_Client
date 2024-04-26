@@ -24,20 +24,11 @@ export default function SearchComponent() {
       sx={{
         p: "2px 12px",
         margin: "0 12px",
-        display: "flex",
+        display: { xs: "none", sm: "flex" },
         backgroundColor: "#eeeeee",
         borderRadius: "30px",
         alignItems: "center",
-        maxWidth: { xs: "140px", sm: "220px", md: "240px", lg: "320px" },
-        // "@media (min-width: 600px)": {
-        //   width: "124px",
-        // },
-        // "@media (min-width: 700px)": {
-        //   width: "240px",
-        // },
-        // "@media (min-width: 1023px)": {
-        //   width: "300px",
-        // },
+        width: { xs: "140px", sm: "220px", md: "240px", lg: "360px" },
       }}
     >
       <InputBase
@@ -55,7 +46,6 @@ export default function SearchComponent() {
           flex: 1,
         }}
         placeholder="Tìm kiếm"
-        inputProps={{ "aria-label": "search" }}
       />
       <IconButton
         type="button"

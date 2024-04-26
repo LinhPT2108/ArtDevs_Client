@@ -1,7 +1,8 @@
 "use client";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import GoogleIcon from "@mui/icons-material/Google";
 import {
   Box,
-  Button,
   Container,
   CssBaseline,
   Divider,
@@ -11,7 +12,6 @@ import {
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
@@ -408,27 +408,72 @@ export default function HomeInfor({ session }: { session: User }) {
               xs={2}
               sx={{ display: "flex", justifyContent: "flex-end" }}
             >
-              <Box
-                sx={{
-                  minWidth: "90px",
-                  textAlign: "center",
-                  borderRadius: "30px",
-                  padding: "8px 16px",
-                  boxShadow: GLOBAL_BOXSHADOW,
-                  background: GLOBAL_BG_BLUE_900,
-                  fontWeight: "bold",
-                  color: GLOBAL_COLOR_WHITE,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                  "&:hover": {
-                    transform: "scale(1.03)",
-                    backgroundColor: GLOBAL_BG_BLUE_300,
-                  },
-                }}
-                onClick={handleClickOpenEmail}
-              >
-                Chỉnh sửa
-              </Box>
+              {session?.user?.provider ? (
+                session?.user?.provider == "google" ? (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minWidth: 90,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "30px",
+                      backgroundColor: "#CC3E2F",
+                      color: "white",
+                      padding: "8px 16px ",
+                    }}
+                  >
+                    <GoogleIcon sx={{ fontSize: "32px" }} />{" "}
+                    <Typography sx={{ marginLeft: "6px", fontWeight: "bold" }}>
+                      Google
+                    </Typography>
+                  </Box>
+                ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      minWidth: 90,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      borderRadius: "30px",
+                      backgroundColor: "#59227F",
+                      color: "white",
+                      padding: "8px 16px ",
+                    }}
+                  >
+                    <GitHubIcon
+                      sx={{
+                        fontSize: "32px",
+                        borderRadius: "100%",
+                      }}
+                    />
+                    <Typography sx={{ marginLeft: "6px", fontWeight: "bold" }}>
+                      GitHub
+                    </Typography>
+                  </Box>
+                )
+              ) : (
+                <Box
+                  sx={{
+                    minWidth: "90px",
+                    textAlign: "center",
+                    borderRadius: "30px",
+                    padding: "8px 16px",
+                    boxShadow: GLOBAL_BOXSHADOW,
+                    background: GLOBAL_BG_BLUE_900,
+                    fontWeight: "bold",
+                    color: GLOBAL_COLOR_WHITE,
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                    "&:hover": {
+                      transform: "scale(1.03)",
+                      backgroundColor: GLOBAL_BG_BLUE_300,
+                    },
+                  }}
+                  onClick={handleClickOpenEmail}
+                >
+                  Chỉnh sửa
+                </Box>
+              )}
               <Dialog
                 fullScreen={fullScreen}
                 open={openEmail}

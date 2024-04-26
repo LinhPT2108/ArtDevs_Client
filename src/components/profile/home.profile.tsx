@@ -6,6 +6,7 @@ import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import {
   Alert,
   Autocomplete,
+  Avatar,
   Backdrop,
   Button,
   CardMedia,
@@ -21,6 +22,9 @@ import {
   Grid,
   Grow,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
   MenuItem,
   MenuList,
   Paper,
@@ -59,6 +63,8 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
 import { mutate } from "swr";
+import { ProcessingLoading } from "../utils/component.global";
+import Image from "next/image";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -221,7 +227,6 @@ const HomeProfile = ({ session }: IPros) => {
   const handleOpenBackdrop = () => {
     setOpenBackdrop(true);
   };
-
   const handleOpen = () => {
     setOpen(true);
   };
@@ -239,6 +244,7 @@ const HomeProfile = ({ session }: IPros) => {
   const [programingLanguage, setProgramingLanguage] = useState<
     MyLanguageProgram[]
   >([]);
+  // lấy danh sách thành phố
   useEffect(() => {
     const fetchDataProvince = async () => {
       try {
@@ -261,7 +267,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataProvince();
   }, []);
-
+  // lấy danh sách quận, huyện từ thành phố
   useEffect(() => {
     const fetchDataDistrict = async () => {
       try {
@@ -288,7 +294,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataDistrict();
   }, [city]);
-
+  // lấy danh sách xã, phường, thị trấn từ quận, huyện
   useEffect(() => {
     const fetchDataWard = async () => {
       try {
@@ -307,7 +313,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataWard();
   }, [district]);
-
+  // lấy toàn bộ danh mục mà người dùng có thể chọn
   useEffect(() => {
     const fetchDataDemand = async () => {
       try {
@@ -323,9 +329,46 @@ const HomeProfile = ({ session }: IPros) => {
 
     fetchDataDemand();
   }, []);
+
+  const [demandOfUserLogin, setDemandOfUserLogin] = useState<Demand[]>([]);
+  // lấy danh sách danh mục mà người dùng đã chọn
+  useEffect(() => {
+    const fetchUserDemand = async () => {
+      try {
+        const response = await sendRequest<Demand[]>({
+          url: GLOBAL_URL + "/api/get-user-demand",
+          method: "GET",
+          queryParams: {
+            userId: searchId ? searchId : session?.user?.userId,
+          },
+        });
+        response && setDemandOfUserLogin(response);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserDemand();
+  }, [session]);
+  console.log(">>> check demandOfUserLogin: ", demandOfUserLogin);
   //xử lý cập nhật thông tin người dùng
   const [data, setData] = useState<UserLogin>(session?.user);
+  const [errorFirstName, setErrorFirstName] = useState<boolean>();
+  const [messageFirstName, setMessageFirstName] = useState<string>();
+  const [errorLastName, setErrorLastName] = useState<boolean>();
+  const [messageLastName, setMessageLastName] = useState<string>();
+  const [errorDateOfBirth, setErrorDateOfBirth] = useState<boolean>();
+  const [messageDateOfBirth, setMessageDateOfBirth] = useState<string>();
+  const [errorDemand, setErrorDemand] = useState<boolean>(false);
+  const [messageDemand, setMessageDemand] = useState<string>("");
   const handleLastName = (value: string) => {
+    if (value) {
+      setErrorLastName(false);
+      setMessageLastName("");
+    } else {
+      setErrorLastName(true);
+      setMessageLastName("Không được để trống tên !");
+    }
     setData((prevData) => ({
       ...prevData,
       lastName: value,
@@ -337,13 +380,28 @@ const HomeProfile = ({ session }: IPros) => {
       middleName: value,
     }));
   };
+
   const handleFirstName = (value: string) => {
+    if (value) {
+      setErrorFirstName(false);
+      setMessageFirstName("");
+    } else {
+      setErrorFirstName(true);
+      setMessageFirstName("Không được để trống họ !");
+    }
     setData((prevData) => ({
       ...prevData,
       firstName: value,
     }));
   };
   const handleDateOfBirth = (value: string) => {
+    if (value) {
+      setErrorDateOfBirth(false);
+      setMessageDateOfBirth("");
+    } else {
+      setErrorDateOfBirth(true);
+      setMessageDateOfBirth("Không được để trống ngày sinh !");
+    }
     setData((prevData) => ({
       ...prevData,
       birthday: value,
@@ -404,6 +462,13 @@ const HomeProfile = ({ session }: IPros) => {
         (item) => item.languageName
       );
     }
+    if (myLanguageProgram.length > 0) {
+      setErrorDemand(false);
+      setMessageDemand("");
+    } else {
+      setErrorDemand(true);
+      setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+    }
     setData((prevData) => ({
       ...prevData,
       listDemandOfUser: arrayOfValues,
@@ -428,6 +493,36 @@ const HomeProfile = ({ session }: IPros) => {
 
   const handleUpdateProfile = async () => {
     try {
+      if (!data?.firstName) {
+        setErrorFirstName(true);
+        setMessageFirstName("Không được để trống họ !");
+        return;
+      }
+      if (!data?.lastName) {
+        setErrorLastName(true);
+        setMessageLastName("Không được để trống tên !");
+        return;
+      }
+      if (!data?.birthday) {
+        setErrorDateOfBirth(true);
+        setMessageDateOfBirth("Không được để trống ngày sinh !");
+        return;
+      }
+      if (
+        session?.user?.role?.roleName == "user" &&
+        data?.listDemandOfUser?.length == 0
+      ) {
+        setErrorDemand(true);
+        setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+        return;
+      }
+      if (
+        session?.user?.role?.roleName == "mentor" &&
+        data?.listSkillOfUser?.length == 0
+      ) {
+        return;
+      }
+      handleClickOpenModalUpdate();
       console.log(">>> check data: ", data);
       const response = await sendRequest<ResponseStatus>({
         url: GLOBAL_URL + "/api/user/update-profile",
@@ -446,6 +541,7 @@ const HomeProfile = ({ session }: IPros) => {
         await sessionUpdate(updatedUserData);
         setDataProfile(data);
         router.refresh();
+        handleCloseModalUpdate();
         handleClose();
       }
     } catch (error) {
@@ -762,6 +858,19 @@ const HomeProfile = ({ session }: IPros) => {
       setOpenFriend(false);
     }
   }
+
+  // modal loading
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+
+  //xử lý mở modal loading
+  const handleClickOpenModalUpdate = () => {
+    setOpenModalUpdate(true);
+  };
+
+  //xử lý đóng modal loading
+  const handleCloseModalUpdate = () => {
+    setOpenModalUpdate(false);
+  };
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
       <Backdrop sx={{ color: "#fff", zIndex: 9999 }} open={openBackdrop}>
@@ -1023,7 +1132,7 @@ const HomeProfile = ({ session }: IPros) => {
                               handleCloseFriend(e);
                             }}
                           >
-                            Hủy kết bạn 1
+                            Hủy kết bạn
                           </MenuItem>
                         </MenuList>
                       </ClickAwayListener>
@@ -1129,55 +1238,6 @@ const HomeProfile = ({ session }: IPros) => {
                 <Box
                   sx={{
                     borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 5fr",
-                    padding: "10px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      padding: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#1771E6",
-                      width: "50px",
-                      height: "50px",
-                      color: "white",
-                    }}
-                  >
-                    <VpnKeyIcon />
-                  </Box>
-                  <Box
-                    sx={{
-                      "& h3": {
-                        fontSize: "15px",
-                        color: "#333",
-                        marginTop: "7px",
-                        marginLeft: "10px",
-                      },
-                      "& a": {
-                        textDecoration: "none",
-                        fontSize: "13px",
-                        marginLeft: "10px",
-                        marginTop: "2px",
-                        fontWeight: "bold",
-                        color: "#1771E6",
-                        "&hover": {
-                          textDecoration: "underline",
-                        },
-                      },
-                    }}
-                  >
-                    <h3>Khóa tài khoản của chính mình?</h3>
-                    <a href="#">Tìm hiểu thêm</a>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{
-                    borderRadius: "5px",
                     padding: "10px",
                     boxShadow: "0px 1px 2px #3335",
                     backgroundColor: "#fff",
@@ -1200,93 +1260,32 @@ const HomeProfile = ({ session }: IPros) => {
                     sx={{
                       width: "100%",
                       paddingX: "16px",
+                      display: "flex",
                     }}
                   >
                     <Typography
                       component={"p"}
                       sx={{
+                        textWrap: "nowrap",
                         fontSize: "16px",
                         fontWeight: "bold",
-                        borderBottom: "1px solid #80808061",
                       }}
                     >
-                      Địa chỉ
+                      Địa chỉ:
                     </Typography>
-                    <Box
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
+                        marginLeft: "6px",
+                        fontSize: { xs: "16px", sm: "12px", md: "16px" },
                       }}
                     >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Tỉnh/TP:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.city ? dataProfile?.city : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Quận/Huyện:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.district ? dataProfile?.district : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Xã/Phường:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.ward ? dataProfile?.ward : ""}
-                      </Typography>
-                    </Box>
+                      {dataProfile?.ward ? dataProfile?.ward : ""}
+                      {dataProfile?.district
+                        ? `, ${dataProfile?.district}`
+                        : ""}
+                      {dataProfile?.city ? `, ${dataProfile?.city}` : ""}
+                    </Typography>
                   </Box>
 
                   <Box
@@ -1300,33 +1299,60 @@ const HomeProfile = ({ session }: IPros) => {
                       sx={{
                         fontSize: "16px",
                         fontWeight: "bold",
-                        borderBottom: "1px solid #80808061",
                       }}
                     >
                       Quan tâm
                     </Typography>
-                    <Box
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
+                        fontSize: "11px",
                       }}
                     >
-                      {dataProfile?.listDemandOfUser &&
-                        dataProfile?.listDemandOfUser?.map((item, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              borderRadius: "20px",
-                              border: "1px solid gray",
-                              padding: "5px 16px",
-                              marginTop: "8px",
-                              marginX: "3px",
-                            }}
-                          >
-                            {item}
-                          </Box>
+                      (sắp xếp theo độ ưu tiên giảm dần)
+                    </Typography>
+                    <List
+                      sx={{
+                        width: "100%",
+                        maxWidth: 360,
+                        bgcolor: "background.paper",
+                        borderTop: "1px solid gray",
+                      }}
+                    >
+                      {demandOfUserLogin &&
+                        demandOfUserLogin?.map((demandOfUser, index) => (
+                          <ListItem key={index} sx={{ paddingX: "0" }}>
+                            <Typography sx={{ marginRight: "6px" }}>
+                              {`${index + 1}. `}
+                            </Typography>
+                            <ListItemText
+                              primary={demandOfUser?.programingLanguage}
+                            />
+
+                            {demandOfUserLogin?.length > 3
+                              ? index < 3 && (
+                                  // <Avatar>
+                                  <Image
+                                    src="/priority.png"
+                                    width={20}
+                                    height={20}
+                                    alt="Ưu tiên"
+                                  />
+                                  // </Avatar>
+                                )
+                              : index < 1 && (
+                                  // <Avatar>
+                                  <Image
+                                    src="/priority.png"
+                                    width={20}
+                                    height={20}
+                                    alt="Ưu tiên"
+                                  />
+                                  // </Avatar>
+                                )}
+                          </ListItem>
                         ))}
-                    </Box>
+                    </List>
                   </Box>
 
                   {!searchId && (
@@ -1422,6 +1448,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-first-name"
                             autoFocus
                             value={data?.firstName}
+                            error={errorFirstName}
+                            helperText={messageFirstName}
                             sx={{
                               marginBottom: "0",
                             }}
@@ -1475,6 +1503,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-last-name"
                             autoFocus
                             value={data?.lastName}
+                            error={errorLastName}
+                            helperText={messageLastName}
                             sx={{ marginBottom: "0" }}
                           />
                         </Grid>
@@ -1512,6 +1542,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-date-of-birth"
                             autoFocus
                             value={formatBirthDay(data?.birthday)}
+                            error={errorDateOfBirth}
+                            helperText={messageDateOfBirth}
                             sx={{
                               marginBottom: "0",
                               "& input": {
@@ -1549,11 +1581,6 @@ const HomeProfile = ({ session }: IPros) => {
                                 control={<Radio />}
                                 label="Nữ"
                               />
-                              <FormControlLabel
-                                value="3"
-                                control={<Radio />}
-                                label="Khác"
-                              />
                             </RadioGroup>
                           </FormControl>
                         </Grid>
@@ -1567,6 +1594,8 @@ const HomeProfile = ({ session }: IPros) => {
                         handleListDemandOfUser={handleListDemandOfUser}
                         handleListSkillOfUser={handleListSkillOfUser}
                         data={data}
+                        errorDemand={errorDemand}
+                        messageDemand={messageDemand}
                       />
                       <Box sx={{ padding: "16px 0" }}>
                         <Divider />
@@ -1692,7 +1721,7 @@ const HomeProfile = ({ session }: IPros) => {
                         <Divider />
                       </Box>
                     </DialogContent>
-                    <DialogActions>
+                    <DialogActions sx={{ marginRight: "16px" }}>
                       <Button
                         autoFocus
                         variant="outlined"
@@ -2013,6 +2042,7 @@ const HomeProfile = ({ session }: IPros) => {
           </Button>
         </DialogActions>
       </BootstrapDialog>
+      <ProcessingLoading open={openModalUpdate} textContent="Đang cập nhật" />
     </Box>
   );
 };

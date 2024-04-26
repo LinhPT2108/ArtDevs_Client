@@ -27,8 +27,8 @@ const FooterAbout = () => {
                   width: "80px",
                 }}
                 component="img"
-                image="/Art_Devs_y-removebg-preview.png"
-                alt="Art_Devs_y-removebg-preview.png"
+                image="/Art_Devs_aboutFooter.png"
+                alt="Art_Devs_aboutFooter"
               />
               <Box
                 sx={{
