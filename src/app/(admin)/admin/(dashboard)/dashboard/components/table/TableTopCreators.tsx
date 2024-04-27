@@ -20,6 +20,7 @@ type Props = {
   columnsData: any[];
   tableData: UserFormAdminDTO[];
   onRowClick: (rowData: UserFormAdminDTO) => void;
+  titleTable: string;
 };
 
 function TopCreatorTable(props: Props) {
@@ -87,7 +88,7 @@ function TopCreatorTable(props: Props) {
       {/* Top Creator Header */}
       <div className="flex h-fit w-full items-center justify-between rounded-t-2xl bg-white px-4 pt-4 pb-[20px] shadow-2xl shadow-gray-100 dark:!bg-navy-700 dark:shadow-none">
         <h4 className="text-lg font-bold text-navy-700 dark:text-white">
-          Top Creators
+          {props?.titleTable}
         </h4>
         <div className="flex items-center justify-center space-x-2">
           <button
@@ -105,12 +106,12 @@ function TopCreatorTable(props: Props) {
             {">"}
           </button>
           <span className="text-gray-700">
-            Page{" "}
+            Trang{" "}
             <strong>
-              {pageIndex + 1} of {pageOptions.length}
+              {pageIndex + 1} của {pageOptions.length}
             </strong>{" "}
           </span>
-          <span className="text-gray-700">| Go to page: </span>
+          <span className="text-gray-700">| đi đến trang: </span>
           <input
             type="number"
             defaultValue={pageIndex + 1}
@@ -120,7 +121,7 @@ function TopCreatorTable(props: Props) {
             }}
             className="w-12 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
-          <span className="text-gray-700">| Show </span>
+          <span className="text-gray-700">| Hiển thị </span>
           <select
             value={pageSize}
             onChange={(e) => {
@@ -194,7 +195,7 @@ function TopCreatorTable(props: Props) {
                                 vertical: "top",
                                 horizontal: "left",
                               }}
-                              style={{ fontSize: "0.1rem"}}
+                              style={{ fontSize: "0.1rem" }}
                             >
                               <div className="h-[30px] w-[30px] rounded-full">
                                 <img

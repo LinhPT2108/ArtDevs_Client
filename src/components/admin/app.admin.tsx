@@ -1,10 +1,12 @@
 "use client";
 import Box from "@mui/material/Box";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { CubeSpan } from "../utils/component.global";
 
 const AppAdmin = ({ session }: { session: User | null }) => {
   const router = useRouter();
+  const path = usePathname();
+
   if (!session) {
     router.push("/admin/login");
   } else {

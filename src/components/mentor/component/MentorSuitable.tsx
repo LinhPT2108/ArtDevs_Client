@@ -57,14 +57,11 @@ const MentorSuitable = ({ session }: IPros) => {
       headers: { authorization: `Bearer ${session?.access_token}` },
     });
   };
-  const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    GLOBAL_URL + "/api/get-mentor-issuitable",
-    fetchData,
-    {
+  const { data, error, isLoading, mutate }: SWRResponse<MentorInfor[], any> =
+    useSWR(GLOBAL_URL + "/api/get-mentor-issuitable", fetchData, {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
-    }
-  );
+    });
   console.log(">>> check data gợi ý : ", data);
 
   const handleRedirect = (id: string) => {
@@ -101,6 +98,12 @@ const MentorSuitable = ({ session }: IPros) => {
         if (apiResult === true) {
           // Thành công, chuyển hướng đến trang mới
           showSnackbar();
+          data &&
+            mentorId &&
+            mutate(
+              data.filter((m) => m.userId != mentorId),
+              false
+            );
           setOpen(false);
         } else {
           // Xử lý khi có lỗi trong cuộc gọi API

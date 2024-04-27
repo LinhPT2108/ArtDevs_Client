@@ -45,7 +45,6 @@ type Props = {
   columnsData: any[];
   tableData: Post[];
   handleUnlockPost: (postId: string) => void;
-  
 };
 
 const PostReportTable = (props: Props) => {
@@ -165,12 +164,12 @@ const PostReportTable = (props: Props) => {
             {">"}
           </button>
           <span className="text-gray-700">
-            Page{" "}
+            Trang{" "}
             <strong>
-              {pageIndex + 1} of {pageOptions.length}
+              {pageIndex + 1} của {pageOptions.length}
             </strong>{" "}
           </span>
-          <span className="text-gray-700">| Go to page: </span>
+          <span className="text-gray-700">| đi đến trang: </span>
           <input
             type="number"
             defaultValue={pageIndex + 1}
@@ -180,7 +179,7 @@ const PostReportTable = (props: Props) => {
             }}
             className="w-12 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
           />
-          <span className="text-gray-700">| Show </span>
+          <span className="text-gray-700">| Hiển thị </span>
           <select
             value={pageSize}
             onChange={(e) => {

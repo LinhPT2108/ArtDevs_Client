@@ -64,6 +64,7 @@ const DashboardPage: FC<Props> = () => {
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
   };
+
   console.log("prop", sessions);
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseAllUserFormAdmin>({
@@ -165,8 +166,9 @@ const DashboardPage: FC<Props> = () => {
     handleRowClick(DataUser);
   };
   useEffect(() => {
-    console.log("check data datadataForTable", dataForTable);
+    setUserData(dataForTable[0]);
   }, [dataForTable]);
+
   return (
     <>
       {/* Card widget */}
@@ -178,7 +180,9 @@ const DashboardPage: FC<Props> = () => {
             CountAccount?.model?.listAllAccount.toString() || "Loading..."
           }
           newAccount={
+            //@ts-ignore
             CountAccount?.model?.listNewMentor +
+            //@ts-ignore
             CountAccount?.model?.listNewUser
           }
           onWidgetClick={() =>
@@ -251,6 +255,7 @@ const DashboardPage: FC<Props> = () => {
             columnsData={tableColumnsTopCreators}
             tableData={dataForTable}
             onRowClick={handleRowClick}
+            titleTable="Danh sách tài khoản"
           />
         </div>
         <div className="xl:col-span-2">

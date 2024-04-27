@@ -104,7 +104,7 @@ const FeddbackTable = (props: Props) => {
   );
   console.log(">>> check data123123: ", reponseAPI);
 
-  if (reponseAPI && !dataForTableFeedback.length) {
+  if (reponseAPI && dataForTableFeedback && dataForTableFeedback.length == 0) {
     setDataForTableFeedback(reponseAPI.model);
   }
 
@@ -178,7 +178,7 @@ const FeddbackTable = (props: Props) => {
         // Sao chép mảng model để tránh cập nhật trực tiếp
         handleCloseLoading();
         const updatedModel = [...dataForTableFeedback];
-        const newdataupdate = fetchData.model;
+        const newdataupdate: FeedbackDTO = fetchData.model[0];
         const index = updatedModel.findIndex(
           (item: FeedbackDTO) => item.id === FeedbackId
         );
@@ -205,7 +205,7 @@ const FeddbackTable = (props: Props) => {
   const handleRowClick = (model: FeedbackDTO) => {
     setdataHastagFeedback(model);
   };
-
+  console.log(">>> check data: ", data);
   const tableInstance = useTable(
     {
       columns,
@@ -257,12 +257,12 @@ const FeddbackTable = (props: Props) => {
             {">"}
           </button>
           <span className="text-gray-700">
-            Page{" "}
+            Trang{" "}
             <strong>
-              {pageIndex + 1} of {pageOptions.length}
+              {pageIndex + 1} của {pageOptions.length}
             </strong>{" "}
           </span>
-          <span className="text-gray-700">| Show </span>
+          <span className="text-gray-700">| Hiển thị </span>
           <select
             value={pageSize}
             onChange={(e) => {

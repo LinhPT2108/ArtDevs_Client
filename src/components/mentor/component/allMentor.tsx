@@ -56,14 +56,11 @@ const AllMentor = ({ session }: IPros) => {
       headers: { authorization: `Bearer ${session?.access_token}` },
     });
   };
-  const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    GLOBAL_URL + "/api/get-all-mentor",
-    fetchData,
-    {
+  const { data, error, isLoading, mutate }: SWRResponse<MentorInfor[], any> =
+    useSWR(GLOBAL_URL + "/api/get-all-mentor", fetchData, {
       shouldRetryOnError: false,
       revalidateOnFocus: false,
-    }
-  );
+    });
   console.log(">>> check datajjj: ", data);
 
   const handleRedirect = (id: string) => {
@@ -100,6 +97,13 @@ const AllMentor = ({ session }: IPros) => {
         if (apiResult === true) {
           // Thành công, chuyển hướng đến trang mới
           showSnackbar();
+
+          data &&
+            mentorId &&
+            mutate(
+              data.filter((m) => m.userId != mentorId),
+              false
+            );
           setOpen(false);
         } else {
           // Xử lý khi có lỗi trong cuộc gọi API

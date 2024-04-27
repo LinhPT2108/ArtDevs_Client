@@ -32,9 +32,10 @@ const Sidebar: FC<Props> = () => {
           <HiX />
         </span>
 
-        <div className={`mx-[56px] mt-[50px] flex items-center`}>
+        <div className={`mx-[56px] mt-[50px] flex items-center justify-center`}>
+          <img src="/Art_Devs_aboutFooter.png" className=" w-[5rem]" alt="" />
           <div className="mt-1 ml-1 h-2.5 font-poppins text-[26px] font-bold uppercase text-navy-700 dark:text-white">
-            ArtDevs <span className="font-medium"></span>
+            ArtDevs
           </div>
         </div>
 
