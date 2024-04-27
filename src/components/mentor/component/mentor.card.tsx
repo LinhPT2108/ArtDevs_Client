@@ -204,7 +204,11 @@ const CardMentor = ({
                           width={50}
                           height={50}
                           src={`/language-program/${
-                            skill == "C#" ? "C_other" : skill
+                            skill == "C#"
+                              ? "C_other"
+                              : skill == "C++"
+                              ? "C_Plus"
+                              : skill
                           }.png`}
                           alt={`${skill == "C#" ? "C_other.png" : skill}.png`}
                         />

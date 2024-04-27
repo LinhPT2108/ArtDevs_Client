@@ -240,7 +240,8 @@ interface IPros {
   search?: string;
   friendPost?: string;
 }
-
+const socket = new SockJS("http://localhost:8080/wss");
+const stompClient = Stomp.over(socket);
 const PostProfile = ({
   session,
   hashTagText,
@@ -249,8 +250,6 @@ const PostProfile = ({
   search,
   friendPost,
 }: IPros) => {
-  const socket = new SockJS(GLOBAL_URL + GLOBAL_URL_SOCKET);
-  const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
@@ -1461,11 +1460,15 @@ const PostProfile = ({
 
       if (response != false) {
         setComment((preData) => [response, ...preData]);
-        setFormDataComment({
-          content: "",
-          listImageofComment: null,
-          postToPost: "",
-        } as CommentToPostDTO);
+        setFormDataComment(
+          (prevData) =>
+            ({
+              ...prevData,
+              content: "",
+              listImageofComment: null,
+              // postToPost: "",
+            } as CommentToPostDTO)
+        );
         setIsLoadingComment(false);
         if (session?.user?.userId !== formDataComment?.userReceive) {
           const notificationToPostDTO: notificationToPostDTO = {
