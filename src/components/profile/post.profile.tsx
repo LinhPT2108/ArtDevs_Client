@@ -1821,7 +1821,7 @@ const PostProfile = ({
                   color: "#333",
                 }}
               >
-                Chia sẻ kinh nghiệm hoặc câu hỏi của bạn
+                Bạn có câu hỏi hoặc kinh nghiệm gì chia sẻ không ?
               </Typography>
             </Box>
           </Box>
@@ -2634,12 +2634,14 @@ const PostProfile = ({
                         key={index}
                         onClick={() => openImageViewer(index, item)}
                         sx={{
+                          marginBottom: "3px",
                           "& img": {
                             width: "100%",
                             height: "100%",
                             maxHeight: "400px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
@@ -2657,6 +2659,7 @@ const PostProfile = ({
                             maxHeight: "440px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
@@ -2673,17 +2676,19 @@ const PostProfile = ({
                                 onClick={() => openImageViewer(index, item)}
                                 sx={{
                                   width: "100%",
-                                  height: "50%",
-                                  maxHeight: "220px",
+                                  height: "49.5%",
+                                  maxHeight: "218px",
                                   backgroundColor: "#3335",
                                   borderBottom: `${
                                     index == 1 ? "3px solid #fff" : "0"
                                   }`,
                                   boxSizing: "border-box",
+                                  border: "1px solid #80808080",
+                                  marginBottom: index == 1 ? "4px" : 0,
                                   "& img": {
                                     width: "100%",
                                     height: "100%",
-                                    maxHeight: "220px",
+                                    maxHeight: "218px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   },
@@ -2704,12 +2709,14 @@ const PostProfile = ({
                         onClick={() => openImageViewer(index, item)}
                         key={index}
                         sx={{
+                          marginBottom: "3px",
                           "& img": {
                             width: "100%",
                             height: "100%",
                             maxHeight: "220px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
@@ -2723,12 +2730,14 @@ const PostProfile = ({
                           <Box
                             onClick={() => openImageViewer(index, item)}
                             sx={{
+                              marginBottom: "3px",
                               "& img": {
                                 width: "100%",
                                 height: "100%",
                                 maxHeight: "220px",
                                 objectFit: "cover",
                                 cursor: "pointer",
+                                border: "1px solid #80808080",
                               },
                             }}
                           >
@@ -2747,6 +2756,7 @@ const PostProfile = ({
                                     maxHeight: "220px",
                                     objectFit: "cover",
                                     cursor: "pointer",
+                                    border: "1px solid #80808080",
                                   },
                                 }}
                               >

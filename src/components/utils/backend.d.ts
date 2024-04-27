@@ -505,6 +505,7 @@ declare global {
     status: boolean;
     user: UserLogin;
     listImage: File[] | null;
+    type: string;
   }
   interface ImageofFeedback {
     id: number;

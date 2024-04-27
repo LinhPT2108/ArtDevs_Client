@@ -307,6 +307,9 @@ export default function AppHeader(pros: IPros) {
   const handleActivity = () => {
     router.push("/activity");
   };
+  const handleUpgradeemntro = () => {
+    router.push("/upgrade-mentor");
+  };
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -325,6 +328,7 @@ export default function AppHeader(pros: IPros) {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleActivity}>Lịch sử hoạt động</MenuItem>
+      <MenuItem onClick={handleUpgradeemntro}>Nâp cấp Mentor</MenuItem>
     </Menu>
   );
 

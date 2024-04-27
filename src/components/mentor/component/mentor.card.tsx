@@ -190,7 +190,7 @@ const CardMentor = ({
                         marginRight="5px"
                         sx={{
                           display: "flex",
-                          justifyContent: "center",
+                          justifyContent: "flex-start",
                           alignItems: "center",
                           backgroundColor: "#f5f5f5",
                           padding: "4px 12px",
@@ -201,8 +201,8 @@ const CardMentor = ({
                         }}
                       >
                         <Image
-                          width={50}
-                          height={50}
+                          width={30}
+                          height={30}
                           src={`/language-program/${
                             skill == "C#"
                               ? "C_other"
@@ -215,12 +215,12 @@ const CardMentor = ({
                         <Box
                           sx={{
                             width: "auto",
-                            minWidth: "80px",
                             textDecoration: "none",
                             fontWeight: "bold",
                             textAlign: "center",
                             color: GLOBAL_COLOR_MENU,
                             fontSize: 18,
+                            marginLeft: "8px",
                           }}
                         >
                           {skill}

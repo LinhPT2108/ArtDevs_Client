@@ -1,6 +1,10 @@
 "use client";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
+import BeachAccessIcon from "@mui/icons-material/BeachAccess";
+import ImageIcon from "@mui/icons-material/Image";
 import SendIcon from "@mui/icons-material/Send";
+import CheckIcon from "@mui/icons-material/Check";
+import WorkIcon from "@mui/icons-material/Work";
 import {
   Button,
   CardMedia,
@@ -15,7 +19,12 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ListItemText from "@mui/material/ListItemText";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Loader } from "../utils/component.global";
 import {
@@ -30,12 +39,10 @@ interface IPros {
   session: User;
 }
 
-export default function HomeFeedback({ session }: IPros) {
+export default function HomeUpgradeMentor({ session }: IPros) {
   //set error
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [errorTitle, setErrorTitle] = useState<boolean>(false);
   const [errorContent, setErrorContent] = useState<boolean>(false);
-  const [messageTitle, setMessageTitle] = useState<string>("");
   const [messageContent, setMessageContent] = useState<string>("");
 
   // modal loading
@@ -75,23 +82,8 @@ export default function HomeFeedback({ session }: IPros) {
     status: false,
     user: session?.user,
     listImage: null,
-    type: "feedback",
+    type: "upgrade",
   });
-
-  //xử lý thay đổi tiêu đề góp ý
-  const handleChaneTitle = (value: string) => {
-    if (value) {
-      setErrorTitle(false);
-      setMessageTitle("");
-      setDataFeedback((prev) => ({
-        ...prev,
-        title: value,
-      }));
-    } else {
-      setErrorTitle(true);
-      setMessageTitle("Vui lòng nhập tiêu đề !");
-    }
-  };
 
   //xử lý thay đổi nổi dung đóng góp ý kiến
   const handleChaneContent = (value: string) => {
@@ -110,68 +102,56 @@ export default function HomeFeedback({ session }: IPros) {
 
   //xử lý gửi ý kiến
   const handleSendFeedback = async () => {
-    if (dataFeedback?.title && dataFeedback?.content) {
-      handleClickOpen();
-      const formData = new FormData();
-      formData.append(
-        "feedback",
-        new Blob(
-          [
-            JSON.stringify({
-              id: dataFeedback?.id,
-              title: dataFeedback?.title,
-              content: dataFeedback?.content,
-              status: dataFeedback?.status,
-              type: dataFeedback?.type,
-            }),
-          ],
-          { type: "application/json" }
-        )
-      );
+    handleClickOpen();
+    const formData = new FormData();
+    formData.append(
+      "feedback",
+      new Blob(
+        [
+          JSON.stringify({
+            id: dataFeedback?.id,
+            title: dataFeedback?.title,
+            content: dataFeedback?.content,
+            status: dataFeedback?.status,
+            type: dataFeedback?.type,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
 
-      if (selectedFiles) {
-        selectedFiles.forEach((file: any, index: any) => {
-          formData.append("listImage", file);
-        });
-      } else {
-        formData.append("listImage", "");
-      }
-      const response = await fetch(GLOBAL_URL + "/api/feedback", {
-        method: "POST",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        body: formData,
+    if (selectedFiles) {
+      selectedFiles.forEach((file: any, index: any) => {
+        formData.append("listImage", file);
       });
-      //@ts-ignore
-      if (response?.status == 200) {
-        const data = await response.json();
-        console.log("Data from response:", data);
-        setDataFeedback({
-          id: 0,
-          title: "",
-          content: "",
-          createFeedback: new Date(),
-          dateHandle: null,
-          status: false,
-          user: session?.user,
-          listImage: null,
-          type: "feedback",
-        });
-
-        setSelectedFiles([]);
-        handleClickOpenConfirm();
-      } else {
-        //@ts-ignore
-        setErrorMessage(response?.message);
-      }
     } else {
-      if (!dataFeedback?.title) {
-        setErrorTitle(true);
-        setMessageTitle("Vui lòng nhập tiêu đề !");
-      }
-      if (!dataFeedback?.content) {
-        setErrorContent(true);
-        setMessageContent("Vui lòng nhập nội dung !");
-      }
+      formData.append("listImage", "");
+    }
+    const response = await fetch(GLOBAL_URL + "/api/feedback", {
+      method: "POST",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      body: formData,
+    });
+    //@ts-ignore
+    if (response?.status == 200) {
+      const data = await response.json();
+      console.log("Data from response:", data);
+      setDataFeedback({
+        id: 0,
+        title: "",
+        content: "",
+        createFeedback: new Date(),
+        dateHandle: null,
+        status: false,
+        user: session?.user,
+        listImage: null,
+        type: "upgrade",
+      });
+      setSelectedFiles([]);
+      handleClickOpenConfirm();
+    } else {
+      //@ts-ignore
+      setErrorMessage(response?.message);
     }
   };
 
@@ -217,9 +197,42 @@ export default function HomeFeedback({ session }: IPros) {
           color: "#050505",
         }}
       >
-        Chung tay cải thiện Art Devs
+        Nâng cấp để trở thành Mentor?
       </Box>
+
       <Divider sx={{ margin: "8px 0 24px 0" }} />
+      <List sx={{ width: "100%" }}>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar
+              sx={{
+                backgroundColor: "#f5f5f5",
+                border: "1px solid #80808080",
+                color: "#2e7d32",
+              }}
+            >
+              <CheckIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Bạn phải có ít nhất 5 bài viết hữu ít" />
+        </ListItem>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar>
+              <CheckIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Có ít nhất 1000 lượt thích cho bài viết và phản hồi" />
+        </ListItem>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar>
+              <CheckIcon />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary="Hoạt động từ 7 ngày trở lên" />
+        </ListItem>
+      </List>
       <Grid
         container
         columns={8}
@@ -231,29 +244,6 @@ export default function HomeFeedback({ session }: IPros) {
         }}
       >
         <Grid item container xs={5} md={3} columns={5} spacing={2}>
-          <Grid item xs={5} md={5}>
-            <Box
-              sx={{
-                fontSize: "16px",
-                fontWeight: "bold",
-                color: "#050505",
-              }}
-            >
-              Chúng tôi có thể cải thiện như thế nào ?
-            </Box>
-            <TextField
-              id="title"
-              hiddenLabel
-              type="text"
-              variant="filled"
-              autoComplete="off"
-              value={dataFeedback?.title}
-              error={errorTitle}
-              helperText={messageTitle}
-              fullWidth
-              onChange={(e) => handleChaneTitle(e.target.value)}
-            />
-          </Grid>
           <Grid
             item
             xs={5}
@@ -283,9 +273,9 @@ export default function HomeFeedback({ session }: IPros) {
                   color: "#050505",
                 }}
               >
-                Chi tiết
+                Nội dung
               </Box>
-              (Vui lòng chia sẻ chi tiết nhất có thể)
+              (Không bắt buộc)
             </Box>
             <TextField
               onChange={(e) => handleChaneContent(e.target.value)}
@@ -301,6 +291,9 @@ export default function HomeFeedback({ session }: IPros) {
             />
           </Grid>
           <Grid item xs={5} md={5}>
+            <Typography sx={{ fontWeight: "bold", marginBottom: "8px" }}>
+              Chứng từ
+            </Typography>
             <Box
               sx={{
                 display: "flex",
@@ -347,7 +340,8 @@ export default function HomeFeedback({ session }: IPros) {
                   borderRadius: "12px",
                 }}
               >
-                <AttachFileIcon /> Thêm video hoặc ảnh chụp màn hình (đề xuất)
+                <AttachFileIcon /> Thêm chứng từ hoặc bằng cấp liên quan (đề
+                xuất)
               </InputLabel>
               <input
                 multiple
@@ -384,8 +378,7 @@ export default function HomeFeedback({ session }: IPros) {
           </Grid>
           <Grid item xs={5} md={5}>
             <Box sx={{ padding: "12px 0 12px 0", textAlign: "justify" }}>
-              Nếu bạn có ý tưởng để cải thiện sản phẩm thì hãy cho chúng tôi
-              biết nhé. Còn nếu cần trợ giúp để khắc phục vấn đề cụ thể.
+              Thời gian xét duyệt từ 1-3 ngày làm việc.
             </Box>
           </Grid>
           <Grid
@@ -468,8 +461,8 @@ export default function HomeFeedback({ session }: IPros) {
                 marginTop: "12px ",
               }}
             >
-              Ý kiến của bạn đang được gửi <br /> Vui lòng chờ trong giây lát{" "}
-              <br /> Xin cảm ơn.
+              Yêu cầu nâng cấp tài khoản đang được gửi <br /> Vui lòng chờ trong
+              giây lát <br />
             </Typography>
           </DialogContentText>
         </DialogContent>
@@ -497,8 +490,8 @@ export default function HomeFeedback({ session }: IPros) {
               errorMessage
             ) : (
               <Typography>
-                Chúng tôi đã nhận được ý kiến đóng góp của bạn. Chúng tôi sẽ xem
-                xét và nâng cấp để cho bạn có trải nghiệm tốt nhấtcó thể <br />
+                Chúng tôi đã nhận được yêu cầu của bạn. Chúng tôi sẽ xem xét và
+                nâng cấp nếu tài khoản đủ điều kiện <br />
                 Trân trọng cảm ơn !
               </Typography>
             )}
