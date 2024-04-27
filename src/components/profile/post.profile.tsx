@@ -17,6 +17,12 @@ import VideoFileIcon from "@mui/icons-material/VideoFile";
 import ImageViewer2 from "react-simple-image-viewer";
 import * as nsfwjs from "nsfwjs";
 import { badWords, blackList } from "vn-badwords";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/free-mode";
+import "swiper/css/pagination";
+import "swiper/css";
+import { FreeMode, Pagination } from "swiper/modules";
 import {
   Alert,
   AppBar,
@@ -42,6 +48,8 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  ImageList,
+  ImageListItem,
   LinearProgress,
   ListItemIcon,
   Modal,
@@ -56,6 +64,7 @@ import {
   Typography,
   Zoom,
   styled,
+  useTheme,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Input from "@mui/material/Input";
@@ -251,7 +260,12 @@ const PostProfile = ({
   friendPost,
 }: IPros) => {
   //tạo biến xử lý modal report
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+
+  const [open2, setOpen2] = React.useState([]);
+
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
     null
   );
@@ -322,18 +336,34 @@ const PostProfile = ({
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
     id: string,
-    postModal: ResPost | null
+    postModal: ResPost | null,
+    index: number
   ) => {
-    setAnchorEl(event.currentTarget);
+    const newOpenArray = [...open2] as boolean[];
+    newOpenArray[index] = true;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = event.currentTarget;
+
+    setOpen2(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
     setSelectedItemId(id);
     setPostModal(postModal);
   };
-  const handleCloses = () => {
-    setAnchorEl(null);
+
+  const handleCloses = (index: number) => {
+    const newOpenArray = [...open2] as boolean[];
+    newOpenArray[index] = false;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = null;
+
+    setOpen2(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
     setPostModal(null);
     setSelectedItemId(null);
   };
-  const handleDeletePost = async (postId: string | null) => {
+  const handleDeletePost = async (postId: string | null, ind: number) => {
     console.log(">>> check postID: ", postId);
     let res = await sendRequest<ResPost>({
       url: GLOBAL_URL + `/api/post/${postId}/hidden`,
@@ -356,7 +386,7 @@ const PostProfile = ({
         mutate(newData, false);
       }
     }
-    handleCloses();
+    handleCloses(ind);
   };
   //tạo biến xử lý modal privacy
   const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
@@ -393,7 +423,8 @@ const PostProfile = ({
     // const newAnchorEls = [...anchorEls];
     // newAnchorEls[index] = null;
     // setAnchorEls(newAnchorEls);
-    setAnchorEl(null);
+
+    setAnchorEl([]);
     setSelectedItemId(null);
     setPostModal(null);
   };
@@ -1186,125 +1217,225 @@ const PostProfile = ({
   // );
 
   const handleLike = async (
-    postId: string,
-    post: ResPost,
-    isDataLoading: boolean
+    entityId: string,
+    item: ResPost,
+    isShare: boolean
   ) => {
-    await setPosts(
-      posts.map((resPost) => {
-        if (resPost?.postId?.postId === postId) {
-          return {
-            ...resPost,
-            postId: {
-              ...resPost.postId,
-              likeByUserLogged: true,
-              totalLike: resPost.postId.totalLike + 1,
+    if (isShare) {
+      console.log("shareId: ", entityId);
+
+      await setPosts(
+        posts.map((resPost) => {
+          if (resPost?.id === entityId) {
+            return {
+              ...resPost,
               isProcessingLike: true,
-            },
-          };
-        }
-        return resPost;
-      })
-    );
-    try {
-      const response = await sendRequest({
-        url: GLOBAL_URL + "/api/like/" + postId,
-        method: "POST",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-      });
-      console.log(response);
-      if (response) {
-        setPosts(
-          posts.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  postId: {
-                    ...resPost.postId,
-                    likeByUserLogged: true,
-                    totalLike: resPost.postId.totalLike + 1,
+              likeByUserLogged: true,
+              totalLike: resPost.totalLike + 1,
+            };
+          }
+          return resPost;
+        })
+      );
+      try {
+        const response = await sendRequest({
+          url: GLOBAL_URL + "/api/share/like/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.id == entityId
+                ? {
+                    ...resPost,
                     isProcessingLike: false,
-                  },
-                }
-              : resPost
-          )
-        );
-        console.log(data);
-        if (session?.user?.userId !== post?.postId?.userPost?.userId) {
-          const notificationToPostDTO: notificationToPostDTO = {
-            message: "like",
-            receiverId: `${post?.postId?.userPost.userId}`,
-            senderId: session?.user?.userId,
-            postId: post?.postId?.postId,
-            shareId: "",
-            type: "post",
-          };
-          stompClient.send(
-            `${GLOBAL_NOTIFI}/${post?.postId?.userPost?.userId}`,
-            {},
-            JSON.stringify(notificationToPostDTO)
+                    likeByUserLogged: true,
+                    totalLike: resPost.totalLike + 1,
+                  }
+                : resPost
+            )
           );
+          console.log(data);
+          if (session?.user?.userId != item?.userPostDto.userId) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "likeShare",
+              receiverId: `${item?.userPostDto.userId}`,
+              senderId: session?.user?.userId,
+              postId: "",
+              shareId: entityId,
+              type: "share",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${item?.userPostDto.userId}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          console.log("something wrong");
         }
-      } else {
-        console.log("something wrong");
+      } catch (error) {
+        console.error("Error during API call:", error);
       }
-    } catch (error) {
-      console.error("Error during API call:", error);
-    }
-  };
-
-  const handleUnlike = async (postId: string, isDataLoading: boolean) => {
-    console.log("unlike: " + postId);
-
-    setPosts(
-      posts.map((resPost) =>
-        resPost?.postId?.postId === postId
-          ? {
+    } else {
+      await setPosts(
+        posts.map((resPost) => {
+          if (resPost?.postId?.postId === entityId) {
+            return {
               ...resPost,
               postId: {
                 ...resPost.postId,
+                likeByUserLogged: true,
+                totalLike: resPost.postId.totalLike + 1,
+                isProcessingLike: true,
+              },
+            };
+          }
+          return resPost;
+        })
+      );
+      try {
+        const response = await sendRequest({
+          url: GLOBAL_URL + "/api/like/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.postId?.postId === entityId
+                ? {
+                    ...resPost,
+                    postId: {
+                      ...resPost.postId,
+                      likeByUserLogged: true,
+                      totalLike: resPost.postId.totalLike + 1,
+                      isProcessingLike: false,
+                    },
+                  }
+                : resPost
+            )
+          );
+          console.log(data);
+          if (session?.user?.userId !== item?.postId?.userPost?.userId) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "like",
+              receiverId: `${item?.postId?.userPost.userId}`,
+              senderId: session?.user?.userId,
+              postId: item?.postId?.postId,
+              shareId: "",
+              type: "post",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${item?.postId?.userPost?.userId}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+      }
+    }
+  };
+
+  const handleUnlike = async (entityId: string, isShare: boolean) => {
+    console.log("unlike: " + entityId);
+    if (isShare) {
+      setPosts(
+        posts.map((resPost) =>
+          resPost?.id == entityId
+            ? {
+                ...resPost,
                 likeByUserLogged: false,
                 totalLike: resPost.postId.totalLike - 1,
                 isProcessingLike: true,
-              },
-            }
-          : resPost
-      )
-    );
+              }
+            : resPost
+        )
+      );
+      try {
+        const response = await sendRequest<Post[]>({
+          url: GLOBAL_URL + "/api/share/unlike/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
 
-    try {
-      const response = await sendRequest<Post[]>({
-        url: GLOBAL_URL + "/api/unlike/" + postId,
-        method: "POST",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-      });
-
-      console.log(response);
-      if (response) {
-        // Kết thúc xử lý API cho bài viết này
-
-        setPosts(
-          posts.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  postId: {
-                    ...resPost.postId,
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.id == entityId
+                ? {
+                    ...resPost,
                     likeByUserLogged: false,
                     totalLike: resPost.postId.totalLike - 1,
                     isProcessingLike: false,
-                  },
-                }
-              : resPost
-          )
-        );
+                  }
+                : resPost
+            )
+          );
 
-        console.log(data);
-      } else {
-        console.log("something wrong");
+          console.log(data);
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
       }
-    } catch (error) {
-      console.error("Error during API call:", error);
+    } else {
+      setPosts(
+        posts.map((resPost) =>
+          resPost?.postId?.postId === entityId
+            ? {
+                ...resPost,
+                postId: {
+                  ...resPost.postId,
+                  likeByUserLogged: false,
+                  totalLike: resPost.postId.totalLike - 1,
+                  isProcessingLike: true,
+                },
+              }
+            : resPost
+        )
+      );
+      try {
+        const response = await sendRequest<Post[]>({
+          url: GLOBAL_URL + "/api/share/unlike/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.postId?.postId === entityId
+                ? {
+                    ...resPost,
+                    postId: {
+                      ...resPost.postId,
+                      likeByUserLogged: false,
+                      totalLike: resPost.postId.totalLike - 1,
+                      isProcessingLike: false,
+                    },
+                  }
+                : resPost
+            )
+          );
+
+          console.log(data);
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+      }
     }
   };
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
@@ -2422,7 +2553,7 @@ const PostProfile = ({
                       },
                     }}
                     onClick={(event) =>
-                      handleClick(event, item?.postId?.postId, item)
+                      handleClick(event, item?.postId?.postId, item, index)
                     }
                   >
                     <Box
@@ -2437,11 +2568,11 @@ const PostProfile = ({
                     </Box>
                   </Box>
                   <Menu
-                    anchorEl={anchorEl}
+                    anchorEl={anchorEl[index]}
                     id={`account-menu-${index}`}
-                    open={Boolean(anchorEl)}
-                    onClose={handleCloses}
-                    onClick={handleCloses}
+                    open={Boolean(anchorEl[index])}
+                    onClose={() => handleCloses(index)}
+                    onClick={() => handleCloses(index)}
                     PaperProps={{
                       elevation: 0,
                       sx: {
@@ -2471,24 +2602,23 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {(session?.user?.userId == item?.postId?.userPost?.userId ||
-                      //@ts-ignore
-                      session?.user?.userId == item?.userPostDto?.userId) &&
-                    !searchParams.get("id") ? (
+                    {session?.user?.userId == item?.postId.userPost.userId ? (
                       <Box>
                         <MenuItem
-                          onClick={() => handleDeletePost(selectedItemId)}
+                          onClick={() =>
+                            handleDeletePost(selectedItemId, index)
+                          }
                         >
                           <ListItemIcon>
                             <DeleteIcon fontSize="small" />
                           </ListItemIcon>
-                          Xóa bài viết{" "}
+                          Xóa bài viết
                         </MenuItem>
                         <MenuItem onClick={() => handleEditPost(postModal!)}>
                           <ListItemIcon>
                             <EditIcon fontSize="small" />
                           </ListItemIcon>
-                          Chỉnh sửa bài viết{" "}
+                          Chỉnh sửa bài viết
                         </MenuItem>
                       </Box>
                     ) : (
@@ -2946,7 +3076,7 @@ const PostProfile = ({
                           },
                         }}
                         onClick={(event) =>
-                          handleClick(event, item?.postId?.postId, item)
+                          handleClick(event, item?.postId?.postId, item, index)
                         }
                       >
                         <Box
@@ -2961,11 +3091,11 @@ const PostProfile = ({
                         </Box>
                       </Box>
                       <Menu
-                        anchorEl={anchorEl}
+                        anchorEl={anchorEl[index]}
                         id={`account-menu-${index}`}
-                        open={Boolean(anchorEl)}
-                        onClose={handleCloses}
-                        onClick={handleCloses}
+                        open={Boolean(anchorEl[index])}
+                        onClose={() => handleCloses(index)}
+                        onClick={() => handleCloses(index)}
                         PaperProps={{
                           elevation: 0,
                           sx: {
@@ -3009,7 +3139,9 @@ const PostProfile = ({
                         !searchParams.get("id") ? (
                           <Box>
                             <MenuItem
-                              onClick={() => handleDeletePost(selectedItemId)}
+                              onClick={() =>
+                                handleDeletePost(selectedItemId, index)
+                              }
                             >
                               <ListItemIcon>
                                 <DeleteIcon fontSize="small" />
@@ -3141,7 +3273,9 @@ const PostProfile = ({
                       />
                     </Box>
                     <Typography component={"p"} sx={{ marginLeft: "6px" }}>
-                      {item?.postId?.totalLike}
+                      {item?.typePost == "share"
+                        ? item?.totalLike
+                        : item?.postId?.totalLike}
                     </Typography>
                   </Box>
 
@@ -3152,149 +3286,278 @@ const PostProfile = ({
                         color: "#3339",
                       }}
                     >
-                      {item?.postId?.totalComment} Bình luận
-                    </Typography>
-                    <Typography
-                      component={"p"}
-                      sx={{
-                        color: "#3339",
-                        marginLeft: "12px",
-                      }}
-                    >
-                      {item?.postId?.totalShare} Chia sẻ
+                      {item?.typePost == "share"
+                        ? item?.totalComment
+                        : item?.postId?.totalComment}{" "}
+                      Bình luận
                     </Typography>
                   </Box>
                 </Box>
               </Box>
-
-              <Grid
-                container
-                columns={3}
-                sx={{
-                  borderTop: " 1px solid #3333",
-                }}
-              >
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    // padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: item?.postId?.likeByUserLogged
-                      ? "#ff0000"
-                      : "#57585b",
-                    // color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    paddingY: 0,
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                >
-                  <IconButton
-                    aria-label="add to favorites"
+              <Box>
+                {item?.typePost == "share" ? (
+                  <Grid
+                    container
+                    columns={3}
                     sx={{
-                      // borderRadius: "10px",
-                      width: "100%",
-                      borderRadius: "0",
-                      // paddingY: 2,
-
-                      color: item?.postId?.likeByUserLogged
-                        ? "#ff0000"
-                        : "#57585b",
+                      borderTop: " 1px solid #3333",
                     }}
-                    onClick={() =>
-                      item?.postId?.likeByUserLogged
-                        ? handleUnlike(item?.postId?.postId, false)
-                        : handleLike(item?.postId?.postId, item, false)
-                    }
-                    disabled={item?.postId?.isProcessingLike}
+                    //site share action button
                   >
-                    {item?.postId?.isProcessingLike ? (
-                      <CircularProgress size={24} color="secondary" />
-                    ) : (
-                      <>
-                        <ThumbUpOffAltIcon />
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: item?.postId?.likeByUserLogged
+                          ? "#ff0000"
+                          : "#57585b",
+                        // color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        paddingY: 0,
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="Thích bài viết"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                          color: item?.likeByUserLogged ? "#ff0000" : "#57585b",
+                        }}
+                        onClick={() =>
+                          item?.likeByUserLogged
+                            ? handleUnlike(item?.id, true)
+                            : handleLike(item?.id, item, true)
+                        }
+                        disabled={item?.isProcessingLike}
+                      >
+                        {item?.isProcessingLike ? (
+                          <CircularProgress size={24} color="secondary" />
+                        ) : (
+                          <>
+                            <ThumbUpOffAltIcon />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "5px" }}
+                            >
+                              Thích Share
+                            </Typography>
+                          </>
+                        )}
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="comment"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                        }}
+                        onClick={() => handleOpenModalCmt(item?.postId)}
+                      >
+                        <CommentIcon />
                         <Typography
                           component={"span"}
                           sx={{ marginLeft: "5px" }}
                         >
-                          Thích
+                          Bình luận
                         </Typography>
-                      </>
-                    )}
-                  </IconButton>
-                </Grid>
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    // padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                >
-                  <IconButton
-                    aria-label="comment"
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                      onClick={() =>
+                        handleClickOpenAlerts(
+                          item?.postId,
+                          "share",
+                          false,
+                          -1,
+                          false
+                        )
+                      }
+                    >
+                      <ShareIcon />
+                      <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                        Chia sẻ
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Grid
+                    container
+                    columns={3}
                     sx={{
-                      width: "100%",
-                      borderRadius: "0",
+                      borderTop: " 1px solid #3333",
                     }}
-                    onClick={() => handleOpenModalCmt(item?.postId)}
+                    //site post action button
                   >
-                    <CommentIcon />
-                    <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Bình luận
-                    </Typography>
-                  </IconButton>
-                </Grid>
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                  onClick={() =>
-                    handleClickOpenAlerts(
-                      item?.postId,
-                      "share",
-                      false,
-                      -1,
-                      false
-                    )
-                  }
-                >
-                  <ShareIcon />
-                  <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                    Chia sẻ
-                  </Typography>
-                </Grid>
-              </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: item?.postId?.likeByUserLogged
+                          ? "#ff0000"
+                          : "#57585b",
+                        // color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        paddingY: 0,
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="add to favorites"
+                        sx={{
+                          // borderRadius: "10px",
+                          width: "100%",
+                          borderRadius: "0",
+                          // paddingY: 2,
+
+                          color: item?.postId?.likeByUserLogged
+                            ? "#ff0000"
+                            : "#57585b",
+                        }}
+                        onClick={() =>
+                          item?.postId?.likeByUserLogged
+                            ? handleUnlike(item?.postId?.postId, false)
+                            : handleLike(item?.postId?.postId, item, false)
+                        }
+                        disabled={item?.postId?.isProcessingLike}
+                      >
+                        {item?.postId?.isProcessingLike ? (
+                          <CircularProgress size={24} color="secondary" />
+                        ) : (
+                          <>
+                            <ThumbUpOffAltIcon />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "5px" }}
+                            >
+                              Thích
+                            </Typography>
+                          </>
+                        )}
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="comment"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                        }}
+                        onClick={() => handleOpenModalCmt(item?.postId)}
+                      >
+                        <CommentIcon />
+                        <Typography
+                          component={"span"}
+                          sx={{ marginLeft: "5px" }}
+                        >
+                          Bình luận
+                        </Typography>
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                      onClick={() =>
+                        handleClickOpenAlerts(
+                          item?.postId,
+                          "share",
+                          false,
+                          -1,
+                          false
+                        )
+                      }
+                    >
+                      <ShareIcon />
+                      <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                        Chia sẻ
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                )}
+              </Box>
             </Box>
           ))
         }
@@ -4424,35 +4687,86 @@ const PostProfile = ({
                     </Link>
                   ))}
                 </Box>
-                <Box sx={{ width: "100%" }} className="slider-container">
-                  {/* <Slider {...settings}> */}
-                  {actionDialog.data?.post?.listImageofPost?.map(
-                    (item: any, index: number) => (
-                      // <div key={item.id}>
-                      <CardMedia
-                        key={index + item.id}
-                        component={
-                          isImage(item.imageUrl) === "image"
-                            ? "img"
-                            : isImage(item.imageUrl) === "video"
-                            ? "video"
-                            : "div"
-                        }
-                        // autoPlay={isImage(item.imageUrl) === "video"}
-                        controls={isImage(item.imageUrl) === "video"}
-                        image={item?.imageUrl}
-                        alt={item?.postID}
-                        sx={{
-                          objectFit: "cover",
-                          maxWidth: "100%",
-                          width: ` 100%`,
-                          borderRadius: "16px",
-                        }}
-                      />
-                      // </div>
-                    )
-                  )}
-                  {/* </Slider> */}
+                <Box
+                  sx={{
+                    width: "100%",
+                    "& .swiper-wrapper": {
+                      alignItems: "center",
+                    },
+                  }}
+                  className="slider-container"
+                >
+                  <Swiper
+                    slidesPerView={1}
+                    spaceBetween={10}
+                    freeMode={true}
+                    pagination={{
+                      type: "fraction",
+                      clickable: true,
+                    }}
+                    modules={[FreeMode, Pagination]}
+                    className="mySwiper"
+                    loop={true}
+                  >
+                    {actionDialog.data?.post?.listImageofPost?.map(
+                      (item: any, index: number) => (
+                        <SwiperSlide key={item.id}>
+                          <CardMedia
+                            loading="lazy"
+                            key={index + item.id}
+                            component={
+                              isImage(item.imageUrl) === "image"
+                                ? "img"
+                                : isImage(item.imageUrl) === "video"
+                                ? "video"
+                                : "div"
+                            }
+                            controls={isImage(item.imageUrl) === "video"}
+                            image={item?.imageUrl}
+                            alt={item?.postID}
+                            sx={{
+                              objectFit: "cover",
+                              maxWidth: "100%",
+                              width: `100%`,
+                              borderRadius: "16px",
+                              maxHeight: "500px",
+                            }}
+                          />
+                        </SwiperSlide>
+                      )
+                    )}
+                  </Swiper>
+                  {/* <ImageList
+                  variant="masonry"
+                    cols={2}
+                  >
+                    {actionDialog.data?.post?.listImageofPost?.map(
+                      (item: any, index: number) => (
+                        <ImageListItem key={item.id}>
+                          <CardMedia
+                            loading="lazy"
+                            key={index + item.id}
+                            component={
+                              isImage(item.imageUrl) === "image"
+                                ? "img"
+                                : isImage(item.imageUrl) === "video"
+                                ? "video"
+                                : "div"
+                            }
+                            controls={isImage(item.imageUrl) === "video"}
+                            image={item?.imageUrl}
+                            alt={item?.postID}
+                            sx={{
+                              objectFit: "cover",
+                              maxWidth: "100%",
+                              width: ` 100%`,
+                              borderRadius: "16px",
+                            }}
+                          />
+                        </ImageListItem>
+                      )
+                    )}
+                  </ImageList> */}
                 </Box>
               </Box>
               <TextField

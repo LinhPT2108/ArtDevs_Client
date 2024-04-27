@@ -96,7 +96,32 @@ export const columnsHashtagTable = [
     accessor: "action",
   },
 ];
-
+export const columnsFeedbackTable = [
+  {
+    Header: "ID",
+    accessor: "id",
+  },
+  {
+    Header: "Tiêu Đề",
+    accessor: "title",
+  },
+  {
+    Header: "Người Phản Hồi",
+    accessor: "userid",
+  },
+  {
+    Header: "Ngày Phản Hồi",
+    accessor: "createdate",
+  },
+  {
+    Header: "Ngày Trả Lời Phản Hồi",
+    accessor: "handlereply",
+  },
+  {
+    Header: "Trạng Thái Phản Hồi",
+    accessor: "statusreply",
+  },
+];
 export const columnsProgramingLanguageTable = [
 
   {

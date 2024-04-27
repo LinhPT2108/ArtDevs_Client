@@ -207,11 +207,16 @@ declare global {
   }
 
   interface ResPost {
-    id: number;
+    id: string;
     typePost: string;
-    fullname: string;
+    userPostDto: UserPost;
     content: string;
     postId: Post;
+    timeCreate: string;
+    totalLike: number;
+    totalComment: number;
+    likeByUserLogged: boolean;
+    isProcessingLike: boolean | undefined;
   }
 
   interface Post {
@@ -433,6 +438,11 @@ declare global {
     message: string;
     model: MyLanguageProgram[];
   }
+  interface ReponseFeedbackFormAdmin {
+    statusCode: number;
+    message: string;
+    model: FeedbackDTO[];
+  }
   interface RequestUserUpdateFormAdmin {
     statusCode: number;
     message: string;
@@ -444,7 +454,20 @@ declare global {
     message: string;
     model: AccountListDTO;
   }
-
+  interface ReponseCountAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: CountAccountDTO;
+  }
+  interface CountAccountDTO {
+    listBand: number;
+    listMentor: number;
+    listUser: number;
+    listNewMentor: number;
+    listAllAccount: number;
+    listNewUser: number;
+    listAdmin: number;
+  }
   interface ReponseReportFormAdmin {
     statusCode: number;
     message: string;
@@ -472,8 +495,7 @@ declare global {
     listAllAccount: UserFormAdminDTO[];
     listMentor: UserFormAdminDTO[];
     listUser: UserFormAdminDTO[];
-    listNewMentor: UserFormAdminDTO[];
-    listNewUser: UserFormAdminDTO[];
+    listAdmin: UserFormAdminDTO[];
   }
 
   interface UserFormAdminDTO {
@@ -519,5 +541,15 @@ declare global {
     desiredTime: string;
     priority: number;
     programingLanguage: string;
+  }
+  interface FeedbackDTO {
+    id: number;
+    title: string;
+    content: string;
+    createFeedback: Date;
+    dateHandle: Date | null;
+    status: boolean;
+    userId: string;
+    listImage: ImageofFeedback[] | null;
   }
 }
