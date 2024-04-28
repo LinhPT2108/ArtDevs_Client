@@ -8,6 +8,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import LockIcon from "@mui/icons-material/Lock";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import EditIcon from "@mui/icons-material/Edit";
 import SendIcon from "@mui/icons-material/Send";
 import ShareIcon from "@mui/icons-material/Share";
@@ -120,6 +121,8 @@ import Stomp from "stompjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import InfiniteScroll from "../hash-tag/Infinite.scroll";
 import PostSkeleton from "../posts/post.skeleton";
+import ContentPost from "./post.content";
+import HashtagPost from "./post.hashtag";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -310,6 +313,28 @@ const PostProfile = ({
   }: SWRResponse<IModelPaginate<ResPost>, any> = useSWR(
     GLOBAL_URL + "/api" + url,
     fetchData,
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    }
+  );
+
+  //get data language
+  const fetchDataLanguage = async (url: string) => {
+    return await sendRequest<MyLanguageProgram[]>({
+      url: url,
+      method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+    });
+  };
+
+  const {
+    data: programingLanguage,
+    error: errorProgramingLanguage,
+    isLoading: isLoadingProgramingLanguage,
+  }: SWRResponse<MyLanguageProgram[], any> = useSWR(
+    GLOBAL_URL + "/api/programingLanguage",
+    fetchDataLanguage,
     {
       shouldRetryOnError: false,
       revalidateOnFocus: false,
@@ -1878,6 +1903,7 @@ const PostProfile = ({
     setIsViewerOpen(false);
     setListStringImg([]);
   };
+
   if (isLoading) {
     return <PostSkeleton />;
   }
@@ -2450,6 +2476,9 @@ const PostProfile = ({
                         fontSize: "18px",
                         color: "#333",
                         fontWeight: "bold",
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "center",
                       }}
                       onClick={() =>
                         handleRouterProfile(item?.postId?.userPost?.userId)
@@ -2459,6 +2488,13 @@ const PostProfile = ({
                         ? //@ts-ignore
                           item?.userPostDto?.fullname
                         : item?.postId?.userPost?.fullname}
+                      {item?.userPostDto?.roleName == "mentor" ? (
+                        <VerifiedIcon
+                          sx={{ color: "blue", marginLeft: "4px" }}
+                        />
+                      ) : (
+                        ""
+                      )}
                     </Typography>
                     <Box
                       sx={{
@@ -2637,17 +2673,19 @@ const PostProfile = ({
                 </Box>
               </Box>
               {item?.typePost !== "share" ? (
-                <Link href={`/post?id=${item?.postId?.postId}`}>
-                  <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
-                    {item?.postId?.content}
-                  </Box>
-                </Link>
+                <ContentPost
+                  postId={item?.postId?.postId}
+                  content={item?.postId?.content}
+                  programingLanguage={programingLanguage}
+                  session={session}
+                />
               ) : (
-                <Link href={`/post?id=${item?.postId?.postId}`}>
-                  <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
-                    {item?.content}
-                  </Box>
-                </Link>
+                <ContentPost
+                  postId={item?.userPostDto?.userId}
+                  content={item?.content}
+                  programingLanguage={programingLanguage}
+                  session={session}
+                />
               )}
               {item?.typePost !== "share" &&
                 item?.postId?.listHashtag.length > 0 && (
@@ -2667,42 +2705,47 @@ const PostProfile = ({
                   </Typography>
                 )}
               {item?.typePost !== "share" && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-start",
-                    paddingX: "16px",
-                    flexWrap: "wrap",
-                    paddingBottom: "16px",
-                    "& a": {
-                      backgroundColor: "#d6e8fa",
-                      color: "#0c3b6a",
-                      borderRadius: "4px",
-                      fontSize: "12px",
-                      // fontWeight: "400",
-                      padding: "4.8px 6px",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease-in-out",
-                      margin: "0 2px 2px 0",
-                      border: "1px solid #BDC0C7",
-                      textDecoration: "none",
-                      gridArea: "auto",
-                      "&:hover": {
-                        transform: "translateY(-1px) translateX(0)",
-                        boxShadow: "0 1px 0 0 #BDC0C7",
-                      },
-                    },
-                  }}
-                >
-                  {item?.postId?.listHashtag?.map((hashtag) => (
-                    <Link
-                      key={hashtag.id}
-                      href={`/hash-tag/${hashtag?.hashtagDetailName}`}
-                    >
-                      {hashtag?.hashtagDetailName}
-                    </Link>
-                  ))}
-                </Box>
+                <HashtagPost
+                  session={session}
+                  programingLanguage={programingLanguage}
+                  hashtags={item?.postId?.listHashtag}
+                />
+                // <Box
+                //   sx={{
+                //     display: "flex",
+                //     justifyContent: "flex-start",
+                //     paddingX: "16px",
+                //     flexWrap: "wrap",
+                //     paddingBottom: "16px",
+                //     "& a": {
+                //       backgroundColor: "#d6e8fa",
+                //       color: "#0c3b6a",
+                //       borderRadius: "4px",
+                //       fontSize: "12px",
+                //       // fontWeight: "400",
+                //       padding: "4.8px 6px",
+                //       cursor: "pointer",
+                //       transition: "all 0.3s ease-in-out",
+                //       margin: "0 2px 2px 0",
+                //       border: "1px solid #BDC0C7",
+                //       textDecoration: "none",
+                //       gridArea: "auto",
+                //       "&:hover": {
+                //         transform: "translateY(-1px) translateX(0)",
+                //         boxShadow: "0 1px 0 0 #BDC0C7",
+                //       },
+                //     },
+                //   }}
+                // >
+                //   {item?.postId?.listHashtag?.map((hashtag) => (
+                //     <Link
+                //       key={hashtag.id}
+                //       href={`/hash-tag/${hashtag?.hashtagDetailName}`}
+                //     >
+                //       {hashtag?.hashtagDetailName}
+                //     </Link>
+                //   ))}
+                // </Box>
               )}
               <Box
                 sx={{

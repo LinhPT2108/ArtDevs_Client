@@ -61,7 +61,8 @@ const MenuMentor = ({ session }: IPros) => {
     });
   };
   const { data, error, isLoading }: SWRResponse<MentorInfor[], any> = useSWR(
-    GLOBAL_URL + "/api/get-mentor-isready",
+    // GLOBAL_URL + "/api/get-mentor-isready",
+    GLOBAL_URL + "/api/get-mentor-issuitable",
     fetchData,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -204,12 +205,12 @@ const MenuMentor = ({ session }: IPros) => {
                     component="div"
                     textAlign="center"
                     sx={{
-                      fontSize: "24px",
+                      fontSize: "20px",
                       fontWeight: "500",
                       fontStyle: "bold",
                     }}
                   >
-                    Suggest Mentor
+                    Gợi ý giảng viên
                   </Typography>
                 </ListSubheader>
               }

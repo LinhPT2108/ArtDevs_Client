@@ -3,6 +3,7 @@ import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import FeedIcon from "@mui/icons-material/Feed";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import SmsIcon from "@mui/icons-material/Sms";
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   Box,
   Button,
@@ -25,6 +26,7 @@ import {
   GLOBAL_BG_BLUE_300,
   GLOBAL_BG_BLUE_900,
   GLOBAL_BG_NAV,
+  GLOBAL_BG_NOTIFY,
   GLOBAL_BG_RED_300,
   GLOBAL_BG_RED_900,
   GLOBAL_BOXSHADOW,
@@ -34,7 +36,12 @@ import {
   GLOBAL_URL,
 } from "../utils/veriable.global";
 import { usePathname, useRouter } from "next/navigation";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import { useEffect, useState } from "react";
+import InfoIcon from "@mui/icons-material/Info";
+import GroupIcon from "@mui/icons-material/Group";
+import SecurityIcon from "@mui/icons-material/Security";
+import FeedbackIcon from "@mui/icons-material/Feedback";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -69,35 +76,35 @@ const AppMenu = ({ session }: { session: User }) => {
       index: 0,
       content: "Bảng tin",
       icon: <FeedIcon />,
-      bgColor: "#9b2828",
+      bgColor: "#004AAD",
       url: "/",
     },
     {
       index: 1,
       content: `${session?.user?.role?.id == 3 ? "Match" : "Giảng viên"}`,
       icon: <PersonSearchIcon />,
-      bgColor: "#9c933c",
-      url: "/mentor?tab=suggest",
+      bgColor: "#004AAD",
+      url: "/mentor?tab=all",
     },
     {
       index: 2,
       content: "Bạn bè",
-      icon: <BookmarksIcon />,
-      bgColor: "#1e8d10",
+      icon: <GroupIcon />,
+      bgColor: "#004AAD",
       url: "/friend",
     },
     {
       index: 3,
       content: "Hash tag",
       icon: <BookmarksIcon />,
-      bgColor: "#1e8d10",
+      bgColor: "#004AAD",
       url: "/hash-tag",
     },
     {
       index: 4,
       content: "Trang cá nhân",
       icon: <AccountCircleIcon />,
-      bgColor: "#263797",
+      bgColor: "#004AAD",
       url: "/profile",
     },
   ];
@@ -106,42 +113,42 @@ const AppMenu = ({ session }: { session: User }) => {
       index: 5,
       content: "Hộp thư điện tử",
       icon: <SmsIcon />,
-      bgColor: "#263797",
+      bgColor: "#004AAD",
       url: "/chat",
     },
     {
       index: 6,
       content: "Bài viết của bạn bè",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
+      icon: <RecentActorsIcon />,
+      bgColor: "#004AAD",
       url: "/friend-post",
     },
     {
       index: 7,
       content: "Bảo mật",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
+      icon: <SecurityIcon />,
+      bgColor: "#004AAD",
       url: "/secure",
     },
     {
       index: 8,
       content: "Thông tin chung",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
+      icon: <InfoIcon />,
+      bgColor: "#004AAD",
       url: "/infor",
     },
     {
       index: 9,
       content: "Đóng góp ý kiến",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
+      icon: <FeedbackIcon />,
+      bgColor: "#004AAD",
       url: "/feedback",
     },
     {
       index: 10,
       content: "Đăng xuất",
-      icon: <FeedIcon />,
-      bgColor: "#263797",
+      icon: <LogoutIcon />,
+      bgColor: "#004AAD",
       url: "/",
     },
   ];

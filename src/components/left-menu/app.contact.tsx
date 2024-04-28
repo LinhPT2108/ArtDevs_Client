@@ -128,7 +128,8 @@ const ContactMenu = (pros: IPros) => {
     error: errorMentorSuitable,
     isLoading: isLoadingMentorSuitable,
   }: SWRResponse<MentorInfor[], any> = useSWR(
-    GLOBAL_URL + "/api/get-mentor-isready",
+    // GLOBAL_URL + "/api/get-mentor-isready",
+    GLOBAL_URL + "/api/get-mentor-issuitable",
     fetchDataMentorSuitable,
     {
       shouldRetryOnError: false,

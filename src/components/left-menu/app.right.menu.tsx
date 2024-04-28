@@ -3,6 +3,7 @@ import React from "react";
 import MenuAccept from "./right-menu/menu.accept";
 import MenuMentor from "./right-menu/menu.mentor";
 import UserAccept from "./right-menu/menu.accept";
+import MentorAccept from "./right-menu/menu.mentoraccept";
 interface IPros {
   session: User;
 }
@@ -14,8 +15,11 @@ const RightPost = ({ session }: IPros) => {
         maxWidth: 220,
       }}
     >
-      <UserAccept session={session} />
-      <MenuMentor session={session} />
+      {session.user.role.id === 3 ? (
+        <MentorAccept session={session} />
+      ) : (
+        <MenuMentor session={session} />
+      )}
     </Box>
   );
 };

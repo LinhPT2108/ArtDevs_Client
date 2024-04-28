@@ -54,6 +54,7 @@ const ChatMessagesForm = (pros: IPros) => {
   const handelPreview = (isPre: boolean) => {
     setPreviewImage(isPre);
   };
+
   useEffect(() => {
     console.log(dataMessage);
     setNewDataMessage(dataMessage);
@@ -111,73 +112,72 @@ const ChatMessagesForm = (pros: IPros) => {
           },
         }}
       >
-        {data && (
-          <ListItemButton
-            sx={{
-              padding: { xs: "6px" },
-              margin: " 0",
-              borderBottom: "1px solid #80808026",
-            }}
-            onClick={() => handleRouterProfile(data?.userId)}
-          >
-            {data?.profilePicUrl ? (
-              <Avatar
-                alt={data?.profilePicUrl || ""}
-                src={data?.profilePicUrl}
-                sx={{
-                  boxShadow: "0 0 2px 2px gray",
-                }}
-              />
-            ) : (
-              <ListItemIcon
-                sx={{
-                  color: "white",
-                  backgroundColor: "grey",
-                  padding: "8px",
-                  minWidth: "40px",
-                  marginRight: { xs: "6px" },
-                  borderRadius: "100%",
-                }}
-              >
-                <AccountCircleIcon />
-              </ListItemIcon>
-            )}
-
-            <ListItemText
+        <ListItemButton
+          sx={{
+            padding: { xs: "6px" },
+            margin: " 0",
+            borderBottom: "1px solid #80808026",
+          }}
+        >
+          {data?.profilePicUrl ? (
+            <Avatar
+              alt={data?.profilePicUrl || ""}
+              src={data?.profilePicUrl}
               sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                marginLeft: "12px",
-                "& p": {
-                  fontSize: "12px",
-                },
-                "& p::before": {
-                  content: `""`,
-                  backgroundColor: `${
-                    data?.online ? "success.main" : "#7a837e"
-                  }`,
-                  padding: "0 6px",
-                  minWidth: "6px",
-                  borderRadius: "100%",
-                  fontSize: "12px",
-                  marginRight: "6px",
-                },
+                boxShadow: "0 0 2px 2px gray",
               }}
-              primary={data?.fullname}
-              secondary={`${data?.online ? "Online" : "Offline"}`}
+              onClick={() => handleRouterProfile(data?.userId)}
             />
-            {toggleDrawer && (
-              <IconButton
-                aria-label="delete"
-                size="large"
-                onClick={() => toggleDrawer("right", false, undefined)}
-              >
-                <ClearIcon />
-              </IconButton>
-            )}
-          </ListItemButton>
-        )}
+          ) : (
+            <ListItemIcon
+              sx={{
+                color: "white",
+                backgroundColor: "grey",
+                padding: "8px",
+                minWidth: "40px",
+                marginRight: { xs: "6px" },
+                borderRadius: "100%",
+              }}
+              onClick={() => handleRouterProfile(data?.userId!)}
+            >
+              <AccountCircleIcon />
+            </ListItemIcon>
+          )}
+
+          <ListItemText
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              marginLeft: "12px",
+              "& p": {
+                fontSize: "12px",
+              },
+              "& p::before": {
+                content: `""`,
+                backgroundColor: `${data?.online ? "success.main" : "#7a837e"}`,
+                padding: "0 6px",
+                minWidth: "6px",
+                borderRadius: "100%",
+                fontSize: "12px",
+                marginRight: "6px",
+              },
+            }}
+            onClick={() => handleRouterProfile(data?.userId!)}
+            primary={data?.fullname}
+            secondary={`${data?.online ? "Online" : "Offline"}`}
+          />
+          {toggleDrawer && (
+            <IconButton
+              aria-label="delete"
+              size="large"
+              onClick={() => toggleDrawer("right", false, undefined)}
+            >
+              <ClearIcon />
+            </IconButton>
+          )}
+        </ListItemButton>
+
         <Messsages
           preViewImage={preViewImage}
           pageUrl={pageUrl}

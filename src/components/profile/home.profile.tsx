@@ -1,15 +1,13 @@
 "use client";
-import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
-import VideoFileIcon from "@mui/icons-material/VideoFile";
-import VpnKeyIcon from "@mui/icons-material/VpnKey";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import {
   Alert,
   Autocomplete,
-  Avatar,
   Backdrop,
   Button,
-  CardMedia,
   ClickAwayListener,
   Dialog,
   DialogActions,
@@ -40,31 +38,23 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
+import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
 import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
-import { deleteSpace, formatBirthDay } from "../utils/utils";
-import {
-  GLOBAL_BG,
-  GLOBAL_BG_NAV,
-  GLOBAL_SEND_FRIEND,
-  GLOBAL_URL,
-} from "../utils/veriable.global";
-import PostProfile from "./post.profile";
-import CloseIcon from "@mui/icons-material/Close";
-import { useSession } from "next-auth/react";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
-import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
-import SockJS from "sockjs-client";
-import Stomp from "stompjs";
-import { mutate } from "swr";
 import { ProcessingLoading } from "../utils/component.global";
-import Image from "next/image";
+import { deleteSpace, formatBirthDay } from "../utils/utils";
+import { GLOBAL_SEND_FRIEND, GLOBAL_URL } from "../utils/veriable.global";
+import PostProfile from "./post.profile";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -688,36 +678,59 @@ const HomeProfile = ({ session }: IPros) => {
       return false;
     }
   };
-  // const connectAndSubscribe = () => {
-  //   stompClient.connect(
-  //     {},
-  //     () => {
-  //       console.log("Connected to WebSocket server home friend");
-  //       stompClient.subscribe(
-  //         `/user/${session?.user?.userId}/friend`,
-  //         (message) => {
-  //           if (message) {
-  //             const data: RelaNotiDTO = JSON.parse(message.body);
-  //             console.log(data);
-  //             mutate(
-  //               GLOBAL_URL + "/api/get-request-friend",
-  //               fetchDataUserAction(GLOBAL_URL + "/api/get-request-friend"),
-  //               false
-  //             );
-  //           }
-  //         }
-  //       );
-  //     },
-  //     (error) => {
-  //       console.error("Error connecting to WebSocket server:", error);
-  //     }
-  //   );
-  // };
-  // useEffect(() => {
-  //   if (session) {
-  //     connectAndSubscribe();
-  //   }
-  // }, [session]);
+
+  const sendMatchRequest = async (mentorId: string): Promise<boolean> => {
+    try {
+      // Thực hiện cuộc gọi API ở đây
+      const response = await fetch(`${GLOBAL_URL}/api/send-match/${mentorId}`, {
+        method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
+        // Các tùy chọn khác nếu cần
+      });
+      console.log(response);
+      // Xử lý kết quả
+      const data = await response.json();
+
+      return data; // Giả sử API trả về một trường success kiểu boolean
+    } catch (error) {
+      console.error("Error sending match:", error);
+      return false; // Trả về false nếu có lỗi
+    }
+  };
+  const handleSendmatch = async (mentorId: string) => {
+    try {
+      // Gọi hàm thực hiện cuộc gọi API
+      const apiResult = await sendMatchRequest(mentorId);
+
+      console.log("test Result" + apiResult);
+      // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
+      if (apiResult === true) {
+        // Thành công, chuyển hướng đến trang mới
+
+        setCheckRelationship(true);
+        showSnackbar3();
+        const relation: RelationNotificationDTO = {
+          userAction: session.user.userId,
+          userReceive: mentorId,
+          createDate: new Date(),
+          typeRelation: false,
+        };
+        stompClient.send(
+          `${GLOBAL_SEND_FRIEND}/${mentorId}`,
+          {},
+          JSON.stringify(relation)
+        );
+      } else {
+        // Xử lý khi có lỗi trong cuộc gọi API
+        console.error("Match request failed.");
+      }
+    } catch (error) {
+      console.error("Error sending match:", error);
+    }
+  };
+
   const socket = new SockJS(GLOBAL_URL + "/friend");
   const stompClient = Stomp.over(socket);
   const [snackbar3Open, setSnackbar3Open] = useState(false);
@@ -733,14 +746,7 @@ const HomeProfile = ({ session }: IPros) => {
       if (apiResult === true) {
         setCheckRelationship(true);
         showSnackbar3();
-        // setListDataUserSuitable(
-        //   listDataUserSuitable?.map((t) => {
-        //     if (t.userId == UserId) {
-        //       return { ...t, sendStatus: true };
-        //     }
-        //     return t;
-        //   })
-        // );
+
         const relation: RelationNotificationDTO = {
           userAction: session.user.userId,
           userReceive: UserId,
@@ -1041,19 +1047,33 @@ const HomeProfile = ({ session }: IPros) => {
               sx={{ fontWeight: "bold", fontSize: "24px" }}
             >
               {deleteSpace(fullname)}
+              {dataProfile?.role?.roleName == "mentor" ? (
+                <VerifiedIcon sx={{ color: "blue", marginLeft: "4px" }} />
+              ) : (
+                ""
+              )}
             </Typography>
             {/* <Typography component={"p"}>1.2K Friends </Typography> */}
           </Box>
         </Box>
-        {searchId && (dataProfile?.status == -1 || dataProfile?.status == 0) ? (
+        {searchId &&
+        (dataProfile?.status == -1 ||
+          dataProfile?.status == 0 ||
+          dataProfile?.status == 2) ? (
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {!checkRelationship && (
               <Button
                 color="primary"
                 variant="outlined"
-                onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+                onClick={() =>
+                  dataProfile?.role?.roleName == "user"
+                    ? handsenddAddfriend(dataProfile?.userId!)
+                    : handleSendmatch(dataProfile?.userId!)
+                }
               >
-                Thêm bạn bè
+                {dataProfile?.role?.roleName == "user"
+                  ? " Thêm bạn bè"
+                  : "Nhờ hỗ trợ"}
               </Button>
             )}
             {checkRelationship && (
@@ -1064,13 +1084,15 @@ const HomeProfile = ({ session }: IPros) => {
                   handlerefusedAddfriend(dataProfile?.userId, false, 0)
                 }
               >
-                Hủy kết bạn
+                {dataProfile?.role?.roleName == "user"
+                  ? "Hủy kết bạn"
+                  : "Không nhờ hỗ trợ"}
               </Button>
             )}
           </Box>
         ) : (
           searchId &&
-          dataProfile?.status == 1 && (
+          (dataProfile?.status == 1 || dataProfile?.status == 3) && (
             <Box sx={{ display: "flex", alignItems: "center" }}>
               {!checkRelationship && (
                 <Button
@@ -1092,7 +1114,7 @@ const HomeProfile = ({ session }: IPros) => {
                   aria-haspopup="true"
                   onClick={handleToggleFriend}
                 >
-                  Bạn bè
+                  {dataProfile?.role?.roleName == "user" ? " Bạn bè" : "Mentor"}
                 </Button>
               )}
 
@@ -1132,7 +1154,9 @@ const HomeProfile = ({ session }: IPros) => {
                               handleCloseFriend(e);
                             }}
                           >
-                            Hủy kết bạn
+                            {dataProfile?.role?.roleName == "user"
+                              ? "Hủy kết bạn"
+                              : "Không nhờ hỗ trợ"}
                           </MenuItem>
                         </MenuList>
                       </ClickAwayListener>
@@ -1880,6 +1904,7 @@ const HomeProfile = ({ session }: IPros) => {
                         sessionGuest={dataProfile}
                         session={session}
                         profile={url}
+                        programingLanguage={programingLanguage}
                       />
                     )}
                   </Box>

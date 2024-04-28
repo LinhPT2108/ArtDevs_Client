@@ -24,7 +24,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TransitionProps } from "react-transition-group/Transition";
 import useSWR, { SWRResponse } from "swr";
 import CardMentorSkeleton from "../home.mentor.skeleton";
@@ -140,6 +140,7 @@ const AllMentor = ({ session }: IPros) => {
     setSnackbar2Open(true);
     setTimeout(() => setSnackbar2Open(false), 10000);
   };
+
   if (isLoading) {
     return (
       <Grid container columns={12} spacing={1}>

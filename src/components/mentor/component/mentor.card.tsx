@@ -26,7 +26,7 @@ import {
   GLOBAL_COLOR_MENU,
   GLOBAL_URL,
 } from "@/components/utils/veriable.global";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TransitionProps } from "react-transition-group/Transition";
 import { CubeSpan } from "@/components/utils/component.global";
 import Image from "next/image";
@@ -46,6 +46,38 @@ const CardMentor = ({
   handleClickOpen,
   data: mentor,
 }: MyCard) => {
+  //test
+  const elementRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        } else {
+          setIsVisible(false);
+        }
+      },
+      {
+        threshold: 1,
+      }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+    return () => {
+      if (elementRef.current) {
+        observer.unobserve(elementRef.current);
+      }
+    };
+  }, []);
+  useEffect(() => {
+    if (isVisible) {
+      console.log(">>> check data mentor: ", mentor);
+    }
+  }, [isVisible]);
   return (
     <Grid
       item
@@ -56,6 +88,7 @@ const CardMentor = ({
       }}
     >
       <Card
+        ref={elementRef}
         sx={{
           background:
             "linear-gradient(180deg, rgba(103, 186, 186) 0%, rgba(45, 53, 102) 100%)",

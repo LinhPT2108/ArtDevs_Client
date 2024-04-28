@@ -240,6 +240,7 @@ declare global {
     fullname: string;
     profilePicUrl?: string;
     fullname: string;
+    roleName: string;
   }
   interface Hashtag {
     hashtagDetailName: string;
