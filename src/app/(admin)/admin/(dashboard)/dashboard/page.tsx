@@ -25,10 +25,10 @@ import { tableColumnsTopCreators } from "./variables/tableColumnsTopCreators";
 import { sendRequest } from "@/components/utils/api";
 import useSWR, { SWRResponse } from "swr";
 import {
+  GLOBAL_LISTADMIN,
   GLOBAL_LISTALLACCOUNT,
   GLOBAL_LISTALLBAND,
   GLOBAL_LISTMENTOR,
-  GLOBAL_LISTNEWMENTOR,
   GLOBAL_LISTNEWUSER,
   GLOBAL_LISTUSER,
   GLOBAL_TURNON_MENTOR,
@@ -36,6 +36,8 @@ import {
 } from "@/components/utils/veriable.global";
 import TopCreatorTable from "./components/table/TableTopCreators";
 import Banner from "./components/table/Banner";
+import { useSession } from "next-auth/react";
+import { Badge } from "@mui/material";
 
 const MiniCalendar = dynamic(
   () => import("@/components/admin/calendar/MiniCalendar"),
@@ -48,24 +50,27 @@ const MiniCalendar = dynamic(
 type Props = {};
 
 const DashboardPage: FC<Props> = () => {
+  const { data: sessions, update: sessionUpdate } = useSession();
   const [dataForTable, setDataForTable] = useState<UserFormAdminDTO[]>([]);
   const [listNameTable, setlistNameTable] = useState<string>(
     GLOBAL_LISTALLACCOUNT
   );
   const [userData, setUserData] = useState<UserFormAdminDTO | null>(null);
+
   const handleRowClick = (rowData: UserFormAdminDTO) => {
     // Xử lý dữ liệu của hàng được chọn tại đây, ví dụ:
     setUserData(rowData);
-
     console.log("Row data:", rowData);
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
   };
 
+  console.log("prop", sessions);
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseAllUserFormAdmin>({
       url: url,
       method: "GET",
+      headers: { authorization: `Bearer ${sessions?.access_token}` },
     });
   };
   const {
@@ -75,6 +80,25 @@ const DashboardPage: FC<Props> = () => {
   }: SWRResponse<ReponseAllUserFormAdmin, any> = useSWR(
     `${GLOBAL_URL}/api/admin/get-all-account`,
     fetchData,
+    {
+      shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
+      revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
+    }
+  );
+
+  const fetchDataCount = async (url: string) => {
+    return await sendRequest<ReponseCountAllUserFormAdmin>({
+      url: url,
+      method: "GET",
+      headers: { authorization: `Bearer ${sessions?.access_token}` },
+    });
+  };
+  const {
+    data: CountAccount,
+    error: ErrorCount,
+  }: SWRResponse<ReponseCountAllUserFormAdmin, any> = useSWR(
+    `${GLOBAL_URL}/api/admin/get-count-account`,
+    fetchDataCount,
     {
       shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
       revalidateOnFocus: true, // Tự động thực hiện yêu cầu lại khi trang được focus lại
@@ -107,18 +131,15 @@ const DashboardPage: FC<Props> = () => {
         // Xử lý trường hợp GLOBAL_LISTMENTOR
         // Ví dụ:
         return dataGetAll?.model.listMentor || [];
-      case GLOBAL_LISTNEWMENTOR:
+      case GLOBAL_LISTADMIN:
         // Xử lý trường hợp GLOBAL_LISTNEWMENTOR
         // Ví dụ:
-        return dataGetAll?.model.listNewMentor || [];
+        return dataGetAll?.model.listAdmin || [];
       case GLOBAL_LISTUSER:
         // Xử lý trường hợp GLOBAL_LISTUSER
         // Ví dụ:
         return dataGetAll?.model.listUser || [];
-      case GLOBAL_LISTNEWUSER:
-        // Xử lý trường hợp GLOBAL_LISTNEWUSER
-        // Ví dụ:
-        return dataGetAll?.model.listNewUser || [];
+
       default:
         // Trường hợp không khớp với bất kỳ giá trị nào được xác định
         return null;
@@ -145,18 +166,24 @@ const DashboardPage: FC<Props> = () => {
     handleRowClick(DataUser);
   };
   useEffect(() => {
-    console.log("check data datadataForTable", dataForTable);
+    setUserData(dataForTable[0]);
   }, [dataForTable]);
+
   return (
     <>
       {/* Card widget */}
-      <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3 3xl:grid-cols-6">
+      <div className="mt-3 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-3 3xl:grid-cols-5">
         <Widget
           icon={<IoMdHome className="h-7 w-7" />}
-          title={"Tất Cả Tài Khoản"}
+          title={"Tài khoản "}
           subtitle={
-            dataGetAll?.model?.listAllAccount?.length?.toString() ||
-            "Loading..."
+            CountAccount?.model?.listAllAccount.toString() || "Loading..."
+          }
+          newAccount={
+            //@ts-ignore
+            CountAccount?.model?.listNewMentor +
+            //@ts-ignore
+            CountAccount?.model?.listNewUser
           }
           onWidgetClick={() =>
             handleWidgetClick(
@@ -167,10 +194,9 @@ const DashboardPage: FC<Props> = () => {
         />
         <Widget
           icon={<IoIosPerson className="h-6 w-6" />}
-          title={"Số lượng user"}
-          subtitle={
-            dataGetAll?.model?.listUser.length?.toString() || "Loading..."
-          }
+          title={"Số lượng Học Viên"}
+          subtitle={CountAccount?.model?.listUser.toString() || "Loading..."}
+          newAccount={CountAccount?.model?.listNewUser}
           onWidgetClick={() =>
             handleWidgetClick(
               dataGetAll?.model?.listUser ?? [],
@@ -178,12 +204,12 @@ const DashboardPage: FC<Props> = () => {
             )
           }
         />
+
         <Widget
           icon={<IoStar className="h-7 w-7" />}
-          title={"Số lượng Mentor"}
-          subtitle={
-            dataGetAll?.model?.listMentor.length?.toString() || "Loading..."
-          }
+          title={"Số lượng Người Hướng Dẫn"}
+          subtitle={CountAccount?.model?.listMentor.toString() || "Loading..."}
+          newAccount={CountAccount?.model?.listNewMentor}
           onWidgetClick={() =>
             handleWidgetClick(
               dataGetAll?.model?.listMentor ?? [],
@@ -193,10 +219,8 @@ const DashboardPage: FC<Props> = () => {
         />
         <Widget
           icon={<IoIosAlert className="h-6 w-6" />}
-          title={"Số lượng account bị khóa"}
-          subtitle={
-            dataGetAll?.model?.listBand.length?.toString() || "Loading..."
-          }
+          title={"Số lượng tài khoản bị khóa"}
+          subtitle={CountAccount?.model?.listBand.toString() || "Loading..."}
           onWidgetClick={() =>
             handleWidgetClick(
               dataGetAll?.model?.listBand ?? [],
@@ -206,27 +230,12 @@ const DashboardPage: FC<Props> = () => {
         />
         <Widget
           icon={<MdBarChart className="h-7 w-7" />}
-          title={"New User Trong 24h"}
-          subtitle={
-            dataGetAll?.model?.listNewUser.length?.toString() || "Loading..."
-          }
+          title={"Quản Trị Viên"}
+          subtitle={CountAccount?.model?.listAdmin.toString() || "Loading..."}
           onWidgetClick={() =>
             handleWidgetClick(
-              dataGetAll?.model?.listNewUser ?? [],
-              GLOBAL_LISTNEWUSER
-            )
-          }
-        />
-        <Widget
-          icon={<IoMdHome className="h-6 w-6" />}
-          title={"New Mentor Trong 24h"}
-          subtitle={
-            dataGetAll?.model?.listNewMentor.length?.toString() || "Loading..."
-          }
-          onWidgetClick={() =>
-            handleWidgetClick(
-              dataGetAll?.model?.listNewMentor ?? [],
-              GLOBAL_LISTNEWMENTOR
+              dataGetAll?.model?.listAdmin ?? [],
+              GLOBAL_LISTADMIN
             )
           }
         />
@@ -239,21 +248,25 @@ const DashboardPage: FC<Props> = () => {
       </div> */}
 
       {/* Tables & Charts */}
-      <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <TopCreatorTable
-          // extra="mb-5"
-
-          columnsData={tableColumnsTopCreators}
-          tableData={dataForTable}
-          onRowClick={handleRowClick}
-        />
-        {userData && (
-          <Banner
-            user={userData}
-            listnametable={listNameTable}
-            handlepropdata={handleWidgetClick1}
+      <div className="mt-5 grid grid-cols-1 gap-5 xl:grid-cols-5">
+        <div className="xl:col-span-3">
+          <TopCreatorTable
+            // extra="mb-5"
+            columnsData={tableColumnsTopCreators}
+            tableData={dataForTable}
+            onRowClick={handleRowClick}
+            titleTable="Danh sách tài khoản"
           />
-        )}
+        </div>
+        <div className="xl:col-span-2">
+          {userData && (
+            <Banner
+              user={userData}
+              listnametable={listNameTable}
+              handlepropdata={handleWidgetClick1}
+            />
+          )}
+        </div>
         {/* Check Table */}
         {/* <div>
           <CheckTable

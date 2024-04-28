@@ -2,39 +2,33 @@ import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import InputBase from "@mui/material/InputBase";
 import Paper from "@mui/material/Paper";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function SearchComponent() {
   const [search, setSearch] = useState<string>("");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const path = usePathname();
   const handleSearch = () => {
-    router.push(`/search?keyword=${search}`);
+    router.push(`/search?tabfilter=post&keyword=${search}`);
   };
   useEffect(() => {
-    searchParams.get("keyword") &&
+    path == "/search" &&
+      searchParams.get("keyword") &&
       setSearch(searchParams.get("keyword") as string);
   }, [searchParams.get("keyword") as string]);
   return (
     <Paper
-      // component="form"
+      component="form"
       sx={{
         p: "2px 12px",
         margin: "0 12px",
-        display: "flex",
+        display: { xs: "none", sm: "flex" },
         backgroundColor: "#eeeeee",
         borderRadius: "30px",
         alignItems: "center",
-        "@media (min-width: 600px)": {
-          width: "144px",
-        },
-        "@media (min-width: 700px)": {
-          width: "240px",
-        },
-        "@media (min-width: 1023px)": {
-          width: "300px",
-        },
+        width: { xs: "140px", sm: "220px", md: "240px", lg: "360px" },
       }}
     >
       <InputBase
@@ -52,7 +46,6 @@ export default function SearchComponent() {
           flex: 1,
         }}
         placeholder="Tìm kiếm"
-        inputProps={{ "aria-label": "search" }}
       />
       <IconButton
         type="button"

@@ -2,7 +2,7 @@ import Stomp from "stompjs";
 import SockJS from "sockjs-client";
 
 // witdh of menu
-export const DRAWER_WIDTH: number = 200;
+export const DRAWER_WIDTH: number = 240;
 export const GLOBAL_URL: string = "http://localhost:8080";
 export const GLOBAL_URL_SOCKET: string = "/wss";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";
@@ -37,7 +37,7 @@ export const GLOBAL_UNLOCKED_ACCOUNT: string = "unlockaccount";
 export const GLOBAL_LISTALLACCOUNT: string = "listallaccount";
 export const GLOBAL_LISTALLBAND: string = "listallband";
 export const GLOBAL_LISTMENTOR: string = "listallmentor";
-export const GLOBAL_LISTNEWMENTOR: string = "listnewmentor";
+export const GLOBAL_LISTADMIN: string = "listadmin";
 export const GLOBAL_LISTUSER: string = "listuser";
 export const GLOBAL_LISTNEWUSER: string = "listnewuser";
 export const GLOBAL_LISTUSERREPORT1: string = "listuserreport1";

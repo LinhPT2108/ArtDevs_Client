@@ -63,22 +63,15 @@ const AppSearch = ({ session }: IPros) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  //tab filter
+  const [tabValue, setTabValue] = useState<number>(0);
+
   //Biến lấy danh sách thành phố
   const [provinces, setProvinces] = useState<Province[]>([]);
   //Biến lấy danh sách demand
   const [programingLanguage, setProgramingLanguage] = useState<
     MyLanguageProgram[]
   >([]);
-  //lấy tất cả dữ liệu tìm kiếm
-  const [searchAlls, setSearchAlls] = useState<MySearch>();
-  //Biến lấy danh sách bài viết tìm được
-  const [posts, setPosts] = useState<ResPost[]>([]);
-  //Biến lấy danh sách người dùng tìm được
-  const [peoples, setPeoples] = useState<UserAction[]>([]);
-  //Biến lấy danh sách mentor tìm được
-  const [mentors, setMentors] = useState<MentorInfor[]>([]);
-  //Biến lấy danh sách bài viết tìm được
-  const [hashtags, setHashtags] = useState<HashtagInfor[]>([]);
 
   //Biến xử lý city people
   const [cityPeople, setCityPeople] = useState<string>("");
@@ -98,6 +91,12 @@ const AppSearch = ({ session }: IPros) => {
     setOpenAllPeople(false);
     setOpenMentor(false);
     setOpenHashtag(false);
+    tabValue != 0 &&
+      router.replace(
+        `/search?tabfilter=post&keyword=${
+          searchParams.get("keyword") as string
+        }`
+      );
   };
   // Hàm xử lý ẩn hiện bộ lọc mọi người
   const handleClickAllPeople = () => {
@@ -105,6 +104,12 @@ const AppSearch = ({ session }: IPros) => {
     setOpenAllPeople(!openAllPeople);
     setOpenMentor(false);
     setOpenHashtag(false);
+    tabValue != 1 &&
+      router.replace(
+        `/search?tabfilter=people&keyword=${
+          searchParams.get("keyword") as string
+        }`
+      );
   };
   // Hàm xử lý ẩn hiện bộ lọc giảng viên
   const handleClickMentor = () => {
@@ -112,6 +117,12 @@ const AppSearch = ({ session }: IPros) => {
     setOpenAllPeople(false);
     setOpenMentor(!openMentor);
     setOpenHashtag(false);
+    tabValue != 2 &&
+      router.replace(
+        `/search?tabfilter=mentor&keyword=${
+          searchParams.get("keyword") as string
+        }`
+      );
   };
   // Hàm xử lý ẩn hiện bộ lọc hashtag
   const handleClickHashtag = () => {
@@ -119,6 +130,12 @@ const AppSearch = ({ session }: IPros) => {
     setOpenAllPeople(false);
     setOpenMentor(false);
     setOpenHashtag(!openHashtag);
+    tabValue != 3 &&
+      router.replace(
+        `/search?tabfilter=hashtag&keyword=${
+          searchParams.get("keyword") as string
+        }`
+      );
   };
 
   // biến xử lý chi tiết bộ lọc
@@ -166,34 +183,80 @@ const AppSearch = ({ session }: IPros) => {
     }
   };
   //xử lý chi tiết bộ lọc mọi người
+  const [dataFilterPeoples, setDataFilterPeoples] = useState<{
+    city?: string;
+    demands?: string;
+  }>();
   const handleFilterPeople = () => {
-    router.push(
-      `/search?keyword=${searchParams.get(
-        "keyword"
-      )}&city=${cityPeople}&demands=${demandPeople}`
-    );
+    cityPeople &&
+      setDataFilterPeoples((prev) => ({
+        ...prev,
+        city: cityPeople,
+      }));
+    demandPeople &&
+      setDataFilterPeoples((prev) => ({
+        ...prev,
+        demands: demandPeople,
+      }));
   };
   //xử lý chi tiết bộ lọc mọi người
+  const [dataFilterMentors, setDataFilterMentors] = useState<{
+    city?: string;
+    skill?: string;
+  }>();
   const handleFilterMentor = () => {
-    router.push(
-      `/search?keyword=${searchParams.get(
-        "keyword"
-      )}&cityMentor=${cityMentor}&skill=${demandMentor}`
-    );
+    cityMentor &&
+      setDataFilterMentors((prev) => ({
+        ...prev,
+        city: cityMentor,
+      }));
+    demandMentor &&
+      setDataFilterMentors((prev) => ({
+        ...prev,
+        skill: demandMentor,
+      }));
   };
   //xử lý chi tiết bộ lọc mọi người
+  const [dataFilterHashtags, setDataFilterHashtags] = useState<{
+    tab?: string;
+    dir?: string;
+  }>();
   const handleFilterHashtag = () => {
-    router.push(
-      `/search?keyword=${searchParams.get("keyword")}&tab=${tab}&dir=${dir}`
-    );
+    tab &&
+      setDataFilterHashtags((prev) => ({
+        ...prev,
+        tab: tab,
+      }));
+    setDataFilterHashtags((prev) => ({
+      ...prev,
+      dir: dir ? "DESC" : "ASC",
+    }));
   };
 
+  //tab của filter hashtag
   const handleTabHashtag = (
     event: React.MouseEvent<HTMLElement>,
     newAlignment: string
   ) => {
     setTab(newAlignment);
   };
+
+  //lấy tab hiện tại khi reload page
+  const handleFilterTab = (value: string) => {
+    if (value == "post") {
+      setTabValue(0);
+    } else if (value == "people") {
+      setTabValue(1);
+    } else if (value == "mentor") {
+      setTabValue(2);
+    } else if (value == "hashtag") {
+      setTabValue(3);
+    }
+  };
+  useEffect(() => {
+    searchParams.get("tabfilter") &&
+      handleFilterTab(searchParams.get("tabfilter") as string);
+  }, [searchParams.get("tabfilter")]);
 
   // lấy danh sách thành phố
   useEffect(() => {
@@ -245,62 +308,27 @@ const AppSearch = ({ session }: IPros) => {
   };
 
   // xử lý thay đổi nội dung tìm kiếm bài viết
-  useEffect(() => {
-    const dataFilter: {
-      sort?: string;
-      sortLike?: string;
-      start?: string;
-      end?: string;
-    } = {};
-    searchParams.get("sort") &&
-      (dataFilter.sort =
-        (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
-    searchParams.get("sortLike") &&
-      (dataFilter.sortLike =
-        (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
-    searchParams.get("startDate") &&
-      (dataFilter.start = searchParams.get("startDate") as string);
-    searchParams.get("endDate") &&
-      (dataFilter.end = searchParams.get("endDate") as string);
-
-    const refeshDataSearch = async () => {
-      const newDataSearch = await sendRequest<ResPost[]>({
-        url: GLOBAL_URL + "/api/search/post",
-        method: "GET",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        queryParams: {
-          page: 0,
-          keyword: searchParams.get("keyword") as string,
-          ...dataFilter,
-        },
-      });
-      console.log(">>> check seaerch: ", newDataSearch);
-
-      newDataSearch && setPosts(newDataSearch);
-    };
-    refeshDataSearch();
-  }, [
-    searchParams.get("keyword") as string,
-    searchParams.get("sort") as string,
-    searchParams.get("sortLike") as string,
-    searchParams.get("startDate") as string,
-    searchParams.get("endDate") as string,
-  ]);
-
-  // xử lý thay đổi nội dung tìm kiếm mọi người
   // useEffect(() => {
   //   const dataFilter: {
-  //     city?: string;
-  //     demands?: string;
+  //     sort?: string;
+  //     sortLike?: string;
+  //     start?: string;
+  //     end?: string;
   //   } = {};
-  //   searchParams.get("city") &&
-  //     (dataFilter.city = searchParams.get("city") as string);
-  //   searchParams.get("demands") &&
-  //     (dataFilter.demands = searchParams.get("demands") as string);
+  //   searchParams.get("sort") &&
+  //     (dataFilter.sort =
+  //       (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("sortLike") &&
+  //     (dataFilter.sortLike =
+  //       (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("startDate") &&
+  //     (dataFilter.start = searchParams.get("startDate") as string);
+  //   searchParams.get("endDate") &&
+  //     (dataFilter.end = searchParams.get("endDate") as string);
 
   //   const refeshDataSearch = async () => {
-  //     const newDataSearch = await sendRequest<UserAction[]>({
-  //       url: GLOBAL_URL + "/api/search/people",
+  //     const newDataSearch = await sendRequest<ResPost[]>({
+  //       url: GLOBAL_URL + "/api/search/post",
   //       method: "GET",
   //       headers: { authorization: `Bearer ${session?.access_token}` },
   //       queryParams: {
@@ -309,46 +337,17 @@ const AppSearch = ({ session }: IPros) => {
   //         ...dataFilter,
   //       },
   //     });
-  //     console.log(">>> check newDataSearch people: ", newDataSearch);
-  //     newDataSearch && setPeoples(newDataSearch);
+  //     console.log(">>> check seaerch: ", newDataSearch);
+
+  //     newDataSearch && setPosts(newDataSearch);
   //   };
   //   refeshDataSearch();
   // }, [
   //   searchParams.get("keyword") as string,
-  //   searchParams.get("city") as string,
-  //   searchParams.get("demands") as string,
-  // ]);
-
-  // xử lý thay đổi nội dung tìm kiếm mentor
-  // useEffect(() => {
-  //   const dataFilter: {
-  //     city?: string;
-  //     skill?: string;
-  //   } = {};
-  //   searchParams.get("cityMentor") &&
-  //     (dataFilter.city = searchParams.get("cityMentor") as string);
-  //   searchParams.get("skill") &&
-  //     (dataFilter.skill = searchParams.get("skill") as string);
-
-  //   const refeshDataSearch = async () => {
-  //     const newDataSearch = await sendRequest<MentorInfor[]>({
-  //       url: GLOBAL_URL + "/api/search/mentor",
-  //       method: "GET",
-  //       headers: { authorization: `Bearer ${session?.access_token}` },
-  //       queryParams: {
-  //         page: 0,
-  //         keyword: searchParams.get("keyword") as string,
-  //         ...dataFilter,
-  //       },
-  //     });
-  //     console.log(">>> check newDataSearch mentor: ", newDataSearch);
-  //     newDataSearch && setMentors(newDataSearch);
-  //   };
-  //   refeshDataSearch();
-  // }, [
-  //   searchParams.get("keyword") as string,
-  //   searchParams.get("cityMentor") as string,
-  //   searchParams.get("skill") as string,
+  //   searchParams.get("sort") as string,
+  //   searchParams.get("sortLike") as string,
+  //   searchParams.get("startDate") as string,
+  //   searchParams.get("endDate") as string,
   // ]);
 
   // xử lý thay đổi nội dung tìm kiếm hashtag
@@ -384,24 +383,24 @@ const AppSearch = ({ session }: IPros) => {
   //   searchParams.get("tab") as string,
   // ]);
 
-  useEffect(() => {
-    const refeshDataSearch = async () => {
-      if (session) {
-        const newDataSearch = await sendRequest<MySearch>({
-          url: GLOBAL_URL + "/api/search/all",
-          method: "GET",
-          headers: { authorization: `Bearer ${session?.access_token}` },
-          queryParams: {
-            page: 0,
-            keyword: searchParams.get("keyword") as string,
-          },
-        });
-        newDataSearch && setSearchAlls(newDataSearch);
-        console.log(">>> check newDataSearch: ", newDataSearch);
-      }
-    };
-    refeshDataSearch();
-  }, [searchParams.get("keyword") as string, session]);
+  // useEffect(() => {
+  //   const refeshDataSearch = async () => {
+  //     if (session) {
+  //       const newDataSearch = await sendRequest<MySearch>({
+  //         url: GLOBAL_URL + "/api/search/all",
+  //         method: "GET",
+  //         headers: { authorization: `Bearer ${session?.access_token}` },
+  //         queryParams: {
+  //           page: 0,
+  //           keyword: searchParams.get("keyword") as string,
+  //         },
+  //       });
+  //       newDataSearch && setSearchAlls(newDataSearch);
+  //       console.log(">>> check newDataSearch: ", newDataSearch);
+  //     }
+  //   };
+  //   refeshDataSearch();
+  // }, [searchParams.get("keyword") as string, session]);
   return (
     <Box sx={{ flexGrow: 1, height: "100vh", marginTop: "100px" }}>
       <Box sx={{ display: "flex", height: "100%" }}>
@@ -765,22 +764,29 @@ const AppSearch = ({ session }: IPros) => {
             justifyContent: "center",
           }}
         >
-          {searchAlls && (
-            <Box sx={{ width: "1000px" }}>
+          <Box sx={{ width: "1000px" }}>
+            {tabValue == 1 && (
               <SearchPeople
-                searchAlls={searchAlls}
+                dataFilterPeoples={dataFilterPeoples}
                 session={session}
-                setSearchAlls={setSearchAlls}
               />
+            )}
+            {tabValue == 2 && (
               <SearchMentor
-                peoples={searchAlls?.listMentorDTOs}
+                dataFilterMentors={dataFilterMentors}
                 session={session}
-                setPeoples={setPeoples}
               />
-              <SearchHashtag hashtags={searchAlls?.listHashtagDTOs} />
+            )}
+            {tabValue == 3 && (
+              <SearchHashtag
+                dataFilterHashtags={dataFilterHashtags}
+                session={session}
+              />
+            )}
+            {tabValue == 0 && (
               <PostProfile session={session} search="/search/post" />
-            </Box>
-          )}
+            )}
+          </Box>
         </Box>
       </Box>
     </Box>

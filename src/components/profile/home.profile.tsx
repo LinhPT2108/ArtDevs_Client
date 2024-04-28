@@ -6,9 +6,11 @@ import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import {
   Alert,
   Autocomplete,
+  Avatar,
   Backdrop,
   Button,
   CardMedia,
+  ClickAwayListener,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,7 +20,15 @@ import {
   FormControlLabel,
   FormLabel,
   Grid,
+  Grow,
   IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  MenuList,
+  Paper,
+  Popper,
   Radio,
   RadioGroup,
   Slide,
@@ -34,17 +44,27 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
 import { deleteSpace, formatBirthDay } from "../utils/utils";
-import { GLOBAL_URL } from "../utils/veriable.global";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NAV,
+  GLOBAL_SEND_FRIEND,
+  GLOBAL_URL,
+} from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import CloseIcon from "@mui/icons-material/Close";
 import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import { mutate } from "swr";
+import { ProcessingLoading } from "../utils/component.global";
+import Image from "next/image";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -139,18 +159,6 @@ const HomeProfile = ({ session }: IPros) => {
     return () => URL.revokeObjectURL(objectUrl);
   }, [selectedFile]);
 
-  useEffect(() => {
-    if (!selectedBgImg) {
-      setPreviewBgImg(session.user.backgroundImageUrl);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(selectedBgImg);
-    setPreviewBgImg(objectUrl as any);
-
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [selectedBgImg]);
-
   const onSelectFile = (e: any) => {
     if (!e.target.files || e.target.files.length === 0) {
       setSelectedFile(undefined);
@@ -219,7 +227,6 @@ const HomeProfile = ({ session }: IPros) => {
   const handleOpenBackdrop = () => {
     setOpenBackdrop(true);
   };
-
   const handleOpen = () => {
     setOpen(true);
   };
@@ -237,6 +244,7 @@ const HomeProfile = ({ session }: IPros) => {
   const [programingLanguage, setProgramingLanguage] = useState<
     MyLanguageProgram[]
   >([]);
+  // lấy danh sách thành phố
   useEffect(() => {
     const fetchDataProvince = async () => {
       try {
@@ -259,7 +267,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataProvince();
   }, []);
-
+  // lấy danh sách quận, huyện từ thành phố
   useEffect(() => {
     const fetchDataDistrict = async () => {
       try {
@@ -286,7 +294,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataDistrict();
   }, [city]);
-
+  // lấy danh sách xã, phường, thị trấn từ quận, huyện
   useEffect(() => {
     const fetchDataWard = async () => {
       try {
@@ -305,7 +313,7 @@ const HomeProfile = ({ session }: IPros) => {
     };
     fetchDataWard();
   }, [district]);
-
+  // lấy toàn bộ danh mục mà người dùng có thể chọn
   useEffect(() => {
     const fetchDataDemand = async () => {
       try {
@@ -321,9 +329,46 @@ const HomeProfile = ({ session }: IPros) => {
 
     fetchDataDemand();
   }, []);
+
+  const [demandOfUserLogin, setDemandOfUserLogin] = useState<Demand[]>([]);
+  // lấy danh sách danh mục mà người dùng đã chọn
+  useEffect(() => {
+    const fetchUserDemand = async () => {
+      try {
+        const response = await sendRequest<Demand[]>({
+          url: GLOBAL_URL + "/api/get-user-demand",
+          method: "GET",
+          queryParams: {
+            userId: searchId ? searchId : session?.user?.userId,
+          },
+        });
+        response && setDemandOfUserLogin(response);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserDemand();
+  }, [session]);
+  console.log(">>> check demandOfUserLogin: ", demandOfUserLogin);
   //xử lý cập nhật thông tin người dùng
   const [data, setData] = useState<UserLogin>(session?.user);
+  const [errorFirstName, setErrorFirstName] = useState<boolean>();
+  const [messageFirstName, setMessageFirstName] = useState<string>();
+  const [errorLastName, setErrorLastName] = useState<boolean>();
+  const [messageLastName, setMessageLastName] = useState<string>();
+  const [errorDateOfBirth, setErrorDateOfBirth] = useState<boolean>();
+  const [messageDateOfBirth, setMessageDateOfBirth] = useState<string>();
+  const [errorDemand, setErrorDemand] = useState<boolean>(false);
+  const [messageDemand, setMessageDemand] = useState<string>("");
   const handleLastName = (value: string) => {
+    if (value) {
+      setErrorLastName(false);
+      setMessageLastName("");
+    } else {
+      setErrorLastName(true);
+      setMessageLastName("Không được để trống tên !");
+    }
     setData((prevData) => ({
       ...prevData,
       lastName: value,
@@ -335,13 +380,28 @@ const HomeProfile = ({ session }: IPros) => {
       middleName: value,
     }));
   };
+
   const handleFirstName = (value: string) => {
+    if (value) {
+      setErrorFirstName(false);
+      setMessageFirstName("");
+    } else {
+      setErrorFirstName(true);
+      setMessageFirstName("Không được để trống họ !");
+    }
     setData((prevData) => ({
       ...prevData,
       firstName: value,
     }));
   };
   const handleDateOfBirth = (value: string) => {
+    if (value) {
+      setErrorDateOfBirth(false);
+      setMessageDateOfBirth("");
+    } else {
+      setErrorDateOfBirth(true);
+      setMessageDateOfBirth("Không được để trống ngày sinh !");
+    }
     setData((prevData) => ({
       ...prevData,
       birthday: value,
@@ -402,6 +462,13 @@ const HomeProfile = ({ session }: IPros) => {
         (item) => item.languageName
       );
     }
+    if (myLanguageProgram.length > 0) {
+      setErrorDemand(false);
+      setMessageDemand("");
+    } else {
+      setErrorDemand(true);
+      setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+    }
     setData((prevData) => ({
       ...prevData,
       listDemandOfUser: arrayOfValues,
@@ -426,6 +493,36 @@ const HomeProfile = ({ session }: IPros) => {
 
   const handleUpdateProfile = async () => {
     try {
+      if (!data?.firstName) {
+        setErrorFirstName(true);
+        setMessageFirstName("Không được để trống họ !");
+        return;
+      }
+      if (!data?.lastName) {
+        setErrorLastName(true);
+        setMessageLastName("Không được để trống tên !");
+        return;
+      }
+      if (!data?.birthday) {
+        setErrorDateOfBirth(true);
+        setMessageDateOfBirth("Không được để trống ngày sinh !");
+        return;
+      }
+      if (
+        session?.user?.role?.roleName == "user" &&
+        data?.listDemandOfUser?.length == 0
+      ) {
+        setErrorDemand(true);
+        setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+        return;
+      }
+      if (
+        session?.user?.role?.roleName == "mentor" &&
+        data?.listSkillOfUser?.length == 0
+      ) {
+        return;
+      }
+      handleClickOpenModalUpdate();
       console.log(">>> check data: ", data);
       const response = await sendRequest<ResponseStatus>({
         url: GLOBAL_URL + "/api/user/update-profile",
@@ -442,7 +539,9 @@ const HomeProfile = ({ session }: IPros) => {
           },
         };
         await sessionUpdate(updatedUserData);
+        setDataProfile(data);
         router.refresh();
+        handleCloseModalUpdate();
         handleClose();
       }
     } catch (error) {
@@ -453,16 +552,18 @@ const HomeProfile = ({ session }: IPros) => {
   const [dataProfile, setDataProfile] = useState<UserLogin>();
   const searchId = searchParams.get("id") as string;
   const handleDataProfile = async () => {
-    console.log(">>> check usser profile12123: ");
     if (searchParams.get("id")) {
       const user = await sendRequest<UserLogin>({
         url: GLOBAL_URL + "/api/get-user-by-id",
         method: "GET",
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
         queryParams: {
           id: searchId,
         },
       });
-      console.log(">>> check usser profile:1 ", user);
+      console.log(">>>check user friend: ", user);
 
       await setDataProfile(user);
     } else {
@@ -472,7 +573,19 @@ const HomeProfile = ({ session }: IPros) => {
 
   useEffect(() => {
     handleDataProfile();
-  }, []);
+  }, [searchParams.get("id") as string]);
+
+  useEffect(() => {
+    if (!selectedBgImg) {
+      setPreviewBgImg(session?.user?.backgroundImageUrl);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(selectedBgImg);
+    setPreviewBgImg(objectUrl as any);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [selectedBgImg]);
 
   console.log(">>> check usser profile:2 ", dataProfile);
   const url = searchId
@@ -495,12 +608,23 @@ const HomeProfile = ({ session }: IPros) => {
         headers: { authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
-      const data: ResPost = await response.json();
+      const data: ImageofPost = await response.json();
       console.log(data);
       if (data) {
+        const updatedUserData: User = {
+          access_token: session?.access_token,
+          refresh_token: session?.refresh_token,
+          user: {
+            ...session?.user,
+            profileImageUrl: data?.imageUrl,
+          },
+        };
+        await sessionUpdate(updatedUserData);
+        setDataProfile({ ...session?.user, profileImageUrl: data?.imageUrl });
         handleCloseBackdrop();
         handleClickAlertAvatar();
         handleCloseDialogAvatar();
+        router.refresh();
       }
     }
   };
@@ -519,14 +643,233 @@ const HomeProfile = ({ session }: IPros) => {
         headers: { authorization: `Bearer ${session?.access_token}` },
         body: formData,
       });
-      const data: ResPost = await response.json();
+      const data: ImageofPost = await response.json();
       console.log(data);
       if (data) {
+        const updatedUserData: User = {
+          access_token: session?.access_token,
+          refresh_token: session?.refresh_token,
+          user: {
+            ...session?.user,
+            backgroundImageUrl: data?.imageUrl,
+          },
+        };
+        await sessionUpdate(updatedUserData);
+        setDataProfile({
+          ...session?.user,
+          backgroundImageUrl: data?.imageUrl,
+        });
+
+        setSelectedBgImg(null);
+        // setPreviewBgImg(data?.imageUrl);
+
         handleCloseBackdrop();
         handleClickAlertBgImg();
         handleCloseDialogAvatar();
+        router.refresh();
       }
     }
+  };
+  const sendAddfriend = async (UserId: string): Promise<boolean> => {
+    try {
+      const response = await fetch(
+        `${GLOBAL_URL}/api/send-request-friend/${UserId}`,
+        {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${session?.access_token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error sending match:", error);
+      return false;
+    }
+  };
+  // const connectAndSubscribe = () => {
+  //   stompClient.connect(
+  //     {},
+  //     () => {
+  //       console.log("Connected to WebSocket server home friend");
+  //       stompClient.subscribe(
+  //         `/user/${session?.user?.userId}/friend`,
+  //         (message) => {
+  //           if (message) {
+  //             const data: RelaNotiDTO = JSON.parse(message.body);
+  //             console.log(data);
+  //             mutate(
+  //               GLOBAL_URL + "/api/get-request-friend",
+  //               fetchDataUserAction(GLOBAL_URL + "/api/get-request-friend"),
+  //               false
+  //             );
+  //           }
+  //         }
+  //       );
+  //     },
+  //     (error) => {
+  //       console.error("Error connecting to WebSocket server:", error);
+  //     }
+  //   );
+  // };
+  // useEffect(() => {
+  //   if (session) {
+  //     connectAndSubscribe();
+  //   }
+  // }, [session]);
+  const socket = new SockJS(GLOBAL_URL + "/friend");
+  const stompClient = Stomp.over(socket);
+  const [snackbar3Open, setSnackbar3Open] = useState(false);
+  const [checkRelationship, setCheckRelationship] = useState(false);
+  const showSnackbar3 = () => {
+    setSnackbar3Open(true);
+    setTimeout(() => setSnackbar3Open(false), 10000);
+  };
+  const handsenddAddfriend = async (UserId: string) => {
+    try {
+      const apiResult = await sendAddfriend(UserId);
+      console.log("test Result: " + apiResult);
+      if (apiResult === true) {
+        setCheckRelationship(true);
+        showSnackbar3();
+        // setListDataUserSuitable(
+        //   listDataUserSuitable?.map((t) => {
+        //     if (t.userId == UserId) {
+        //       return { ...t, sendStatus: true };
+        //     }
+        //     return t;
+        //   })
+        // );
+        const relation: RelationNotificationDTO = {
+          userAction: session.user.userId,
+          userReceive: UserId,
+          createDate: new Date(),
+          typeRelation: false,
+        };
+        stompClient.send(
+          `${GLOBAL_SEND_FRIEND}/${UserId}`,
+          {},
+          JSON.stringify(relation)
+        );
+        // console.log(listUserSuitable);
+      } else {
+        // Xử lý khi có lỗi trong cuộc gọi API
+        console.error("Match request failed.");
+      }
+    } catch (error) {
+      console.error("Error sending match:", error);
+    }
+  };
+
+  const [snackbar2Open, setSnackbar2Open] = useState(false);
+  const [snackbar5Open, setSnackbar5Open] = useState(false);
+  const showSnackbar2 = () => {
+    setSnackbar2Open(true);
+    setTimeout(() => setSnackbar2Open(false), 10000);
+  };
+  const showSnackbar5 = () => {
+    setSnackbar5Open(true);
+    setTimeout(() => setSnackbar5Open(false), 10000);
+  };
+
+  const refusedAddfriend = async (
+    UserId: string,
+    status: number
+  ): Promise<boolean> => {
+    try {
+      // Thực hiện cuộc gọi API ở đây
+      const response = await fetch(
+        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}?status=${status}`,
+        {
+          method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
+          headers: {
+            authorization: `Bearer ${session?.access_token}`,
+          },
+          // Các tùy chọn khác nếu cần
+        }
+      );
+      console.log(response);
+      // Xử lý kết quả
+      const data = await response.json();
+
+      return data; // Giả sử API trả về một trường success kiểu boolean
+    } catch (error) {
+      console.error("Error sending match:", error);
+      return false; // Trả về false nếu có lỗi
+    }
+  };
+  const handlerefusedAddfriend = async (
+    UserId: string,
+    type: boolean,
+    status: number
+  ) => {
+    try {
+      const apiResult = await refusedAddfriend(UserId, status);
+
+      console.log("test Result" + apiResult);
+      if (apiResult === true) {
+        setCheckRelationship(false);
+        if (type) {
+          showSnackbar2();
+        } else {
+          showSnackbar5();
+        }
+      } else {
+        console.log("Match request failed.");
+      }
+    } catch (error) {
+      console.error("Error sending match:", error);
+    }
+  };
+
+  useEffect(() => {
+    setPreviewBgImg(dataProfile?.backgroundImageUrl);
+    setCheckRelationship(
+      dataProfile?.status == -1
+        ? false
+        : dataProfile?.status == 0
+        ? false
+        : true
+    );
+  }, [dataProfile]);
+
+  const [openFriend, setOpenFriend] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
+
+  const handleToggleFriend = () => {
+    setOpenFriend((prevOpen) => !prevOpen);
+  };
+
+  const handleCloseFriend = (event: Event | React.SyntheticEvent) => {
+    if (
+      anchorRef.current &&
+      anchorRef.current.contains(event.target as HTMLElement)
+    ) {
+      return;
+    }
+    setOpenFriend(false);
+  };
+  function handleListKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setOpenFriend(false);
+    } else if (event.key === "Escape") {
+      setOpenFriend(false);
+    }
+  }
+
+  // modal loading
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+
+  //xử lý mở modal loading
+  const handleClickOpenModalUpdate = () => {
+    setOpenModalUpdate(true);
+  };
+
+  //xử lý đóng modal loading
+  const handleCloseModalUpdate = () => {
+    setOpenModalUpdate(false);
   };
   return (
     <Box sx={{ flexGrow: 1, background: "#ffffff" }}>
@@ -570,73 +913,75 @@ const HomeProfile = ({ session }: IPros) => {
         >
           {previewBgImg && <img src={previewBgImg} />}
 
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: { xs: "auto", sm: "12px" },
-              top: { xs: "12px", sm: "auto" },
-              right: "12px",
-            }}
-          >
-            {!selectedBgImg && (
-              <Button
-                component="label"
-                role={undefined}
-                variant="contained"
-                tabIndex={-1}
-                startIcon={<EditIcon />}
-                sx={{
-                  backgroundColor: "white",
-                  boxShadow: "none",
-                  color: "#453c3c",
-                  "&:hover": {
-                    backgroundColor: "#cfcbcb",
-                    outline: "none",
-                    border: "none",
-                  },
-                }}
-              >
-                <VisuallyHiddenInput
-                  type="file"
-                  onChange={onSelectBgImg}
-                  accept="image/*"
-                />
-                Thay đổi ảnh bìa
-              </Button>
-            )}
-            {selectedBgImg && (
-              <Box
-                sx={{
-                  display: "flex",
-                }}
-              >
+          {!searchId && (
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: { xs: "auto", sm: "12px" },
+                top: { xs: "12px", sm: "auto" },
+                right: "12px",
+              }}
+            >
+              {!selectedBgImg && (
                 <Button
+                  component="label"
+                  role={undefined}
                   variant="contained"
+                  tabIndex={-1}
+                  startIcon={<EditIcon />}
                   sx={{
-                    mx: 1,
-                    bgcolor: "#787676",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "#787878",
-                      boxShadow: "none",
-                    },
+                    backgroundColor: "white",
                     boxShadow: "none",
+                    color: "#453c3c",
+                    "&:hover": {
+                      backgroundColor: "#cfcbcb",
+                      outline: "none",
+                      border: "none",
+                    },
                   }}
-                  onClick={handleCancelBgImg}
                 >
-                  Hủy
+                  <VisuallyHiddenInput
+                    type="file"
+                    onChange={onSelectBgImg}
+                    accept="image/*"
+                  />
+                  Thay đổi ảnh bìa
                 </Button>
-                <Button
-                  variant="contained"
-                  sx={{ mx: 1 }}
-                  color="primary"
-                  onClick={handleSaveBgImg}
+              )}
+              {selectedBgImg && (
+                <Box
+                  sx={{
+                    display: "flex",
+                  }}
                 >
-                  Lưu
-                </Button>
-              </Box>
-            )}
-          </Box>
+                  <Button
+                    variant="contained"
+                    sx={{
+                      mx: 1,
+                      bgcolor: "#787676",
+                      color: "white",
+                      "&:hover": {
+                        bgcolor: "#787878",
+                        boxShadow: "none",
+                      },
+                      boxShadow: "none",
+                    }}
+                    onClick={handleCancelBgImg}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    variant="contained"
+                    sx={{ mx: 1 }}
+                    color="primary"
+                    onClick={handleSaveBgImg}
+                  >
+                    Lưu
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
         </Box>
       </Box>
 
@@ -662,7 +1007,7 @@ const HomeProfile = ({ session }: IPros) => {
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: { xs: "center", sm: "flex-end" },
-            alignItems: { xs: "center", sm: "flex-end" },
+            alignItems: { xs: "center", sm: "center" },
             "& img": { width: "125px", height: "125px", borderRadius: "50%" },
           }}
         >
@@ -686,6 +1031,7 @@ const HomeProfile = ({ session }: IPros) => {
               display: "flex",
               flexDirection: "column",
               marginLeft: "12px",
+              // marginTop: "18px",
               justifyContent: { xs: "center", sm: "flex-start" },
               alignItems: { xs: "center", sm: "flex-start" },
             }}
@@ -696,11 +1042,135 @@ const HomeProfile = ({ session }: IPros) => {
             >
               {deleteSpace(fullname)}
             </Typography>
-            <Typography component={"p"}>{/* 1.2K Friends */} </Typography>
+            {/* <Typography component={"p"}>1.2K Friends </Typography> */}
           </Box>
         </Box>
-      </Box>
+        {searchId && (dataProfile?.status == -1 || dataProfile?.status == 0) ? (
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {!checkRelationship && (
+              <Button
+                color="primary"
+                variant="outlined"
+                onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+              >
+                Thêm bạn bè
+              </Button>
+            )}
+            {checkRelationship && (
+              <Button
+                color="primary"
+                variant="outlined"
+                onClick={() =>
+                  handlerefusedAddfriend(dataProfile?.userId, false, 0)
+                }
+              >
+                Hủy kết bạn
+              </Button>
+            )}
+          </Box>
+        ) : (
+          searchId &&
+          dataProfile?.status == 1 && (
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              {!checkRelationship && (
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  onClick={() => handsenddAddfriend(dataProfile?.userId!)}
+                >
+                  Thêm bạn bè
+                </Button>
+              )}
+              {checkRelationship && (
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  ref={anchorRef}
+                  id="composition-button"
+                  aria-controls={openFriend ? "composition-menu" : undefined}
+                  aria-expanded={openFriend ? "true" : undefined}
+                  aria-haspopup="true"
+                  onClick={handleToggleFriend}
+                >
+                  Bạn bè
+                </Button>
+              )}
 
+              <Popper
+                open={openFriend}
+                anchorEl={anchorRef.current}
+                role={undefined}
+                placement="bottom-start"
+                transition
+                disablePortal
+              >
+                {({ TransitionProps, placement }) => (
+                  <Grow
+                    {...TransitionProps}
+                    style={{
+                      transformOrigin:
+                        placement === "bottom-start"
+                          ? "left top"
+                          : "left bottom",
+                    }}
+                  >
+                    <Paper>
+                      <ClickAwayListener onClickAway={handleCloseFriend}>
+                        <MenuList
+                          autoFocusItem={openFriend}
+                          id="composition-menu"
+                          aria-labelledby="composition-button"
+                          onKeyDown={handleListKeyDown}
+                        >
+                          <MenuItem
+                            onClick={(e) => {
+                              handlerefusedAddfriend(
+                                dataProfile?.userId,
+                                true,
+                                1
+                              );
+                              handleCloseFriend(e);
+                            }}
+                          >
+                            Hủy kết bạn
+                          </MenuItem>
+                        </MenuList>
+                      </ClickAwayListener>
+                    </Paper>
+                  </Grow>
+                )}
+              </Popper>
+            </Box>
+          )
+        )}
+      </Box>
+      <Snackbar
+        open={snackbar5Open}
+        message="Hủy gửi lời mời kết bạn!"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar5Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
+      <Snackbar
+        open={snackbar2Open}
+        message="Hủy kết bạn !"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar2Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
+      <Snackbar
+        open={snackbar3Open}
+        message="Gừi lời mời kết bạn thành công!"
+        autoHideDuration={3000}
+        onClose={() => setSnackbar3Open(false)}
+        sx={{
+          color: "black",
+        }}
+      />
       <Box
         sx={{
           width: "100%",
@@ -740,7 +1210,7 @@ const HomeProfile = ({ session }: IPros) => {
           <Box
             sx={{
               width: "100%",
-              backgroundColor: "#F0F2F5",
+              backgroundColor: "#FBFCFE",
               padding: "20px 0px",
             }}
           >
@@ -768,55 +1238,6 @@ const HomeProfile = ({ session }: IPros) => {
                 <Box
                   sx={{
                     borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 5fr",
-                    padding: "10px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      padding: "12px",
-                      borderRadius: "50%",
-                      backgroundColor: "#1771E6",
-                      width: "50px",
-                      height: "50px",
-                      color: "white",
-                    }}
-                  >
-                    <VpnKeyIcon />
-                  </Box>
-                  <Box
-                    sx={{
-                      "& h3": {
-                        fontSize: "15px",
-                        color: "#333",
-                        marginTop: "7px",
-                        marginLeft: "10px",
-                      },
-                      "& a": {
-                        textDecoration: "none",
-                        fontSize: "13px",
-                        marginLeft: "10px",
-                        marginTop: "2px",
-                        fontWeight: "bold",
-                        color: "#1771E6",
-                        "&hover": {
-                          textDecoration: "underline",
-                        },
-                      },
-                    }}
-                  >
-                    <h3>Khóa tài khoản của chính mình?</h3>
-                    <a href="#">Tìm hiểu thêm</a>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{
-                    borderRadius: "5px",
                     padding: "10px",
                     boxShadow: "0px 1px 2px #3335",
                     backgroundColor: "#fff",
@@ -839,93 +1260,32 @@ const HomeProfile = ({ session }: IPros) => {
                     sx={{
                       width: "100%",
                       paddingX: "16px",
+                      display: "flex",
                     }}
                   >
                     <Typography
                       component={"p"}
                       sx={{
+                        textWrap: "nowrap",
                         fontSize: "16px",
                         fontWeight: "bold",
-                        borderBottom: "1px solid #80808061",
                       }}
                     >
-                      Địa chỉ
+                      Địa chỉ:
                     </Typography>
-                    <Box
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
+                        marginLeft: "6px",
+                        fontSize: { xs: "16px", sm: "12px", md: "16px" },
                       }}
                     >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Tỉnh/TP:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.city ? dataProfile?.city : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Quận/Huyện:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.district ? dataProfile?.district : ""}
-                      </Typography>
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          fontSize: { xs: "13px", sm: "11px", md: "13px" },
-                        }}
-                      >
-                        Xã/Phường:
-                      </Box>
-                      <Typography
-                        component={"p"}
-                        sx={{
-                          marginLeft: "6px",
-                          fontWeight: "bold",
-                          fontSize: { xs: "16px", sm: "12px", md: "16px" },
-                        }}
-                      >
-                        {dataProfile?.ward ? dataProfile?.ward : ""}
-                      </Typography>
-                    </Box>
+                      {dataProfile?.ward ? dataProfile?.ward : ""}
+                      {dataProfile?.district
+                        ? `, ${dataProfile?.district}`
+                        : ""}
+                      {dataProfile?.city ? `, ${dataProfile?.city}` : ""}
+                    </Typography>
                   </Box>
 
                   <Box
@@ -939,47 +1299,76 @@ const HomeProfile = ({ session }: IPros) => {
                       sx={{
                         fontSize: "16px",
                         fontWeight: "bold",
-                        borderBottom: "1px solid #80808061",
                       }}
                     >
                       Quan tâm
                     </Typography>
-                    <Box
+                    <Typography
+                      component={"p"}
                       sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
+                        fontSize: "11px",
                       }}
                     >
-                      {dataProfile?.listDemandOfUser &&
-                        dataProfile?.listDemandOfUser?.map((item, index) => (
-                          <Box
-                            key={index}
-                            sx={{
-                              borderRadius: "20px",
-                              border: "1px solid gray",
-                              padding: "5px 16px",
-                              marginTop: "8px",
-                              marginX: "3px",
-                            }}
-                          >
-                            {item}
-                          </Box>
+                      (sắp xếp theo độ ưu tiên giảm dần)
+                    </Typography>
+                    <List
+                      sx={{
+                        width: "100%",
+                        maxWidth: 360,
+                        bgcolor: "background.paper",
+                        borderTop: "1px solid gray",
+                      }}
+                    >
+                      {demandOfUserLogin &&
+                        demandOfUserLogin?.map((demandOfUser, index) => (
+                          <ListItem key={index} sx={{ paddingX: "0" }}>
+                            <Typography sx={{ marginRight: "6px" }}>
+                              {`${index + 1}. `}
+                            </Typography>
+                            <ListItemText
+                              primary={demandOfUser?.programingLanguage}
+                            />
+
+                            {demandOfUserLogin?.length > 3
+                              ? index < 3 && (
+                                  // <Avatar>
+                                  <Image
+                                    src="/priority.png"
+                                    width={20}
+                                    height={20}
+                                    alt="Ưu tiên"
+                                  />
+                                  // </Avatar>
+                                )
+                              : index < 1 && (
+                                  // <Avatar>
+                                  <Image
+                                    src="/priority.png"
+                                    width={20}
+                                    height={20}
+                                    alt="Ưu tiên"
+                                  />
+                                  // </Avatar>
+                                )}
+                          </ListItem>
                         ))}
-                    </Box>
+                    </List>
                   </Box>
 
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      width: "100%",
-                      fontWeight: "bold",
-                      color: "#000",
-                      marginTop: "16px",
-                    }}
-                    onClick={handleOpen}
-                  >
-                    Cập nhật thông tin
-                  </Button>
+                  {!searchId && (
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        width: "100%",
+                        fontWeight: "bold",
+                        color: "#000",
+                        marginTop: "16px",
+                      }}
+                      onClick={handleOpen}
+                    >
+                      Cập nhật thông tin
+                    </Button>
+                  )}
                   <Dialog
                     fullScreen={fullScreen}
                     open={open}
@@ -1059,6 +1448,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-first-name"
                             autoFocus
                             value={data?.firstName}
+                            error={errorFirstName}
+                            helperText={messageFirstName}
                             sx={{
                               marginBottom: "0",
                             }}
@@ -1112,6 +1503,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-last-name"
                             autoFocus
                             value={data?.lastName}
+                            error={errorLastName}
+                            helperText={messageLastName}
                             sx={{ marginBottom: "0" }}
                           />
                         </Grid>
@@ -1149,6 +1542,8 @@ const HomeProfile = ({ session }: IPros) => {
                             autoComplete="new-date-of-birth"
                             autoFocus
                             value={formatBirthDay(data?.birthday)}
+                            error={errorDateOfBirth}
+                            helperText={messageDateOfBirth}
                             sx={{
                               marginBottom: "0",
                               "& input": {
@@ -1186,11 +1581,6 @@ const HomeProfile = ({ session }: IPros) => {
                                 control={<Radio />}
                                 label="Nữ"
                               />
-                              <FormControlLabel
-                                value="3"
-                                control={<Radio />}
-                                label="Khác"
-                              />
                             </RadioGroup>
                           </FormControl>
                         </Grid>
@@ -1204,6 +1594,8 @@ const HomeProfile = ({ session }: IPros) => {
                         handleListDemandOfUser={handleListDemandOfUser}
                         handleListSkillOfUser={handleListSkillOfUser}
                         data={data}
+                        errorDemand={errorDemand}
+                        messageDemand={messageDemand}
                       />
                       <Box sx={{ padding: "16px 0" }}>
                         <Divider />
@@ -1329,7 +1721,7 @@ const HomeProfile = ({ session }: IPros) => {
                         <Divider />
                       </Box>
                     </DialogContent>
-                    <DialogActions>
+                    <DialogActions sx={{ marginRight: "16px" }}>
                       <Button
                         autoFocus
                         variant="outlined"
@@ -1650,6 +2042,7 @@ const HomeProfile = ({ session }: IPros) => {
           </Button>
         </DialogActions>
       </BootstrapDialog>
+      <ProcessingLoading open={openModalUpdate} textContent="Đang cập nhật" />
     </Box>
   );
 };

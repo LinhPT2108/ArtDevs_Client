@@ -149,6 +149,7 @@ declare global {
     birthday: string;
     profileImageUrl: string;
     gender: number;
+    status?: number;
     listDemandOfUser?: string[];
     listSkillOfUser?: string[];
     listMethod?: any;
@@ -206,11 +207,16 @@ declare global {
   }
 
   interface ResPost {
-    id: number;
+    id: string;
     typePost: string;
-    fullname: string;
+    userPostDto: UserPost;
     content: string;
     postId: Post;
+    timeCreate: string;
+    totalLike: number;
+    totalComment: number;
+    likeByUserLogged: boolean;
+    isProcessingLike: boolean | undefined;
   }
 
   interface Post {
@@ -301,10 +307,10 @@ declare global {
     timeCreate: string;
     isDel: Boolean;
   }
-  interface ReponseHashtagInfor{
+  interface ReponseHashtagInfor {
     statusCode: number;
-      message: string;
-      model: HashtagInfor;
+    message: string;
+    model: HashtagInfor;
   }
   // interface CommentToPostDTO {
   //   content: string;
@@ -432,6 +438,11 @@ declare global {
     message: string;
     model: MyLanguageProgram[];
   }
+  interface ReponseFeedbackFormAdmin {
+    statusCode: number;
+    message: string;
+    model: FeedbackDTO[];
+  }
   interface RequestUserUpdateFormAdmin {
     statusCode: number;
     message: string;
@@ -443,13 +454,26 @@ declare global {
     message: string;
     model: AccountListDTO;
   }
-
+  interface ReponseCountAllUserFormAdmin {
+    statusCode: number;
+    message: string;
+    model: CountAccountDTO;
+  }
+  interface CountAccountDTO {
+    listBand: number;
+    listMentor: number;
+    listUser: number;
+    listNewMentor: number;
+    listAllAccount: number;
+    listNewUser: number;
+    listAdmin: number;
+  }
   interface ReponseReportFormAdmin {
     statusCode: number;
     message: string;
     model: ReportListDTO;
   }
-  
+
   interface ReportListDTO {
     listNewReport: Report[];
     listReport: Report[];
@@ -471,8 +495,7 @@ declare global {
     listAllAccount: UserFormAdminDTO[];
     listMentor: UserFormAdminDTO[];
     listUser: UserFormAdminDTO[];
-    listNewMentor: UserFormAdminDTO[];
-    listNewUser: UserFormAdminDTO[];
+    listAdmin: UserFormAdminDTO[];
   }
 
   interface UserFormAdminDTO {
@@ -504,11 +527,29 @@ declare global {
     status: boolean;
     user: UserLogin;
     listImage: File[] | null;
+    type: string;
   }
   interface ImageofFeedback {
     id: number;
     cloudinaryPublicId: string;
     imageOfFeedbackUrl: string;
     time: string;
+  }
+  interface Demand {
+    id: number;
+    description: string;
+    desiredTime: string;
+    priority: number;
+    programingLanguage: string;
+  }
+  interface FeedbackDTO {
+    id: number;
+    title: string;
+    content: string;
+    createFeedback: Date;
+    dateHandle: Date | null;
+    status: boolean;
+    userId: string;
+    listImage: ImageofFeedback[] | null;
   }
 }

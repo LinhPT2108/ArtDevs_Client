@@ -4,6 +4,7 @@ import Footer from "@/components/admin/footer/Footer";
 import SidebarProvider from "@/providers/SidebarProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import NextAuthWrapper from "@/lib/next.auth.provider";
 
 export default async function DashboardLayout({
   children, // will be a page or nested layout
@@ -23,15 +24,17 @@ export default async function DashboardLayout({
             <main className="mx-[12px] h-full flex-none transition-all md:pr-2 xl:ml-[313px]">
               {/* Routes */}
               <div className="h-full">
-                <Navbar session={session} />
+                <NextAuthWrapper>
+                  <Navbar session={session} />
 
-                <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
-                  {children}
-                </div>
+                  <div className="pt-5s mx-auto mb-auto h-full min-h-[84vh] p-2 md:pr-2">
+                    {children}
+                  </div>
 
-                <div className="p-3">
-                  <Footer />
-                </div>
+                  <div className="p-3">
+                    <Footer />
+                  </div>
+                </NextAuthWrapper>
               </div>
             </main>
           </div>

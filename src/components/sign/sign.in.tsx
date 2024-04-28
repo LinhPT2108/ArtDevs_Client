@@ -1,7 +1,6 @@
 "use client";
 import { useUser } from "@/lib/custom.content";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import FacebookOutlinedIcon from "@mui/icons-material/FacebookOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import GoogleIcon from "@mui/icons-material/Google";
 import {
@@ -25,9 +24,8 @@ import Snowfall from "react-snowfall";
 import "../../style/loading.css";
 import { CubeSpan } from "../utils/component.global";
 
+import Image2 from "next/image";
 import ForgotPassword from "./sign.forgotpasswork";
-import { GLOBAL_URL } from "../utils/veriable.global";
-import { sendRequest } from "../utils/api";
 
 interface State extends SnackbarOrigin {
   open: boolean;
@@ -220,15 +218,27 @@ const SignIn = () => {
                   marginTop: { xs: 0, md: "32px" },
                   marginBottom: { xs: "6px", sm: "16px" },
                   fontWeight: 700,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
                   "& a": {
-                    color: "#0766FF",
+                    color: "#0241a7",
                     textDecoration: "none",
+                    verticalAlign: "middle",
                     "&:hover": {
                       color: "#0045b5",
                     },
                   },
                 }}
               >
+                <Link href="/">
+                  <Image2
+                    src={"/Art_Devs_aboutFooter.png"}
+                    width={100}
+                    height={100}
+                    alt="Art_Devs_aboutFooter"
+                  />
+                </Link>
                 <Link href="/">Art Devs</Link>
               </Typography>
               <Typography
@@ -389,54 +399,6 @@ const SignIn = () => {
                 }}
                 columns={8}
               >
-                <Box
-                  component={Grid}
-                  item
-                  xs={8}
-                  sx={{
-                    marginTop: "12px",
-                    paddingLeft: "0",
-                    display: "flex",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Link
-                    sx={{
-                      width: "305px",
-                      backgroundColor: "#3A5793",
-                      fontSize: "16px",
-                      textDecoration: "none",
-                      color: "#ffffff",
-                      fontWeight: "700",
-                      display: "flex",
-                      padding: "6px 8px",
-                      transition: "all 0.25s linear",
-                      cursor: "pointer",
-                      borderRadius: "6px",
-                      "&:hover": {
-                        backgroundColor: "#283e68",
-                      },
-                    }}
-                  >
-                    <FacebookOutlinedIcon
-                      sx={{
-                        fontSize: "32px",
-                        color: "#3A5793",
-                        backgroundColor: "#ffffff",
-                        borderRadius: "100%",
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        margin: "0 6px 0 12px",
-                        lineHeight: 1.9,
-                        userSelect: "none",
-                      }}
-                    >
-                      ĐĂNG NHẬP VỚI FACEBOOK
-                    </Box>
-                  </Link>
-                </Box>
                 <Box
                   component={Grid}
                   item

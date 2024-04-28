@@ -18,6 +18,7 @@ import {
   CardMedia,
   Dialog,
   DialogContent,
+  DialogContentText,
   IconButton,
   makeStyles,
   styled,
@@ -27,7 +28,6 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import ClearIcon from "@mui/icons-material/Clear";
 import "../../style/loading.css";
-
 const FadeInImage = styled("img")({
   animation: "fadeIn 0.5s ease-in-out",
   "@keyframes fadeIn": {
@@ -274,6 +274,12 @@ export const ImageReplyViewerEdit: React.FC<ImageReplyViewerEditProps> = ({
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogActions from "@mui/material/DialogActions";
 import Typography from "@mui/material/Typography";
+import {
+  GLOBAL_BG_BLUE_300,
+  GLOBAL_BG_BLUE_900,
+  GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_WHITE,
+} from "./veriable.global";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -363,5 +369,43 @@ export const Loader = () => {
         <div className="loading-bar"></div>
       </div>
     </Box>
+  );
+};
+
+interface MyProcessingLoading {
+  open: boolean;
+  textContent?: string;
+}
+
+export const ProcessingLoading = ({
+  open,
+  textContent,
+}: MyProcessingLoading) => {
+  return (
+    <Dialog
+      open={open}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+      sx={{
+        "& .MuiPaper-root": {
+          borderRadius: "12px",
+        },
+      }}
+    >
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          <Loader />
+          <Typography
+            sx={{
+              textAlign: "center",
+              fontWeight: "bold",
+              marginTop: "12px ",
+            }}
+          >
+            {textContent}
+          </Typography>
+        </DialogContentText>
+      </DialogContent>
+    </Dialog>
   );
 };

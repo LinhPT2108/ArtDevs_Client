@@ -3,8 +3,7 @@ import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Button from "@mui/material/Button";
-import { ButtonGroup, CardMedia, Container } from "@mui/material";
-import Link from "next/link";
+import { ButtonGroup, CardMedia, Container, Link } from "@mui/material";
 import IntroAbout from "./about.intro";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -36,7 +35,7 @@ const About = () => {
                 <CardMedia
                   sx={{ width: { xs: "60px", sm: "100px" } }}
                   component="img"
-                  image="/Art_Devs_y-removebg-preview.png"
+                  image="/Art_Devs_aboutFooter.png"
                   alt="logo"
                 />
               </Link>

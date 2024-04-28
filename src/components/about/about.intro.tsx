@@ -70,17 +70,15 @@ const IntroAbout = () => {
               alignItems: "center",
             }}
           >
-            <Box
+            <Button
               sx={{
                 backgroundColor: "#DF6312",
-                padding: "6px 16px",
                 marginX: "6px",
-                color: GLOBAL_COLOR_WHITE,
-                cursor: "pointer",
                 borderRadius: "30px",
+                padding: "6px 16px",
+                color: GLOBAL_COLOR_WHITE,
                 fontWeight: 700,
                 marginY: { xs: "6px", sm: 0 },
-                width: "160px",
                 transition: "box-shadow .25s ease,transform .25s ease",
                 "&:hover": {
                   backgroundColor: "#af4e0f",
@@ -89,7 +87,7 @@ const IntroAbout = () => {
               }}
             >
               Tìm hiểu thêm ...
-            </Box>
+            </Button>
             <Box
               sx={{
                 backgroundColor: "#E63C43",

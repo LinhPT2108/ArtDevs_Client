@@ -75,6 +75,7 @@ export default function HomeFeedback({ session }: IPros) {
     status: false,
     user: session?.user,
     listImage: null,
+    type: "feedback",
   });
 
   //xử lý thay đổi tiêu đề góp ý
@@ -107,21 +108,6 @@ export default function HomeFeedback({ session }: IPros) {
     }
   };
 
-  //xử lý thay đổi file
-  const handleChangePictureFeedback = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const fileInput = event.target as HTMLInputElement;
-    const selected = fileInput.files;
-    setDataFeedback((prevData) => ({
-      ...prevData,
-      listImage: [
-        ...(prevData.listImage || []),
-        ...(selected ? Array.from(selected) : []),
-      ] as File[],
-    }));
-  };
-
   //xử lý gửi ý kiến
   const handleSendFeedback = async () => {
     if (dataFeedback?.title && dataFeedback?.content) {
@@ -136,14 +122,15 @@ export default function HomeFeedback({ session }: IPros) {
               title: dataFeedback?.title,
               content: dataFeedback?.content,
               status: dataFeedback?.status,
+              type: dataFeedback?.type,
             }),
           ],
           { type: "application/json" }
         )
       );
 
-      if (dataFeedback.listImage) {
-        dataFeedback.listImage.forEach((file: any, index: any) => {
+      if (selectedFiles) {
+        selectedFiles.forEach((file: any, index: any) => {
           formData.append("listImage", file);
         });
       } else {
@@ -158,6 +145,19 @@ export default function HomeFeedback({ session }: IPros) {
       if (response?.status == 200) {
         const data = await response.json();
         console.log("Data from response:", data);
+        setDataFeedback({
+          id: 0,
+          title: "",
+          content: "",
+          createFeedback: new Date(),
+          dateHandle: null,
+          status: false,
+          user: session?.user,
+          listImage: null,
+          type: "feedback",
+        });
+
+        setSelectedFiles([]);
         handleClickOpenConfirm();
       } else {
         //@ts-ignore
@@ -247,6 +247,7 @@ export default function HomeFeedback({ session }: IPros) {
               type="text"
               variant="filled"
               autoComplete="off"
+              value={dataFeedback?.title}
               error={errorTitle}
               helperText={messageTitle}
               fullWidth
@@ -292,6 +293,7 @@ export default function HomeFeedback({ session }: IPros) {
               hiddenLabel
               multiline
               fullWidth
+              value={dataFeedback?.content}
               maxRows={6}
               variant="outlined"
               error={errorContent}
@@ -336,7 +338,15 @@ export default function HomeFeedback({ session }: IPros) {
                 },
               }}
             >
-              <InputLabel htmlFor="file">
+              <InputLabel
+                htmlFor="file"
+                sx={{
+                  backgroundColor: "#315ca1",
+                  color: "white",
+                  padding: "6px",
+                  borderRadius: "12px",
+                }}
+              >
                 <AttachFileIcon /> Thêm video hoặc ảnh chụp màn hình (đề xuất)
               </InputLabel>
               <input

@@ -1,4 +1,4 @@
-import { Box, Grid } from "@mui/material";
+import { Box, Grid, Typography } from "@mui/material";
 import Checkbox from "@mui/material/Checkbox";
 import TextField from "@mui/material/TextField";
 import Autocomplete from "@mui/material/Autocomplete";
@@ -15,10 +15,14 @@ interface IProps {
   handleListDemandOfUser: (value: MyLanguageProgram[]) => void;
   handleListSkillOfUser: (value: MyLanguageProgram[]) => void;
   data: UserRegister | UserLogin;
+  messageDemand: string;
+  errorDemand: boolean;
 }
 
 const KnowlegdeSign = (props: IProps) => {
   const {
+    errorDemand,
+    messageDemand,
     programingLanguage,
     role,
     handleListDemandOfUser,
@@ -39,6 +43,7 @@ const KnowlegdeSign = (props: IProps) => {
     setSelectedTopics(value);
     if (role.roleName === "user") {
       handleListDemandOfUser(value);
+      console.log(">>> check value: ", value);
       handleListSkillOfUser([]);
     } else {
       handleListDemandOfUser([]);
@@ -48,8 +53,33 @@ const KnowlegdeSign = (props: IProps) => {
 
   return (
     <Box>
-      <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
+      <Box
+        sx={{
+          fontWeight: 700,
+          fontSize: { xs: 18, sm: 24 },
+          marginBottom: "12px",
+        }}
+      >
         Chọn chủ đề bạn quan tâm
+        <Typography
+          component={"p"}
+          sx={{
+            fontSize: "14px",
+          }}
+        >
+          (sắp xếp theo độ ưu tiên giảm dần)
+        </Typography>
+        {errorDemand && (
+          <Typography
+            component={"p"}
+            sx={{
+              fontSize: "14px",
+              color: "red",
+            }}
+          >
+            {messageDemand}
+          </Typography>
+        )}
       </Box>
       <Grid columns={2} spacing={2} container>
         <Grid item xs={2}>

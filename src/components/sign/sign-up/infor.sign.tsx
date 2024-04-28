@@ -51,6 +51,8 @@ interface IPros {
   setIsErrorEmailExist: (value: boolean) => void;
   emailExist: string;
   setEmailExist: (value: string) => void;
+  errorDateOfBirth: boolean;
+  messageDateOfBirth: string;
 }
 const InforSign = (props: IPros) => {
   const {
@@ -84,6 +86,8 @@ const InforSign = (props: IPros) => {
     setIsErrorEmailExist,
     emailExist,
     setEmailExist,
+    messageDateOfBirth,
+    errorDateOfBirth,
   } = props;
   const { provinces, districts, wards } = address;
 
@@ -446,6 +450,8 @@ const InforSign = (props: IPros) => {
                 name="date-of-birth"
                 autoComplete="new-date-of-birth"
                 autoFocus
+                error={errorDateOfBirth}
+                helperText={messageDateOfBirth}
                 value={data?.birthday}
                 // error={}
                 sx={{

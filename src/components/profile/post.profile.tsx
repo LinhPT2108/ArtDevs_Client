@@ -14,8 +14,15 @@ import ShareIcon from "@mui/icons-material/Share";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
+import ImageViewer2 from "react-simple-image-viewer";
 import * as nsfwjs from "nsfwjs";
 import { badWords, blackList } from "vn-badwords";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/free-mode";
+import "swiper/css/pagination";
+import "swiper/css";
+import { FreeMode, Pagination } from "swiper/modules";
 import {
   Alert,
   AppBar,
@@ -41,6 +48,8 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  ImageList,
+  ImageListItem,
   LinearProgress,
   ListItemIcon,
   Modal,
@@ -55,6 +64,7 @@ import {
   Typography,
   Zoom,
   styled,
+  useTheme,
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Input from "@mui/material/Input";
@@ -65,7 +75,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { red } from "@mui/material/colors";
 import { TransitionProps } from "@mui/material/transitions";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
@@ -94,6 +104,7 @@ import {
   GLOBAL_BOXSHADOW,
   GLOBAL_COLOR_BLACK,
   GLOBAL_COLOR_MENU,
+  GLOBAL_COLOR_WHITE,
   GLOBAL_DELETE_COMMENT_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_NOTIFI,
@@ -106,8 +117,9 @@ import {
 } from "../utils/veriable.global";
 import SockJS from "sockjs-client";
 import Stomp from "stompjs";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import InfiniteScroll from "../hash-tag/Infinite.scroll";
+import PostSkeleton from "../posts/post.skeleton";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -237,18 +249,23 @@ interface IPros {
   search?: string;
   friendPost?: string;
 }
-
+const socket = new SockJS("http://localhost:8080/wss");
+const stompClient = Stomp.over(socket);
 const PostProfile = ({
   session,
   hashTagText,
+  sessionGuest,
   profile,
   search,
   friendPost,
 }: IPros) => {
-  const socket = new SockJS(GLOBAL_URL + GLOBAL_URL_SOCKET);
-  const stompClient = Stomp.over(socket);
   //tạo biến xử lý modal report
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [anchorEl, setAnchorEl] = React.useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+
+  const [open2, setOpen2] = React.useState([]);
+
   const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
     null
   );
@@ -265,14 +282,14 @@ const PostProfile = ({
   });
   let url = profile
     ? profile
-    : hashTagText
-    ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
-    : search
-    ? search
-    : friendPost
-    ? friendPost
-    : "/news-feed";
-
+    : // : hashTagText
+      // ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
+      // : search
+      // ? search
+      // : friendPost
+      // ? friendPost
+      "/news-feed";
+  console.log(">>> check url: ", url);
   const searchParams = useSearchParams();
 
   //get data bài đăng
@@ -299,22 +316,54 @@ const PostProfile = ({
     }
   );
 
+  useEffect(() => {
+    const handleChangeSession = async () => {
+      console.log(">>> check url1111: ", url);
+      const newData = await sendRequest<IModelPaginate<ResPost>>({
+        url: GLOBAL_URL + "/api" + url,
+        method: "GET",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        queryParams: {
+          page: 0,
+          keyword: searchParams.get("keyword") as string,
+        },
+      });
+      newData && mutate(newData, true);
+    };
+    handleChangeSession();
+  }, [sessionGuest]);
   //xử lý thao tác xóa modal report
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
     id: string,
-    postModal: ResPost | null
+    postModal: ResPost | null,
+    index: number
   ) => {
-    setAnchorEl(event.currentTarget);
+    const newOpenArray = [...open2] as boolean[];
+    newOpenArray[index] = true;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = event.currentTarget;
+
+    setOpen2(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
     setSelectedItemId(id);
     setPostModal(postModal);
   };
-  const handleCloses = () => {
-    setAnchorEl(null);
+
+  const handleCloses = (index: number) => {
+    const newOpenArray = [...open2] as boolean[];
+    newOpenArray[index] = false;
+
+    const newAnchorEl = [...anchorEl];
+    newAnchorEl[index] = null;
+
+    setOpen2(newOpenArray as []);
+    setAnchorEl(newAnchorEl);
     setPostModal(null);
     setSelectedItemId(null);
   };
-  const handleDeletePost = async (postId: string | null) => {
+  const handleDeletePost = async (postId: string | null, ind: number) => {
     console.log(">>> check postID: ", postId);
     let res = await sendRequest<ResPost>({
       url: GLOBAL_URL + `/api/post/${postId}/hidden`,
@@ -337,7 +386,7 @@ const PostProfile = ({
         mutate(newData, false);
       }
     }
-    handleCloses();
+    handleCloses(ind);
   };
   //tạo biến xử lý modal privacy
   const [anchorEls, setAnchorEls] = React.useState<Array<null | HTMLElement>>(
@@ -374,7 +423,8 @@ const PostProfile = ({
     // const newAnchorEls = [...anchorEls];
     // newAnchorEls[index] = null;
     // setAnchorEls(newAnchorEls);
-    setAnchorEl(null);
+
+    setAnchorEl([]);
     setSelectedItemId(null);
     setPostModal(null);
   };
@@ -1167,125 +1217,225 @@ const PostProfile = ({
   // );
 
   const handleLike = async (
-    postId: string,
-    post: ResPost,
-    isDataLoading: boolean
+    entityId: string,
+    item: ResPost,
+    isShare: boolean
   ) => {
-    await setPosts(
-      posts.map((resPost) => {
-        if (resPost?.postId?.postId === postId) {
-          return {
-            ...resPost,
-            postId: {
-              ...resPost.postId,
-              likeByUserLogged: true,
-              totalLike: resPost.postId.totalLike + 1,
+    if (isShare) {
+      console.log("shareId: ", entityId);
+
+      await setPosts(
+        posts.map((resPost) => {
+          if (resPost?.id === entityId) {
+            return {
+              ...resPost,
               isProcessingLike: true,
-            },
-          };
-        }
-        return resPost;
-      })
-    );
-    try {
-      const response = await sendRequest({
-        url: GLOBAL_URL + "/api/like/" + postId,
-        method: "POST",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-      });
-      console.log(response);
-      if (response) {
-        setPosts(
-          posts.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  postId: {
-                    ...resPost.postId,
-                    likeByUserLogged: true,
-                    totalLike: resPost.postId.totalLike + 1,
+              likeByUserLogged: true,
+              totalLike: resPost.totalLike + 1,
+            };
+          }
+          return resPost;
+        })
+      );
+      try {
+        const response = await sendRequest({
+          url: GLOBAL_URL + "/api/share/like/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.id == entityId
+                ? {
+                    ...resPost,
                     isProcessingLike: false,
-                  },
-                }
-              : resPost
-          )
-        );
-        console.log(data);
-        if (session?.user?.userId !== post?.postId?.userPost?.userId) {
-          const notificationToPostDTO: notificationToPostDTO = {
-            message: "like",
-            receiverId: `${post?.postId?.userPost.userId}`,
-            senderId: session?.user?.userId,
-            postId: post?.postId?.postId,
-            shareId: "",
-            type: "post",
-          };
-          stompClient.send(
-            `${GLOBAL_NOTIFI}/${post?.postId?.userPost?.userId}`,
-            {},
-            JSON.stringify(notificationToPostDTO)
+                    likeByUserLogged: true,
+                    totalLike: resPost.totalLike + 1,
+                  }
+                : resPost
+            )
           );
+          console.log(data);
+          if (session?.user?.userId != item?.userPostDto.userId) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "likeShare",
+              receiverId: `${item?.userPostDto.userId}`,
+              senderId: session?.user?.userId,
+              postId: "",
+              shareId: entityId,
+              type: "share",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${item?.userPostDto.userId}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          console.log("something wrong");
         }
-      } else {
-        console.log("something wrong");
+      } catch (error) {
+        console.error("Error during API call:", error);
       }
-    } catch (error) {
-      console.error("Error during API call:", error);
-    }
-  };
-
-  const handleUnlike = async (postId: string, isDataLoading: boolean) => {
-    console.log("unlike: " + postId);
-
-    setPosts(
-      posts.map((resPost) =>
-        resPost?.postId?.postId === postId
-          ? {
+    } else {
+      await setPosts(
+        posts.map((resPost) => {
+          if (resPost?.postId?.postId === entityId) {
+            return {
               ...resPost,
               postId: {
                 ...resPost.postId,
+                likeByUserLogged: true,
+                totalLike: resPost.postId.totalLike + 1,
+                isProcessingLike: true,
+              },
+            };
+          }
+          return resPost;
+        })
+      );
+      try {
+        const response = await sendRequest({
+          url: GLOBAL_URL + "/api/like/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.postId?.postId === entityId
+                ? {
+                    ...resPost,
+                    postId: {
+                      ...resPost.postId,
+                      likeByUserLogged: true,
+                      totalLike: resPost.postId.totalLike + 1,
+                      isProcessingLike: false,
+                    },
+                  }
+                : resPost
+            )
+          );
+          console.log(data);
+          if (session?.user?.userId !== item?.postId?.userPost?.userId) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "like",
+              receiverId: `${item?.postId?.userPost.userId}`,
+              senderId: session?.user?.userId,
+              postId: item?.postId?.postId,
+              shareId: "",
+              type: "post",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${item?.postId?.userPost?.userId}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+      }
+    }
+  };
+
+  const handleUnlike = async (entityId: string, isShare: boolean) => {
+    console.log("unlike: " + entityId);
+    if (isShare) {
+      setPosts(
+        posts.map((resPost) =>
+          resPost?.id == entityId
+            ? {
+                ...resPost,
                 likeByUserLogged: false,
                 totalLike: resPost.postId.totalLike - 1,
                 isProcessingLike: true,
-              },
-            }
-          : resPost
-      )
-    );
+              }
+            : resPost
+        )
+      );
+      try {
+        const response = await sendRequest<Post[]>({
+          url: GLOBAL_URL + "/api/share/unlike/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
 
-    try {
-      const response = await sendRequest<Post[]>({
-        url: GLOBAL_URL + "/api/unlike/" + postId,
-        method: "POST",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-      });
-
-      console.log(response);
-      if (response) {
-        // Kết thúc xử lý API cho bài viết này
-
-        setPosts(
-          posts.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  postId: {
-                    ...resPost.postId,
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.id == entityId
+                ? {
+                    ...resPost,
                     likeByUserLogged: false,
                     totalLike: resPost.postId.totalLike - 1,
                     isProcessingLike: false,
-                  },
-                }
-              : resPost
-          )
-        );
+                  }
+                : resPost
+            )
+          );
 
-        console.log(data);
-      } else {
-        console.log("something wrong");
+          console.log(data);
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
       }
-    } catch (error) {
-      console.error("Error during API call:", error);
+    } else {
+      setPosts(
+        posts.map((resPost) =>
+          resPost?.postId?.postId === entityId
+            ? {
+                ...resPost,
+                postId: {
+                  ...resPost.postId,
+                  likeByUserLogged: false,
+                  totalLike: resPost.postId.totalLike - 1,
+                  isProcessingLike: true,
+                },
+              }
+            : resPost
+        )
+      );
+      try {
+        const response = await sendRequest<Post[]>({
+          url: GLOBAL_URL + "/api/share/unlike/" + entityId,
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+        });
+
+        console.log(response);
+        if (response) {
+          setPosts(
+            posts.map((resPost) =>
+              resPost?.postId?.postId === entityId
+                ? {
+                    ...resPost,
+                    postId: {
+                      ...resPost.postId,
+                      likeByUserLogged: false,
+                      totalLike: resPost.postId.totalLike - 1,
+                      isProcessingLike: false,
+                    },
+                  }
+                : resPost
+            )
+          );
+
+          console.log(data);
+        } else {
+          console.log("something wrong");
+        }
+      } catch (error) {
+        console.error("Error during API call:", error);
+      }
     }
   };
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
@@ -1441,11 +1591,15 @@ const PostProfile = ({
 
       if (response != false) {
         setComment((preData) => [response, ...preData]);
-        setFormDataComment({
-          content: "",
-          listImageofComment: null,
-          postToPost: "",
-        } as CommentToPostDTO);
+        setFormDataComment(
+          (prevData) =>
+            ({
+              ...prevData,
+              content: "",
+              listImageofComment: null,
+              // postToPost: "",
+            } as CommentToPostDTO)
+        );
         setIsLoadingComment(false);
         if (session?.user?.userId !== formDataComment?.userReceive) {
           const notificationToPostDTO: notificationToPostDTO = {
@@ -1602,6 +1756,35 @@ const PostProfile = ({
   console.log(">>> check data posst: ", data);
 
   useEffect(() => {
+    (async () => {
+      if (page) {
+        console.log(">>> check url234234: ", url);
+        const response = await sendRequest<IModelPaginate<ResPost>>({
+          url: GLOBAL_URL + "/api" + url,
+          method: "GET",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          queryParams: {
+            page: page,
+            keyword: searchParams.get("keyword") as string,
+          },
+        });
+        const has = data?.result ? data?.result : [];
+        const resHash = response?.result ? response?.result : [];
+        const newData: ResPost[] = [...has, ...resHash];
+        setPosts(newData);
+        mutate({ meta: response?.meta, result: newData! }, false);
+      } else {
+        data && setPosts(data?.result);
+      }
+    })();
+  }, [page]);
+
+  useEffect(() => {
+    if (data && !error) {
+      setPosts(data?.result);
+    }
+  }, [data]);
+  useEffect(() => {
     const fetchDataHashtag = async () => {
       try {
         const getHashtag = await sendRequest<HashtagInfor[]>({
@@ -1621,612 +1804,545 @@ const PostProfile = ({
     if (searchValueHashtag) {
       fetchDataHashtag();
     }
-    (async () => {
-      if (page) {
-        const response = await sendRequest<IModelPaginate<ResPost>>({
-          url: GLOBAL_URL + "/api" + url,
-          method: "GET",
-          headers: { authorization: `Bearer ${session?.access_token}` },
-          queryParams: {
-            page: page,
-            keyword: searchParams.get("keyword") as string,
-          },
-        });
-        const has = data?.result ? data?.result : [];
-        const resHash = response?.result ? response?.result : [];
-        const newData: ResPost[] = [...has, ...resHash];
-        setPosts(newData);
-        mutate({ meta: response?.meta, result: newData! }, false);
-      } else {
-        data && setPosts(data?.result);
-      }
-    })();
-  }, [page, data]);
 
+    // if (data && !error) {
+    //   setPosts(data?.result);
+    // }
+  }, [loading, dataLoading, searchValueHashtag]);
+
+  //biến chuyển hướng
+  const router = useRouter();
+  // xử lý chuyển hướng trang cá nhân
+  const handleRouterProfile = (id: string) => {
+    router.push(`/profile?id=${id}`);
+  };
+
+  // xử lý thay đổi nội dung tìm kiếm bài viết
   // useEffect(() => {
-  //   const fetchDataHashtag = async () => {
-  //     try {
-  //       const getHashtag = await sendRequest<HashtagInfor[]>({
-  //         url: GLOBAL_URL + "/api/search-detailhashtag",
-  //         method: "GET",
-  //         queryParams: {
-  //           keyword: searchValueHashtag,
-  //         },
-  //       });
-  //       console.log(getHashtag);
+  //   const dataFilter: {
+  //     sort?: string;
+  //     sortLike?: string;
+  //     start?: string;
+  //     end?: string;
+  //   } = {};
+  //   searchParams.get("sort") &&
+  //     (dataFilter.sort =
+  //       (searchParams.get("sort") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("sortLike") &&
+  //     (dataFilter.sortLike =
+  //       (searchParams.get("sortLike") as string) == "false" ? "asc" : "desc");
+  //   searchParams.get("startDate") &&
+  //     (dataFilter.start = searchParams.get("startDate") as string);
+  //   searchParams.get("endDate") &&
+  //     (dataFilter.end = searchParams.get("endDate") as string);
 
-  //       setHashtagData(getHashtag);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
+  //   const refeshDataSearch = async () => {
+  //     const newDataSearch = await sendRequest<IModelPaginate<ResPost>>({
+  //       url: GLOBAL_URL + "/api" + url,
+  //       method: "GET",
+  //       headers: { authorization: `Bearer ${session?.access_token}` },
+  //       queryParams: {
+  //         page: 0,
+  //         keyword: searchParams.get("keyword") as string,
+  //         ...dataFilter,
+  //       },
+  //     });
+  //     console.log(">>> check dataFilter: ", dataFilter);
+  //     console.log(">>> check seaerch: ", newDataSearch);
+  //     mutate(newDataSearch, false);
+  //     newDataSearch && setPosts(newDataSearch?.result);
+  //     console.log(">>> check newDataSearch: ", newDataSearch);
   //   };
-  //   if (searchValueHashtag) {
-  //     fetchDataHashtag();
-  //   }
+  //   refeshDataSearch();
+  // }, [
+  //   searchParams.get("keyword") as string,
+  //   searchParams.get("sort") as string,
+  //   searchParams.get("sortLike") as string,
+  //   searchParams.get("startDate") as string,
+  //   searchParams.get("endDate") as string,
+  // ]);
 
-  //   if (data && !error) {
-  //     setPosts(data?.result);
-  //   }
-  // }, [loading, dataLoading, searchValueHashtag]);
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [listStringImg, setListStringImg] = useState<string[]>([]);
+  const openImageViewer = useCallback((index: any, item: ResPost) => {
+    setCurrentImage(index);
+    setIsViewerOpen(true);
+    console.log(index);
+    setListStringImg(item?.postId?.listImageofPost?.map((i) => i.imageUrl));
+    console.log(item);
+  }, []);
 
+  const closeImageViewer = () => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
+    setListStringImg([]);
+  };
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          // minHeight: "100px",
-          height: "86vh",
-          alignItems: "center",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            zIndex: 2,
-            backgroundColor: "transparent",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <div className="cube-loader">
-            <div className="cube-top"></div>
-            <div className="cube-wrapper">
-              {[0, 1, 2, 3].map((index) => (
-                <CubeSpan key={index} index={index} />
-              ))}
-            </div>
-          </div>
-        </Box>
-      </Box>
-    );
+    return <PostSkeleton />;
   }
   console.log(">>> check posts123: ", posts);
   return (
     <>
-      <Box
-        sx={{
-          borderRadius: "5px",
-          boxShadow: "0px 1px 2px #3335",
-          backgroundColor: "#fff",
-          padding: "10px",
-          marginBottom: "15px",
-          display: `${search ? "none" : "block"}`,
-        }}
-      >
+      {!searchParams.get("id") && (
         <Box
           sx={{
-            display: "flex",
-            borderBottom: "1px solid #3333",
-            paddingBottom: "10px",
+            borderRadius: "5px",
+            boxShadow: "0px 1px 2px #3335",
+            backgroundColor: "#fff",
+            padding: "10px",
+            marginBottom: "15px",
+            display: `${search ? "none" : "block"}`,
           }}
         >
           <Box
             sx={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "50%",
-              marginRight: "6px",
-              "& img": {
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
+              display: "flex",
+              paddingBottom: "10px",
+            }}
+          >
+            <Box
+              sx={{
+                width: "36px",
+                height: "36px",
                 borderRadius: "50%",
-                cursor: "pointer",
-              },
-            }}
-          >
-            <img
-              src={`${
-                session?.user?.profileImageUrl
-                  ? session?.user?.profileImageUrl
-                  : "/profile/user.jpg"
-              }`}
-            />
-          </Box>
-          <Box
-            onClick={handleOpenPost}
-            sx={{
-              position: "relative",
-              width: "100%",
-              padding: "7px 10px",
-              boxSizing: "border-box",
-              borderRadius: "25px",
-              backgroundColor: "#E4E6EB",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#D8DADF",
-              },
-            }}
-          >
-            <Typography
-              component={"span"}
-              sx={{
-                position: "absolute",
-                left: "15px",
-                top: "50%",
-                transform: "translateY(-50%)",
-                fontSize: "15px",
-                color: "#333",
-              }}
-            >
-              Bạn đang nghĩ gì ?
-            </Typography>
-          </Box>
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "flex-start",
-            padding: "10px 0px 0px 0px",
-          }}
-        >
-          <Box
-            sx={{
-              width: "50%",
-              maxWidth: "160px",
-              padding: "5px",
-              boxSizing: "border-box",
-              backgroundColor: "#fff",
-              borderRadius: "20px",
-              marginRight: "8px",
-              filter: "drop-shadow(0 0 0.1rem crimson)",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#E4E6EB",
-              },
-            }}
-          >
-            <Typography
-              component={"p"}
-              sx={{
-                padding: "5px 0px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#333",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <VideoFileIcon sx={{ color: "#E42645" }} />
-              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                Video
-              </Typography>
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              width: "50%",
-              padding: "5px",
-              maxWidth: "160px",
-              boxSizing: "border-box",
-              backgroundColor: "#fff",
-              borderRadius: "20px",
-              filter: "drop-shadow(0 0 0.1rem green)",
-              cursor: "pointer",
-              "&:hover": {
-                backgroundColor: "#E4E6EB",
-              },
-            }}
-          >
-            <Typography
-              component={"p"}
-              sx={{
-                padding: "5px 0px",
-                textAlign: "center",
-                fontSize: "14px",
-                color: "#333",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <AddAPhotoIcon sx={{ color: "#41B35D" }} />
-              <Typography component={"span"} sx={{ marginLeft: "6px" }}>
-                Photo
-              </Typography>
-            </Typography>
-          </Box>
-        </Box>
-        <Dialog
-          open={openPost}
-          TransitionComponent={Transition}
-          keepMounted
-          onClose={handleClosePost}
-          aria-describedby="alert-dialog-slide-description"
-          PaperProps={{
-            style: {
-              backgroundColor: GLOBAL_BG_NOTIFY,
-              width: "100%",
-              borderRadius: "12px",
-            },
-            component: "form",
-            onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-              event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              const formJson = Object.fromEntries((formData as any).entries());
-              console.log(formJson);
-              handleClosePost();
-            },
-          }}
-        >
-          <Box className="dialog-header">
-            <DialogTitle
-              id="alert-dialog-title"
-              sx={{
-                color: GLOBAL_COLOR_MENU,
-                textAlign: "center",
-                p: "10px",
-              }}
-            >
-              Tạo bài viết
-            </DialogTitle>
-            <IconButton
-              aria-label="close"
-              onClick={handleClosePost}
-              sx={{
-                position: "absolute",
-                right: 8,
-                top: 5,
-                color: (theme) => theme.palette.grey[900],
-                backgroundColor: "#3a3b3c",
-                "&:hover": {
-                  backgroundColor: "#7d7d7d",
+                marginRight: "6px",
+                "& img": {
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  cursor: "pointer",
                 },
               }}
             >
-              <ClearIcon />
-            </IconButton>
-          </Box>
-          <Divider />
-          <DialogContent sx={{ p: "8px" }}>
-            <Card
+              <img
+                src={`${
+                  sessionGuest?.profileImageUrl
+                    ? sessionGuest?.profileImageUrl
+                    : session?.user?.profileImageUrl
+                    ? session?.user?.profileImageUrl
+                    : "/profile/user.jpg"
+                }`}
+              />
+            </Box>
+            <Box
+              onClick={handleOpenPost}
               sx={{
-                backgroundColor: "transparent",
-                boxShadow: "none",
-                color: "white",
-                border: "none",
+                position: "relative",
                 width: "100%",
+                padding: "7px 10px",
+                boxSizing: "border-box",
+                borderRadius: "25px",
+                backgroundColor: "#E4E6EB",
+                cursor: "pointer",
+                "&:hover": {
+                  backgroundColor: "#D8DADF",
+                },
               }}
             >
-              <CardHeader
+              <Typography
+                component={"span"}
                 sx={{
-                  color: "#000000",
-                  py: "5px",
+                  position: "absolute",
+                  left: "15px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "15px",
+                  color: "#333",
                 }}
-                avatar={
-                  <Avatar
-                    sx={{ bgcolor: red[500] }}
-                    aria-label="recipe"
-                    alt={session?.user?.lastName}
-                    src={session?.user?.profileImageUrl}
-                  ></Avatar>
-                }
-                title={
-                  <>
-                    <Typography
-                      fontSize={16}
-                      sx={{
-                        color: GLOBAL_COLOR_MENU,
-                      }}
-                    >
-                      {session?.user?.firstName +
-                        " " +
-                        session?.user?.middleName +
-                        " " +
-                        session?.user?.lastName}
-                    </Typography>
-                  </>
-                }
-                action={
-                  <>
-                    <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
-                      <Select
-                        id="demo-simple-select-autowidth"
-                        value={postData.privacyPostDetails + ""}
-                        onChange={handleChangePrivacyPost}
-                        autoWidth
-                        sx={{
-                          color: GLOBAL_COLOR_MENU,
-                          "&.MuiSelect-root": {
-                            backgroundColor: "#3a3b3c",
-                            border: "1px solid white",
-                          },
-                          "& fieldset": {
-                            border: "1px solid #323235",
-                          },
-                          "& fieldset:focus": {
-                            border: "1px solid white",
-                          },
-                          "& svg": {
-                            color: "#323235",
-                          },
-                        }}
-                      >
-                        <MenuItem value={1}>Công khai</MenuItem>
-                        <MenuItem value={2}>Riêng tư</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </>
-                }
-              />
-
-              <CardContent
-                sx={{
-                  color: "white",
-                  py: "5px",
-                }}
-                className="contentPost"
               >
-                <Input
-                  placeholder={
-                    session?.user?.firstName +
-                    " " +
-                    session?.user?.middleName +
-                    " " +
-                    session?.user?.lastName +
-                    " ơi, Bạn đang nghĩ gì thế ?"
-                  }
-                  inputProps={ariaLabel}
-                  onChange={(e) => handleContentPost(e.target.value)}
-                  multiline
-                  sx={{
-                    color: GLOBAL_COLOR_MENU,
-                    fontSize: "1.5rem",
-                  }}
-                  fullWidth
-                  disableUnderline
-                  value={postData.content}
-                />
-              </CardContent>
-              <CardContent
+                Bạn có câu hỏi hoặc kinh nghiệm gì chia sẻ không ?
+              </Typography>
+            </Box>
+          </Box>
+
+          <Dialog
+            open={openPost}
+            TransitionComponent={Transition}
+            keepMounted
+            onClose={handleClosePost}
+            aria-describedby="alert-dialog-slide-description"
+            PaperProps={{
+              style: {
+                backgroundColor: GLOBAL_BG_NOTIFY,
+                width: "100%",
+                borderRadius: "12px",
+              },
+              component: "form",
+              onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+                event.preventDefault();
+                const formData = new FormData(event.currentTarget);
+                const formJson = Object.fromEntries(
+                  (formData as any).entries()
+                );
+                console.log(formJson);
+                handleClosePost();
+              },
+            }}
+          >
+            <Box className="dialog-header">
+              <DialogTitle
+                id="alert-dialog-title"
                 sx={{
                   color: GLOBAL_COLOR_MENU,
-                  py: "5px",
+                  textAlign: "center",
+                  p: "10px",
                 }}
               >
-                <Autocomplete
-                  size="small"
-                  multiple
-                  freeSolo
-                  id="tags-standard"
-                  options={hashtagData as any[]}
-                  // value={postData.listHashtag as any}
-                  value={
-                    hashtagData.length > 0
-                      ? postData.listHashtag?.map((oldTag) => {
-                          const matchingTag = hashtagData.find(
-                            (newTag) => newTag.hashtagText === oldTag
-                          );
-                          return matchingTag ? matchingTag : oldTag;
-                        }) || postData.listHashtag
-                      : (postData.listHashtag as any)
-                  }
-                  getOptionLabel={(option: any) => {
-                    return formatHashtagText(
-                      typeof option === "string" ? option : option.hashtagText
-                    );
+                Tạo bài viết
+              </DialogTitle>
+              <IconButton
+                aria-label="close"
+                onClick={handleClosePost}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: 5,
+                  color: (theme) => theme.palette.grey[900],
+                  backgroundColor: "#c4c4c4",
+                  transition: "all .2s linear",
+                  "&:hover": {
+                    backgroundColor: "#7d7d7d",
+                  },
+                }}
+              >
+                <ClearIcon />
+              </IconButton>
+            </Box>
+            <Divider />
+            <DialogContent sx={{ p: "8px" }}>
+              <Card
+                sx={{
+                  backgroundColor: "transparent",
+                  boxShadow: "none",
+                  color: GLOBAL_COLOR_BLACK,
+                  border: "none",
+                  width: "100%",
+                }}
+              >
+                <CardHeader
+                  sx={{
+                    color: "#000000",
+                    py: "5px",
                   }}
-                  onChange={(event, values: any) =>
-                    handleHashtagPost(event, values)
+                  avatar={
+                    <Avatar
+                      sx={{ bgcolor: red[500] }}
+                      aria-label="recipe"
+                      alt={session?.user?.lastName}
+                      src={session?.user?.profileImageUrl}
+                    ></Avatar>
                   }
-                  renderOption={(props, option, { selected }) => (
-                    <Box
-                      component="li"
-                      sx={{
-                        backgroundColor: selected
-                          ? "#f5f5f5 !important"
-                          : "#fff !important",
-                        color: "white !important",
-                        "&:hover": {
-                          backgroundColor: "#f5f5f5 !important",
-                        },
-                        py: "10px !important",
-                      }}
-                      {...props}
-                      key={option.hashtagText}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Typography
-                          variant="body1"
+                  title={
+                    <>
+                      <Typography
+                        fontSize={16}
+                        sx={{
+                          color: GLOBAL_COLOR_BLACK,
+                        }}
+                      >
+                        {session?.user?.firstName +
+                          " " +
+                          session?.user?.middleName +
+                          " " +
+                          session?.user?.lastName}
+                      </Typography>
+                    </>
+                  }
+                  action={
+                    <>
+                      <FormControl sx={{ m: 1, minWidth: 80 }} size="small">
+                        <Select
+                          id="demo-simple-select-autowidth"
+                          value={postData.privacyPostDetails + ""}
+                          onChange={handleChangePrivacyPost}
+                          autoWidth
                           sx={{
                             color: GLOBAL_COLOR_MENU,
+                            "&.MuiSelect-root": {
+                              backgroundColor: GLOBAL_BG_NOTIFY,
+                              border: "1px solid white",
+                            },
+                            "& fieldset": {
+                              border: "1px solid #323235",
+                            },
+                            "& fieldset:focus": {
+                              border: "1px solid white",
+                            },
+                            "& svg": {
+                              color: "#323235",
+                            },
                           }}
-                          mr="10px"
                         >
-                          {option.hashtagText}
-                        </Typography>
-                        {selected ? (
-                          <CheckIcon color="success" fontWeight="Bold" />
-                        ) : "" + selected ? (
-                          selected
-                        ) : (
-                          selected
-                        )}
-                        <Chip
-                          label={option?.totalPostUseHashtag + " bài viết"}
-                          variant="outlined"
-                          sx={{
-                            color: GLOBAL_COLOR_MENU,
-                          }}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Hashtag"
-                      placeholder="Nhập từ khóa tìm kiếm"
-                      sx={{
-                        backgroundColor: GLOBAL_BG,
-                        color: GLOBAL_COLOR_MENU,
-                        borderRadius: "4px",
-                        "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "white" },
-                          "&:hover fieldset": { borderColor: "white" },
-                          "&.Mui-focused fieldset": { borderColor: "white" },
-                          "& .MuiInputBase-input": {
-                            color: GLOBAL_COLOR_MENU,
-                          },
-                        },
-                      }}
-                      onChange={handleTextFieldChange}
-                      value={searchValueHashtag}
-                      InputLabelProps={{
-                        style: {
-                          color: GLOBAL_COLOR_MENU,
-                        },
-                      }}
-                    />
-                  )}
-                  ChipProps={{
-                    style: {
-                      color: GLOBAL_COLOR_MENU,
-                      backgroundColor: GLOBAL_BG_NAV,
-                    },
-                  }}
-                  disableCloseOnSelect
-                  fullWidth
-                  loading
-                  loadingText={
-                    !searchValueHashtag
-                      ? ""
-                      : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                          <MenuItem value={1}>Công khai</MenuItem>
+                          <MenuItem value={2}>Riêng tư</MenuItem>
+                        </Select>
+                      </FormControl>
+                    </>
                   }
                 />
-                {postData.listHashtag?.length == 0 ? (
-                  <FormHelperText
+
+                <CardContent
+                  sx={{
+                    color: GLOBAL_COLOR_BLACK,
+                    py: "5px",
+                  }}
+                  className="contentPost"
+                >
+                  <Input
+                    placeholder="Chia sẻ kinh nghiệm hoặc câu hỏi của bạn"
+                    inputProps={ariaLabel}
+                    onChange={(e) => handleContentPost(e.target.value)}
+                    multiline
                     sx={{
                       color: GLOBAL_COLOR_MENU,
+                      fontSize: "1.5rem",
                     }}
-                  >
-                    Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
-                  </FormHelperText>
-                ) : (
-                  <></>
-                )}
-              </CardContent>
-              <CardContent
-                sx={{
-                  color: "white !important",
-                  py: "5px !important",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  display: "flex",
-                }}
-              >
-                <Button
-                  component="label"
-                  variant="contained"
+                    fullWidth
+                    disableUnderline
+                    value={postData.content}
+                  />
+                </CardContent>
+                <CardContent
                   sx={{
-                    p: "8px",
-                    // backgroundColor: "transparent",
-                    color: "white",
-                    "&:hover": {
-                      boxShadow: GLOBAL_BOXSHADOW,
-                    },
-                    boxShadow: "none",
+                    color: GLOBAL_COLOR_MENU,
+                    py: "5px",
                   }}
                 >
-                  <AddPhotoAlternate />
-                  Thêm ảnh hoặc Video
-                  <VisuallyHiddenInput
-                    type="file"
-                    accept=".jpg, .png , .mp4"
-                    onChange={(event) => handleChangePicturePost(event)}
+                  <Autocomplete
+                    size="small"
                     multiple
-                    name="listImageofComment"
+                    freeSolo
+                    id="tags-standard"
+                    options={hashtagData as any[]}
+                    // value={postData.listHashtag as any}
+                    value={
+                      hashtagData.length > 0
+                        ? postData.listHashtag?.map((oldTag) => {
+                            const matchingTag = hashtagData.find(
+                              (newTag) => newTag.hashtagText === oldTag
+                            );
+                            return matchingTag ? matchingTag : oldTag;
+                          }) || postData.listHashtag
+                        : (postData.listHashtag as any)
+                    }
+                    getOptionLabel={(option: any) => {
+                      return formatHashtagText(
+                        typeof option === "string" ? option : option.hashtagText
+                      );
+                    }}
+                    onChange={(event, values: any) =>
+                      handleHashtagPost(event, values)
+                    }
+                    renderOption={(props, option, { selected }) => (
+                      <Box
+                        component="li"
+                        sx={{
+                          transition: "all .2s linear",
+                          backgroundColor: selected
+                            ? "#gray !important"
+                            : "#fff !important",
+                          color: "black !important",
+                          "&:hover": {
+                            backgroundColor: "gray !important",
+                          },
+                          py: "10px !important",
+                        }}
+                        {...props}
+                        key={option.hashtagText}
+                      >
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: GLOBAL_COLOR_MENU,
+                            }}
+                            mr="10px"
+                          >
+                            {option.hashtagText}
+                          </Typography>
+                          {selected ? (
+                            <CheckIcon color="success" fontWeight="Bold" />
+                          ) : "" + selected ? (
+                            selected
+                          ) : (
+                            selected
+                          )}
+                          <Chip
+                            label={option?.totalPostUseHashtag + " bài viết"}
+                            variant="outlined"
+                            sx={{
+                              color: GLOBAL_COLOR_MENU,
+                            }}
+                          />
+                        </Box>
+                      </Box>
+                    )}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Hashtag"
+                        placeholder="Nhập từ khóa tìm kiếm"
+                        sx={{
+                          backgroundColor: GLOBAL_BG_NOTIFY,
+                          color: GLOBAL_COLOR_MENU,
+                          borderRadius: "4px",
+                          "& .MuiOutlinedInput-root": {
+                            "& fieldset": { borderColor: GLOBAL_BG_NAV },
+                            "&:hover fieldset": {
+                              borderColor: GLOBAL_BG_NAV,
+                            },
+                            "&.Mui-focused fieldset": {
+                              borderColor: GLOBAL_BG_NAV,
+                            },
+                            "& .MuiInputBase-input": {
+                              color: GLOBAL_COLOR_MENU,
+                            },
+                          },
+                        }}
+                        onChange={handleTextFieldChange}
+                        value={searchValueHashtag}
+                        InputLabelProps={{
+                          style: {
+                            color: GLOBAL_COLOR_MENU,
+                          },
+                        }}
+                      />
+                    )}
+                    ChipProps={{
+                      style: {
+                        color: GLOBAL_COLOR_MENU,
+                        backgroundColor: GLOBAL_BG_NAV,
+                      },
+                    }}
+                    disableCloseOnSelect
+                    fullWidth
+                    loading
+                    loadingText={
+                      !searchValueHashtag
+                        ? ""
+                        : `Thêm từ khóa "${searchValueHashtag}" vào danh sách Hashtag`
+                    }
                   />
-                </Button>
-              </CardContent>
-              <Grid container rowSpacing={1} mt={1}>
-                {postData.listImageofPost?.map((url: File, index: any) => (
-                  <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
-                    <PreviewImageOfPost
-                      // key={index}
-                      url={url}
-                      index={index}
-                      handleRemoveImageOfPost={handleRemoveImageOfPost}
+                  {postData.listHashtag?.length == 0 ? (
+                    <FormHelperText
+                      sx={{
+                        color: GLOBAL_COLOR_MENU,
+                      }}
+                    >
+                      Hãy chọn hashtag để bài viết được nhiều người tiếp cận hơn
+                    </FormHelperText>
+                  ) : (
+                    <></>
+                  )}
+                </CardContent>
+                <CardContent
+                  sx={{
+                    color: "white !important",
+                    py: "5px !important",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    display: "flex",
+                  }}
+                >
+                  <Button
+                    component="label"
+                    variant="contained"
+                    sx={{
+                      p: "8px",
+                      // backgroundColor: "transparent",
+                      color: GLOBAL_COLOR_WHITE,
+                      "&:hover": {
+                        boxShadow: GLOBAL_BOXSHADOW,
+                      },
+                      boxShadow: "none",
+                    }}
+                  >
+                    <AddPhotoAlternate />
+                    Thêm ảnh hoặc Video
+                    <VisuallyHiddenInput
+                      type="file"
+                      accept=".jpg, .png , .mp4"
+                      onChange={(event) => handleChangePicturePost(event)}
+                      multiple
+                      name="listImageofComment"
                     />
-                  </Grid>
-                ))}
-              </Grid>
-            </Card>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleClosePost}
-              sx={{
-                color: "gray",
-              }}
-            >
-              Hủy
-            </Button>
-            {isEditPost ? (
-              <Button onClick={handleSaveEditPost}>Lưu</Button>
-            ) : (
-              <Button onClick={handlePost}>Đăng</Button>
-            )}
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={openLoaderPost}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-          sx={{
-            "& .MuiPaper-root": {
-              borderRadius: "12px",
-            },
-          }}
-        >
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              <Loader />
-              <Typography
-                sx={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  marginTop: "12px ",
-                }}
+                  </Button>
+                </CardContent>
+                <Grid container rowSpacing={1} mt={1}>
+                  {postData.listImageofPost?.map((url: File, index: any) => (
+                    <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                      <PreviewImageOfPost
+                        // key={index}
+                        url={url}
+                        index={index}
+                        handleRemoveImageOfPost={handleRemoveImageOfPost}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Card>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                color="error"
+                variant="outlined"
+                onClick={handleClosePost}
               >
-                Đang đăng bài
-              </Typography>
-            </DialogContentText>
-          </DialogContent>
-        </Dialog>
-      </Box>
+                Hủy
+              </Button>
+              {isEditPost ? (
+                <Button
+                  color="primary"
+                  variant="contained"
+                  onClick={handleSaveEditPost}
+                  sx={{ minWidth: "120px" }}
+                >
+                  Lưu
+                </Button>
+              ) : (
+                <Button
+                  color="primary"
+                  variant="contained"
+                  onClick={handlePost}
+                  sx={{ minWidth: "120px" }}
+                >
+                  Đăng
+                </Button>
+              )}
+            </DialogActions>
+          </Dialog>
+          <Dialog
+            open={openLoaderPost}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+            sx={{
+              "& .MuiPaper-root": {
+                borderRadius: "12px",
+              },
+            }}
+          >
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                <Loader />
+                <Typography
+                  sx={{
+                    textAlign: "center",
+                    fontWeight: "bold",
+                    marginTop: "12px ",
+                  }}
+                >
+                  Đang đăng bài
+                </Typography>
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+        </Box>
+      )}
       <InfiniteScroll
         loader={<Loader />}
-        className=" my-10"
+        className=" my-5 pb-3"
         fetchMore={() => setPage((prev) => prev + 1)}
         hasMore={data && page + 1 < data?.meta?.total}
         totalPage={data ? data?.meta?.total : 1}
@@ -2266,43 +2382,6 @@ const PostProfile = ({
                 },
               }}
             >
-              {item?.typePost === "share" && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    padding: "8px 16px",
-                    boxShadow: "1px 1px 1px 1px gray",
-                    backgroundColor: "#bed1b491",
-                    borderTopLeftRadius: "5px",
-                    borderTopRightRadius: "5px",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Typography
-                      component={"p"}
-                      sx={{ fontWeight: "bold", marginRight: "6px" }}
-                    >
-                      {
-                        //@ts-ignore
-                        item?.userPostDto?.fullname
-                      }
-                    </Typography>
-                    <Typography component={"p"}>
-                      {`đã chia sẻ bài viết`}
-                    </Typography>
-                  </Box>
-                  <Typography component={"p"}>{item?.content}</Typography>
-                </Box>
-              )}
               <Box
                 sx={{
                   display: "flex",
@@ -2332,8 +2411,21 @@ const PostProfile = ({
                         cursor: "pointer",
                       },
                     }}
+                    onClick={() =>
+                      handleRouterProfile(item?.postId?.userPost?.userId)
+                    }
                   >
-                    <a href="#">
+                    {item?.typePost === "share" ? (
+                      <img
+                        src={`${
+                          //@ts-ignore
+                          url == item?.userPostDto?.profilePicUrl
+                            ? //@ts-ignore
+                              item?.userPostDto?.profilePicUrl
+                            : "/profile/user.jpg"
+                        }`}
+                      />
+                    ) : (
                       <img
                         src={`${
                           url == "post-by-user-logged"
@@ -2345,7 +2437,7 @@ const PostProfile = ({
                             : "/profile/user.jpg"
                         }`}
                       />
-                    </a>
+                    )}
                   </Box>
                   <Box
                     sx={{
@@ -2359,8 +2451,14 @@ const PostProfile = ({
                         color: "#333",
                         fontWeight: "bold",
                       }}
+                      onClick={() =>
+                        handleRouterProfile(item?.postId?.userPost?.userId)
+                      }
                     >
-                      {item?.postId?.userPost?.fullname}
+                      {item?.typePost === "share"
+                        ? //@ts-ignore
+                          item?.userPostDto?.fullname
+                        : item?.postId?.userPost?.fullname}
                     </Typography>
                     <Box
                       sx={{
@@ -2426,7 +2524,13 @@ const PostProfile = ({
                         component={"span"}
                         sx={{ textDecoration: "none", marginLeft: "6px" }}
                       >
-                        {formatDateString(item?.postId?.time)}
+                        {
+                          //@ts-ignore
+                          item?.typePost === "share"
+                            ? //@ts-ignore
+                              formatDateString(item?.timeCreate)
+                            : formatDateString(item?.postId?.time)
+                        }
                       </Typography>
                     </Box>
                   </Box>
@@ -2449,7 +2553,7 @@ const PostProfile = ({
                       },
                     }}
                     onClick={(event) =>
-                      handleClick(event, item?.postId?.postId, item)
+                      handleClick(event, item?.postId?.postId, item, index)
                     }
                   >
                     <Box
@@ -2464,11 +2568,11 @@ const PostProfile = ({
                     </Box>
                   </Box>
                   <Menu
-                    anchorEl={anchorEl}
+                    anchorEl={anchorEl[index]}
                     id={`account-menu-${index}`}
-                    open={Boolean(anchorEl)}
-                    onClose={handleCloses}
-                    onClick={handleCloses}
+                    open={Boolean(anchorEl[index])}
+                    onClose={() => handleCloses(index)}
+                    onClick={() => handleCloses(index)}
                     PaperProps={{
                       elevation: 0,
                       sx: {
@@ -2498,12 +2602,12 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {session?.user?.userId == item?.postId?.userPost?.userId ||
-                    //@ts-ignore
-                    session?.user?.userId == item?.userPostDto?.userId ? (
+                    {session?.user?.userId == item?.postId.userPost.userId ? (
                       <Box>
                         <MenuItem
-                          onClick={() => handleDeletePost(selectedItemId)}
+                          onClick={() =>
+                            handleDeletePost(selectedItemId, index)
+                          }
                         >
                           <ListItemIcon>
                             <DeleteIcon fontSize="small" />
@@ -2532,15 +2636,43 @@ const PostProfile = ({
                   </Menu>
                 </Box>
               </Box>
-              <Link href={`/post?id=${item?.postId?.postId}`}>
-                <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
-                  {item?.postId?.content}
-                </Box>
+              {item?.typePost !== "share" ? (
+                <Link href={`/post?id=${item?.postId?.postId}`}>
+                  <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
+                    {item?.postId?.content}
+                  </Box>
+                </Link>
+              ) : (
+                <Link href={`/post?id=${item?.postId?.postId}`}>
+                  <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
+                    {item?.content}
+                  </Box>
+                </Link>
+              )}
+              {item?.typePost !== "share" &&
+                item?.postId?.listHashtag.length > 0 && (
+                  <Typography
+                    sx={{
+                      fontSize: "14px",
+                      color: GLOBAL_COLOR_MENU,
+                      fontStyle: "italic",
+                      display: "block",
+                      marginX: "16px",
+                      borderBottom: "1px solid gray",
+                      width: "50px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    hashtag
+                  </Typography>
+                )}
+              {item?.typePost !== "share" && (
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "flex-start",
                     paddingX: "16px",
+                    flexWrap: "wrap",
                     paddingBottom: "16px",
                     "& a": {
                       backgroundColor: "#d6e8fa",
@@ -2571,6 +2703,19 @@ const PostProfile = ({
                     </Link>
                   ))}
                 </Box>
+              )}
+              <Box
+                sx={{
+                  borderRadius: `${
+                    item?.typePost === "share" ? "12px" : "none"
+                  }`,
+                  border: `${
+                    item?.typePost === "share" ? "1px solid gray" : "none"
+                  }`,
+                  // padding: "6px 12px",
+                  overflow: "hidden",
+                }}
+              >
                 <Box
                   sx={{
                     backgroundColor: "#fff",
@@ -2593,31 +2738,58 @@ const PostProfile = ({
                     }`,
                   }}
                 >
+                  {isViewerOpen && (
+                    <Box
+                      sx={{
+                        "& .react-simple-image-viewer__modal": {
+                          zIndex: 999999,
+                          "& img": {
+                            width: "auto",
+                          },
+                        },
+                      }}
+                    >
+                      <ImageViewer2
+                        src={listStringImg}
+                        currentIndex={currentImage}
+                        disableScroll={false}
+                        closeOnClickOutside={true}
+                        onClose={closeImageViewer}
+                      />
+                    </Box>
+                  )}
                   {item?.postId?.listImageofPost?.length < 3 ? (
-                    item?.postId?.listImageofPost?.map((item, index) => (
+                    item?.postId?.listImageofPost?.map((item2, index) => (
                       <Box
                         key={index}
+                        onClick={() => openImageViewer(index, item)}
                         sx={{
+                          marginBottom: "3px",
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "400px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
-                        <img src={item.imageUrl} alt="photo" />
+                        <img src={item2.imageUrl} alt="photo" />
                       </Box>
                     ))
                   ) : item?.postId?.listImageofPost?.length == 3 ? (
                     <React.Fragment key={index}>
                       <Box
+                        onClick={() => openImageViewer(index, item)}
                         sx={{
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "440px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
@@ -2627,27 +2799,32 @@ const PostProfile = ({
                         />
                       </Box>
                       <Box>
-                        {item?.postId?.listImageofPost?.map((item, index) => (
+                        {item?.postId?.listImageofPost?.map((item2, index) => (
                           <React.Fragment key={index}>
                             {index > 0 ? (
                               <Box
+                                onClick={() => openImageViewer(index, item)}
                                 sx={{
                                   width: "100%",
-                                  height: "50%",
+                                  height: "49.5%",
+                                  maxHeight: "218px",
                                   backgroundColor: "#3335",
                                   borderBottom: `${
                                     index == 1 ? "3px solid #fff" : "0"
                                   }`,
                                   boxSizing: "border-box",
+                                  border: "1px solid #80808080",
+                                  marginBottom: index == 1 ? "4px" : 0,
                                   "& img": {
                                     width: "100%",
                                     height: "100%",
+                                    maxHeight: "218px",
                                     objectFit: "cover",
                                     cursor: "pointer",
                                   },
                                 }}
                               >
-                                <img src={item?.imageUrl} alt="photo" />
+                                <img src={item2?.imageUrl} alt="photo" />
                               </Box>
                             ) : (
                               <React.Fragment key={index}></React.Fragment>
@@ -2657,19 +2834,23 @@ const PostProfile = ({
                       </Box>
                     </React.Fragment>
                   ) : item?.postId?.listImageofPost?.length == 4 ? (
-                    item?.postId?.listImageofPost?.map((item, index) => (
+                    item?.postId?.listImageofPost?.map((item2, index) => (
                       <Box
+                        onClick={() => openImageViewer(index, item)}
                         key={index}
                         sx={{
+                          marginBottom: "3px",
                           "& img": {
                             width: "100%",
                             height: "100%",
+                            maxHeight: "220px",
                             objectFit: "cover",
                             cursor: "pointer",
+                            border: "1px solid #80808080",
                           },
                         }}
                       >
-                        <img src={item.imageUrl} alt="photo" />
+                        <img src={item2.imageUrl} alt="photo" />
                       </Box>
                     ))
                   ) : (
@@ -2677,12 +2858,16 @@ const PostProfile = ({
                       <React.Fragment key={index}>
                         {index < 3 ? (
                           <Box
+                            onClick={() => openImageViewer(index, item)}
                             sx={{
+                              marginBottom: "3px",
                               "& img": {
                                 width: "100%",
                                 height: "100%",
+                                maxHeight: "220px",
                                 objectFit: "cover",
                                 cursor: "pointer",
+                                border: "1px solid #80808080",
                               },
                             }}
                           >
@@ -2692,13 +2877,16 @@ const PostProfile = ({
                           <React.Fragment key={index}>
                             {index == 4 ? (
                               <Box
+                                onClick={() => openImageViewer(index, item)}
                                 sx={{
                                   position: "relative",
                                   "& img": {
                                     width: "100%",
                                     height: "100%",
+                                    maxHeight: "220px",
                                     objectFit: "cover",
                                     cursor: "pointer",
+                                    border: "1px solid #80808080",
                                   },
                                 }}
                               >
@@ -2733,7 +2921,323 @@ const PostProfile = ({
                     ))
                   )}
                 </Box>
-              </Link>
+                {item?.typePost === "share" && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "10px",
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          borderRadius: "50%",
+                          width: "45px",
+                          height: "45px",
+                          marginRight: "4px",
+                          "& img": {
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "50%",
+                            cursor: "pointer",
+                          },
+                        }}
+                        onClick={() =>
+                          handleRouterProfile(item?.postId?.userPost?.userId)
+                        }
+                      >
+                        {item?.typePost === "share" && (
+                          <img
+                            src={`${
+                              url == "post-by-user-logged"
+                                ? session?.user?.profileImageUrl
+                                  ? session?.user?.profileImageUrl
+                                  : "/profile/user.jpg"
+                                : item.postId.userPost.profilePicUrl
+                                ? item.postId.userPost.profilePicUrl
+                                : "/profile/user.jpg"
+                            }`}
+                          />
+                        )}
+                      </Box>
+                      <Box
+                        sx={{
+                          marginLeft: "7px",
+                        }}
+                      >
+                        <Typography
+                          component={"h2"}
+                          sx={{
+                            fontSize: "18px",
+                            color: "#333",
+                            fontWeight: "bold",
+                          }}
+                          onClick={() =>
+                            handleRouterProfile(item?.postId?.userPost?.userId)
+                          }
+                        >
+                          {item?.postId?.userPost?.fullname}
+                        </Typography>
+                        <Box
+                          sx={{
+                            color: "#3339",
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          {session?.user?.userId ===
+                            item?.postId?.userPost?.userId && (
+                            <React.Fragment>
+                              <List
+                                component="nav"
+                                aria-label="Device settings"
+                                sx={{ bgcolor: "background.paper", padding: 0 }}
+                              >
+                                <ListItemButton
+                                  id={`lock-button-${index}`}
+                                  aria-haspopup="listbox"
+                                  aria-controls={`lock-menu-${index}`}
+                                  aria-label="when device is locked"
+                                  aria-expanded={
+                                    Boolean(anchorEls[index])
+                                      ? "true"
+                                      : undefined
+                                  }
+                                  onClick={handleClickListItem(index)}
+                                  sx={{ padding: 0 }}
+                                >
+                                  <LockIcon sx={{ fontSize: "18px" }} />
+                                  {options[selectedIndexes[index]] ||
+                                    item?.postId?.privacyPostDetails[0]
+                                      ?.namePrivacy}
+                                </ListItemButton>
+                              </List>
+                              <Menu
+                                id={`lock-menu-${index}`}
+                                anchorEl={anchorEls[index]}
+                                open={Boolean(anchorEls[index])}
+                                onClose={handleClose}
+                                MenuListProps={{
+                                  "aria-labelledby": `lock-button-${index}`,
+                                  role: "listbox",
+                                }}
+                              >
+                                {options.map((option, optionIndex) => (
+                                  <MenuItem
+                                    key={option}
+                                    selected={
+                                      optionIndex === selectedIndexes[index]
+                                    }
+                                    onClick={handleMenuItemClick(
+                                      index,
+                                      optionIndex,
+                                      item?.postId?.postId
+                                    )}
+                                  >
+                                    {option}
+                                  </MenuItem>
+                                ))}
+                              </Menu>
+                            </React.Fragment>
+                          )}
+                          <Typography
+                            component={"span"}
+                            sx={{ textDecoration: "none", marginLeft: "6px" }}
+                          >
+                            {formatDateString(item?.postId?.time)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                    <Box
+                      sx={{
+                        transform: "rotate(90deg)",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          borderRadius: "4px",
+                          transition: "all 0.2s linear",
+                          "&:hover": {
+                            backgroundColor: "#eeeeee",
+                          },
+                        }}
+                        onClick={(event) =>
+                          handleClick(event, item?.postId?.postId, item, index)
+                        }
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            padding: "8px 4px ",
+                            alignItems: "center",
+                            textAlign: "center",
+                          }}
+                        >
+                          <MoreVertIcon />
+                        </Box>
+                      </Box>
+                      <Menu
+                        anchorEl={anchorEl[index]}
+                        id={`account-menu-${index}`}
+                        open={Boolean(anchorEl[index])}
+                        onClose={() => handleCloses(index)}
+                        onClick={() => handleCloses(index)}
+                        PaperProps={{
+                          elevation: 0,
+                          sx: {
+                            overflow: "visible",
+                            filter:
+                              "drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.32))",
+                            mt: 1.5,
+                            "& .MuiAvatar-root": {
+                              width: 32,
+                              height: 32,
+                              ml: -0.5,
+                              mr: 1,
+                            },
+                            "&::before": {
+                              content: '""',
+                              display: "block",
+                              position: "absolute",
+                              top: 0,
+                              right: 14,
+                              width: 10,
+                              height: 10,
+                              bgcolor: "background.paper",
+                              transform: "translateY(-50%) rotate(45deg)",
+                              zIndex: 0,
+                            },
+                          },
+                        }}
+                        transformOrigin={{
+                          horizontal: "right",
+                          vertical: "top",
+                        }}
+                        anchorOrigin={{
+                          horizontal: "right",
+                          vertical: "bottom",
+                        }}
+                      >
+                        {(session?.user?.userId ==
+                          item?.postId?.userPost?.userId ||
+                          //@ts-ignore
+                          session?.user?.userId == item?.userPostDto?.userId) &&
+                        !searchParams.get("id") ? (
+                          <Box>
+                            <MenuItem
+                              onClick={() =>
+                                handleDeletePost(selectedItemId, index)
+                              }
+                            >
+                              <ListItemIcon>
+                                <DeleteIcon fontSize="small" />
+                              </ListItemIcon>
+                              Xóa bài viết{" "}
+                            </MenuItem>
+                            <MenuItem
+                              onClick={() => handleEditPost(postModal!)}
+                            >
+                              <ListItemIcon>
+                                <EditIcon fontSize="small" />
+                              </ListItemIcon>
+                              Chỉnh sửa bài viết{" "}
+                            </MenuItem>
+                          </Box>
+                        ) : (
+                          <Box>
+                            <MenuItem
+                              onClick={() =>
+                                handleOpenDialogReportPost(postModal!)
+                              }
+                            >
+                              <ReportGmailerrorredOutlinedIcon
+                                sx={{ marginRight: "6px" }}
+                              />
+                              Báo cáo bài viết
+                            </MenuItem>
+                          </Box>
+                        )}
+                      </Menu>
+                    </Box>
+                  </Box>
+                )}
+                {item?.typePost === "share" && (
+                  <Link href={`/post?id=${item?.postId?.postId}`}>
+                    <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
+                      {item?.postId?.content}
+                    </Box>
+                  </Link>
+                )}
+                {item?.typePost === "share" &&
+                  item?.postId?.listHashtag.length > 0 && (
+                    <Typography
+                      sx={{
+                        fontSize: "14px",
+                        color: GLOBAL_COLOR_MENU,
+                        fontStyle: "italic",
+                        display: "block",
+                        marginX: "16px",
+                        borderBottom: "1px solid gray",
+                        width: "50px",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      hashtag
+                    </Typography>
+                  )}
+                {item?.typePost === "share" && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      paddingX: "16px",
+                      flexWrap: "wrap",
+                      paddingBottom: "16px",
+                      "& a": {
+                        backgroundColor: "#d6e8fa",
+                        color: "#0c3b6a",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        // fontWeight: "400",
+                        padding: "4.8px 6px",
+                        cursor: "pointer",
+                        transition: "all 0.3s ease-in-out",
+                        margin: "0 2px 2px 0",
+                        border: "1px solid #BDC0C7",
+                        textDecoration: "none",
+                        gridArea: "auto",
+                        "&:hover": {
+                          transform: "translateY(-1px) translateX(0)",
+                          boxShadow: "0 1px 0 0 #BDC0C7",
+                        },
+                      },
+                    }}
+                  >
+                    {item?.postId?.listHashtag?.map((hashtag) => (
+                      <Link
+                        key={hashtag.id}
+                        href={`/hash-tag/${hashtag?.hashtagDetailName}`}
+                      >
+                        {hashtag?.hashtagDetailName}
+                      </Link>
+                    ))}
+                  </Box>
+                )}
+              </Box>
               <Box sx={{ padding: "10px" }}>
                 <Box
                   sx={{
@@ -2762,14 +3266,16 @@ const PostProfile = ({
                     >
                       <ThumbUpOffAltIcon
                         sx={{
-                          color: "white",
+                          color: GLOBAL_COLOR_WHITE,
                           fontSize: "12px",
                           margin: "auto",
                         }}
                       />
                     </Box>
                     <Typography component={"p"} sx={{ marginLeft: "6px" }}>
-                      {item?.postId?.totalLike}
+                      {item?.typePost == "share"
+                        ? item?.totalLike
+                        : item?.postId?.totalLike}
                     </Typography>
                   </Box>
 
@@ -2780,149 +3286,278 @@ const PostProfile = ({
                         color: "#3339",
                       }}
                     >
-                      {item?.postId?.totalComment} Bình luận
-                    </Typography>
-                    <Typography
-                      component={"p"}
-                      sx={{
-                        color: "#3339",
-                        marginLeft: "12px",
-                      }}
-                    >
-                      {item?.postId?.totalShare} Chia sẻ
+                      {item?.typePost == "share"
+                        ? item?.totalComment
+                        : item?.postId?.totalComment}{" "}
+                      Bình luận
                     </Typography>
                   </Box>
                 </Box>
               </Box>
-
-              <Grid
-                container
-                columns={3}
-                sx={{
-                  borderTop: " 1px solid #3333",
-                }}
-              >
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    // padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: item?.postId?.likeByUserLogged
-                      ? "#ff0000"
-                      : "#57585b",
-                    // color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    paddingY: 0,
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                >
-                  <IconButton
-                    aria-label="add to favorites"
+              <Box>
+                {item?.typePost == "share" ? (
+                  <Grid
+                    container
+                    columns={3}
                     sx={{
-                      // borderRadius: "10px",
-                      width: "100%",
-                      borderRadius: "0",
-                      // paddingY: 2,
-
-                      color: item?.postId?.likeByUserLogged
-                        ? "#ff0000"
-                        : "#57585b",
+                      borderTop: " 1px solid #3333",
                     }}
-                    onClick={() =>
-                      item?.postId?.likeByUserLogged
-                        ? handleUnlike(item?.postId?.postId, false)
-                        : handleLike(item?.postId?.postId, item, false)
-                    }
-                    disabled={item?.postId?.isProcessingLike}
+                    //site share action button
                   >
-                    {item?.postId?.isProcessingLike ? (
-                      <CircularProgress size={24} color="secondary" />
-                    ) : (
-                      <>
-                        <ThumbUpOffAltIcon />
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: item?.postId?.likeByUserLogged
+                          ? "#ff0000"
+                          : "#57585b",
+                        // color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        paddingY: 0,
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="Thích bài viết"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                          color: item?.likeByUserLogged ? "#ff0000" : "#57585b",
+                        }}
+                        onClick={() =>
+                          item?.likeByUserLogged
+                            ? handleUnlike(item?.id, true)
+                            : handleLike(item?.id, item, true)
+                        }
+                        disabled={item?.isProcessingLike}
+                      >
+                        {item?.isProcessingLike ? (
+                          <CircularProgress size={24} color="secondary" />
+                        ) : (
+                          <>
+                            <ThumbUpOffAltIcon />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "5px" }}
+                            >
+                              Thích Share
+                            </Typography>
+                          </>
+                        )}
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="comment"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                        }}
+                        onClick={() => handleOpenModalCmt(item?.postId)}
+                      >
+                        <CommentIcon />
                         <Typography
                           component={"span"}
                           sx={{ marginLeft: "5px" }}
                         >
-                          Thích
+                          Bình luận
                         </Typography>
-                      </>
-                    )}
-                  </IconButton>
-                </Grid>
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    // padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                >
-                  <IconButton
-                    aria-label="comment"
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                      onClick={() =>
+                        handleClickOpenAlerts(
+                          item?.postId,
+                          "share",
+                          false,
+                          -1,
+                          false
+                        )
+                      }
+                    >
+                      <ShareIcon />
+                      <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                        Chia sẻ
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                ) : (
+                  <Grid
+                    container
+                    columns={3}
                     sx={{
-                      width: "100%",
-                      borderRadius: "0",
+                      borderTop: " 1px solid #3333",
                     }}
-                    onClick={() => handleOpenModalCmt(item?.postId)}
+                    //site post action button
                   >
-                    <CommentIcon />
-                    <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                      Bình luận
-                    </Typography>
-                  </IconButton>
-                </Grid>
-                <Grid
-                  item
-                  xs={1}
-                  sx={{
-                    padding: "10px 0px",
-                    fontSize: "14px",
-                    textAlign: "center",
-                    color: "#707070",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    transition: "all 0.2s linear",
-                    cursor: "pointer",
-                    "&:hover": {
-                      backgroundColor: "#E4E6E9",
-                    },
-                  }}
-                  onClick={() =>
-                    handleClickOpenAlerts(
-                      item?.postId,
-                      "share",
-                      false,
-                      -1,
-                      false
-                    )
-                  }
-                >
-                  <ShareIcon />
-                  <Typography component={"span"} sx={{ marginLeft: "5px" }}>
-                    Chia sẻ
-                  </Typography>
-                </Grid>
-              </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: item?.postId?.likeByUserLogged
+                          ? "#ff0000"
+                          : "#57585b",
+                        // color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        paddingY: 0,
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="add to favorites"
+                        sx={{
+                          // borderRadius: "10px",
+                          width: "100%",
+                          borderRadius: "0",
+                          // paddingY: 2,
+
+                          color: item?.postId?.likeByUserLogged
+                            ? "#ff0000"
+                            : "#57585b",
+                        }}
+                        onClick={() =>
+                          item?.postId?.likeByUserLogged
+                            ? handleUnlike(item?.postId?.postId, false)
+                            : handleLike(item?.postId?.postId, item, false)
+                        }
+                        disabled={item?.postId?.isProcessingLike}
+                      >
+                        {item?.postId?.isProcessingLike ? (
+                          <CircularProgress size={24} color="secondary" />
+                        ) : (
+                          <>
+                            <ThumbUpOffAltIcon />
+                            <Typography
+                              component={"span"}
+                              sx={{ marginLeft: "5px" }}
+                            >
+                              Thích
+                            </Typography>
+                          </>
+                        )}
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        // padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                    >
+                      <IconButton
+                        aria-label="comment"
+                        sx={{
+                          width: "100%",
+                          borderRadius: "0",
+                        }}
+                        onClick={() => handleOpenModalCmt(item?.postId)}
+                      >
+                        <CommentIcon />
+                        <Typography
+                          component={"span"}
+                          sx={{ marginLeft: "5px" }}
+                        >
+                          Bình luận
+                        </Typography>
+                      </IconButton>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      sx={{
+                        padding: "10px 0px",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        color: "#707070",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "all 0.2s linear",
+                        cursor: "pointer",
+                        "&:hover": {
+                          backgroundColor: "#E4E6E9",
+                        },
+                      }}
+                      onClick={() =>
+                        handleClickOpenAlerts(
+                          item?.postId,
+                          "share",
+                          false,
+                          -1,
+                          false
+                        )
+                      }
+                    >
+                      <ShareIcon />
+                      <Typography component={"span"} sx={{ marginLeft: "5px" }}>
+                        Chia sẻ
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                )}
+              </Box>
             </Box>
           ))
         }
@@ -2948,8 +3583,9 @@ const PostProfile = ({
               left: "50%",
               transform: "translate(-50%, -50%)",
               width: 700,
-              bgcolor: "#1c1e21",
+              bgcolor: GLOBAL_BG,
               borderRadius: "12px",
+              overflow: "hidden",
               boxShadow: 24,
               "@media (max-width: 768px)": {
                 width: "90%",
@@ -2964,7 +3600,11 @@ const PostProfile = ({
           >
             <React.Fragment>
               <AppBar
-                sx={{ backgroundColor: "#1c1e21", padding: "0px !important" }}
+                sx={{
+                  backgroundColor: GLOBAL_BG,
+                  color: GLOBAL_COLOR_BLACK,
+                  padding: "0px !important",
+                }}
               >
                 <Toolbar
                   sx={{ display: "flex", justifyContent: "space-between" }}
@@ -2980,7 +3620,12 @@ const PostProfile = ({
                     aria-expanded={openModalCmt ? "true" : undefined}
                   >
                     <Avatar
-                      sx={{ width: 32, height: 32, backgroundColor: "gray" }}
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: "gray",
+                        border: "1px solid gray",
+                      }}
                     >
                       <ClearIcon />
                     </Avatar>
@@ -2992,10 +3637,10 @@ const PostProfile = ({
                 sx={{
                   maxHeight: "500px",
                   overflowY: "auto",
-                  backgroundColor: "#1c1e21",
+                  backgroundColor: GLOBAL_BG,
                 }}
               >
-                <Box sx={{ my: 2, color: "white" }}>
+                <Box sx={{ my: 2, color: GLOBAL_COLOR_BLACK }}>
                   {comment &&
                     comment?.map((c: CommentOfPost, index) => (
                       <Box key={"comment" + index + c.id}>
@@ -3020,36 +3665,34 @@ const PostProfile = ({
                               >
                                 <Card
                                   sx={{
-                                    backgroundColor: "#3A3B3C",
+                                    backgroundColor: GLOBAL_BG_NOTIFY,
                                     ml: "7px",
-                                    color: "white",
+                                    color: GLOBAL_COLOR_BLACK,
                                     display: "inline-block ",
                                     borderRadius: "15px",
+                                    padding: "0 12px",
                                   }}
                                 >
                                   <Link
-                                    href="/1"
+                                    href={`/profile?userId=${c.userID}`}
                                     style={{ textDecoration: "none" }}
                                   >
-                                    <CardHeader
-                                      title={c.userID.fullname}
-                                      subheader={""}
+                                    <Typography
                                       sx={{
-                                        fontSize: "10px",
                                         paddingY: "7px",
-                                        color: "white !important",
+                                        color: GLOBAL_COLOR_MENU,
+                                        fontWeight: "700",
                                         mb: "0px",
                                         paddingBottom: "0px",
                                       }}
-                                      titleTypographyProps={{
-                                        fontSize: "1rem",
-                                      }}
-                                    />
+                                    >
+                                      {c.userID.fullname}
+                                    </Typography>
                                   </Link>
                                   <CardContent
                                     sx={{
                                       paddingBottom: "7px !important",
-                                      paddingTop: "0px ",
+                                      padding: "0px ",
                                     }}
                                   >
                                     <Typography variant="body1">
@@ -3205,9 +3848,9 @@ const PostProfile = ({
                                 >
                                   <Card
                                     sx={{
-                                      backgroundColor: "#3A3B3C",
+                                      backgroundColor: GLOBAL_BG_NOTIFY,
                                       ml: "7px",
-                                      color: "white",
+                                      color: GLOBAL_COLOR_BLACK,
                                       display: "flex",
                                       borderRadius: "15px",
                                       width: "100%",
@@ -3225,7 +3868,9 @@ const PostProfile = ({
                                       }
                                       variant="filled"
                                       size="small"
-                                      InputProps={{ sx: { color: "white" } }}
+                                      InputProps={{
+                                        sx: { color: GLOBAL_COLOR_BLACK },
+                                      }}
                                       sx={{
                                         color: "white !important",
                                         width: "100%",
@@ -3238,7 +3883,7 @@ const PostProfile = ({
                                       sx={{
                                         p: "0px",
                                         backgroundColor: "transparent",
-                                        color: "white",
+                                        color: GLOBAL_COLOR_BLACK,
                                         "&:hover": {
                                           backgroundColor: "transparent",
                                           boxShadow: "none",
@@ -3293,18 +3938,23 @@ const PostProfile = ({
                                       mx: "15px",
                                       display: "flex",
                                       alignItems: "center",
+                                      marginBottom: "12px",
                                     }}
                                   >
                                     <Button
+                                      color="error"
+                                      variant="outlined"
                                       size="small"
-                                      sx={{ color: "gray" }}
                                       onClick={() =>
                                         handleCancelEditComment(true, index)
                                       }
+                                      sx={{ marginRight: "6px" }}
                                     >
                                       Hủy
                                     </Button>
                                     <Button
+                                      variant="contained"
+                                      color="primary"
                                       size="small"
                                       onClick={() =>
                                         handleSaveEditComment(
@@ -3371,9 +4021,9 @@ const PostProfile = ({
                                       >
                                         <Card
                                           sx={{
-                                            backgroundColor: "#3A3B3C",
+                                            backgroundColor: GLOBAL_BG_NOTIFY,
                                             ml: "7px",
-                                            color: "white",
+                                            color: GLOBAL_COLOR_BLACK,
                                             display: "inline-block ",
                                             borderRadius: "15px",
                                           }}
@@ -3382,19 +4032,17 @@ const PostProfile = ({
                                             href="/1"
                                             style={{ textDecoration: "none" }}
                                           >
-                                            <CardHeader
-                                              title={rl.userID.fullname}
-                                              subheader={""}
+                                            <Typography
                                               sx={{
-                                                fontSize: "10px",
-                                                paddingY: "7px",
-                                                color: "white !important",
+                                                fontSize: "16px",
+                                                padding: "8px 16px",
+                                                color: GLOBAL_COLOR_MENU,
                                                 paddingBottom: "0px",
+                                                fontWeight: 700,
                                               }}
-                                              titleTypographyProps={{
-                                                fontSize: "1rem",
-                                              }}
-                                            />
+                                            >
+                                              {rl.userID.fullname}
+                                            </Typography>
                                           </Link>
                                           <CardContent
                                             sx={{
@@ -3437,7 +4085,7 @@ const PostProfile = ({
                                                 display: "inline-flex",
                                                 flexDirection: "row-reverse",
                                                 alignItems: "center",
-                                                color: "white",
+                                                color: GLOBAL_COLOR_BLACK,
                                                 px: "5px",
                                               }}
                                             />
@@ -3611,9 +4259,9 @@ const PostProfile = ({
                                         >
                                           <Card
                                             sx={{
-                                              backgroundColor: "#3A3B3C",
+                                              backgroundColor: GLOBAL_BG_NOTIFY,
                                               ml: "7px",
-                                              color: "white",
+                                              color: GLOBAL_COLOR_BLACK,
                                               display: "flex",
                                               borderRadius: "15px",
                                               width: "100%",
@@ -3634,7 +4282,9 @@ const PostProfile = ({
                                               variant="filled"
                                               size="small"
                                               InputProps={{
-                                                sx: { color: "white" },
+                                                sx: {
+                                                  color: GLOBAL_COLOR_BLACK,
+                                                },
                                               }}
                                               sx={{
                                                 color: "white !important",
@@ -3648,7 +4298,7 @@ const PostProfile = ({
                                               sx={{
                                                 p: "0px",
                                                 backgroundColor: "transparent",
-                                                color: "white",
+                                                color: GLOBAL_COLOR_BLACK,
                                                 "&:hover": {
                                                   backgroundColor:
                                                     "transparent",
@@ -3755,16 +4405,10 @@ const PostProfile = ({
                     ))}
                 </Box>
               </Container>
-              {/*  <ScrollTop {...props}>
-                <Fab size="small" aria-label="scroll back to top">
-                  <KeyboardArrowUpIcon />
-                </Fab>
-              </ScrollTop>
-              */}
               <Paper
                 elevation={2}
                 sx={{
-                  backgroundColor: "#1c1e21",
+                  backgroundColor: GLOBAL_BG,
                   padding: "16px",
                   display: "flex",
                 }}
@@ -3805,13 +4449,13 @@ const PostProfile = ({
                       }
                       onDelete={handleCancelReplyComment}
                       sx={{
-                        backgroundColor: "gray",
+                        backgroundColor: GLOBAL_BG_NOTIFY,
                         px: "5px",
                         mb: "8px",
                         display: "inline-flex",
                         flexDirection: "row-reverse",
                         alignItems: "center",
-                        color: "white",
+                        color: GLOBAL_COLOR_BLACK,
                         "& .MuiChip-label": {
                           paddingX: "5px",
                           color: "black",
@@ -3833,18 +4477,22 @@ const PostProfile = ({
                       rows={3}
                       fullWidth
                       sx={{
-                        backgroundColor: "#1c1e21",
+                        backgroundColor: GLOBAL_BG,
                         borderRadius: "7px",
-                        color: "white",
-                        "& label.Mui-focused": { color: "white" },
+                        color: GLOBAL_COLOR_BLACK,
+                        "& label.Mui-focused": { color: GLOBAL_COLOR_BLACK },
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: "white" },
-                          "&:hover fieldset": { borderColor: "white" },
-                          "&.Mui-focused fieldset": { borderColor: "white" },
+                          "& fieldset": { borderColor: GLOBAL_COLOR_BLACK },
+                          "&:hover fieldset": {
+                            borderColor: GLOBAL_COLOR_BLACK,
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: GLOBAL_COLOR_BLACK,
+                          },
                         },
-                        "& label": { color: "white" },
+                        "& label": { color: GLOBAL_COLOR_BLACK },
                       }}
-                      InputProps={{ sx: { color: "white" } }}
+                      InputProps={{ sx: { color: GLOBAL_COLOR_BLACK } }}
                       value={
                         isComment
                           ? formDataComment.content
@@ -3861,7 +4509,7 @@ const PostProfile = ({
                       sx={{
                         p: "0px",
                         backgroundColor: "transparent",
-                        color: "white",
+                        color: GLOBAL_COLOR_BLACK,
                         "&:hover": {
                           backgroundColor: "transparent",
                           boxShadow: "none",
@@ -3935,13 +4583,18 @@ const PostProfile = ({
         aria-describedby="alert-dialog-description"
         PaperProps={{
           style: {
-            backgroundColor: "#3e4042",
+            backgroundColor: GLOBAL_BG_NOTIFY,
+          },
+        }}
+        sx={{
+          "& .css-1t1j96h-MuiPaper-root-MuiDialog-paper": {
+            borderRadius: "12px",
           },
         }}
       >
         <DialogTitle
           id="alert-dialog-title"
-          sx={{ color: "white", textAlign: "center" }}
+          sx={{ color: GLOBAL_COLOR_BLACK, textAlign: "center" }}
         >
           {actionDialog.actionType == "deleteCmt"
             ? "Xóa bình luận?"
@@ -3950,55 +4603,11 @@ const PostProfile = ({
         <Divider />
         <DialogContent id="alert-dialog-description">
           {actionDialog.actionType == "deleteCmt" ? (
-            <Typography sx={{ color: "white" }}>
+            <Typography sx={{ color: GLOBAL_COLOR_BLACK }}>
               Bạn có chắc chắn muốn xóa bình luận này không?
             </Typography>
           ) : (
             <>
-              <TextField
-                autoFocus
-                required
-                margin="dense"
-                name="content"
-                hiddenLabel
-                fullWidth
-                variant="standard"
-                label="Bạn nghĩ gì về bài viết này ?"
-                InputLabelProps={{
-                  style: {
-                    color: "white",
-                  },
-                }}
-                onChange={(e) => {
-                  setContentSharePost(e.target.value);
-
-                  if (timer) {
-                    clearTimeout(timer);
-                  }
-
-                  const newTimer = setTimeout(async () => {
-                    console.log("Stop typing");
-                    const content = badWords(e.target.value, {
-                      replacement: "*",
-                      blackList: (defaultList) => [
-                        ...defaultList,
-                        "mẹ mày",
-                        "cc",
-                        "nigga",
-                        "đmm",
-                        "mm",
-                        "đmm",
-                      ],
-                    });
-                    console.log(content);
-                    if (e.target.value.trim() != "") {
-                      setContentSharePost(content.toString());
-                    }
-                  }, 1000);
-
-                  setTimer(newTimer);
-                }}
-              />
               <Box
                 className="block-post-share"
                 sx={{
@@ -4006,7 +4615,7 @@ const PostProfile = ({
                   borderRadius: "16px",
                   minWidth: "320px",
                   mt: "8px",
-                  backgroundColor: "gray",
+                  backgroundColor: "#fff",
                 }}
               >
                 <CardHeader
@@ -4024,7 +4633,6 @@ const PostProfile = ({
                   title={actionDialog.data?.post?.userPost?.fullname}
                   subheader={formatDateString(actionDialog.data?.post?.time)}
                 />
-
                 <CardContent
                   sx={{
                     pt: 0,
@@ -4037,6 +4645,16 @@ const PostProfile = ({
                     {actionDialog.data?.post?.content}
                   </Typography>
                 </CardContent>
+                <Typography
+                  sx={{
+                    borderBottom: "1px solid gray",
+                    width: "60px",
+                    margin: "0 16px 6px 16px",
+                    fontStyle: "italic",
+                  }}
+                >
+                  hashtag
+                </Typography>
                 <Box
                   sx={{
                     display: "flex",
@@ -4069,45 +4687,154 @@ const PostProfile = ({
                     </Link>
                   ))}
                 </Box>
-                <Box sx={{ width: "100%" }} className="slider-container">
-                  {/* <Slider {...settings}> */}
-                  {actionDialog.data?.post?.listImageofPost?.map(
-                    (item: any, index: number) => (
-                      // <div key={item.id}>
-                      <CardMedia
-                        key={index + item.id}
-                        component={
-                          isImage(item.imageUrl) === "image"
-                            ? "img"
-                            : isImage(item.imageUrl) === "video"
-                            ? "video"
-                            : "div"
-                        }
-                        // autoPlay={isImage(item.imageUrl) === "video"}
-                        controls={isImage(item.imageUrl) === "video"}
-                        image={item?.imageUrl}
-                        alt={item?.postID}
-                        sx={{
-                          objectFit: "cover",
-                          maxWidth: "100%",
-                          width: ` 100%`,
-                          borderRadius: "16px",
-                        }}
-                      />
-                      // </div>
-                    )
-                  )}
-                  {/* </Slider> */}
+                <Box
+                  sx={{
+                    width: "100%",
+                    "& .swiper-wrapper": {
+                      alignItems: "center",
+                    },
+                  }}
+                  className="slider-container"
+                >
+                  <Swiper
+                    slidesPerView={1}
+                    spaceBetween={10}
+                    freeMode={true}
+                    pagination={{
+                      type: "fraction",
+                      clickable: true,
+                    }}
+                    modules={[FreeMode, Pagination]}
+                    className="mySwiper"
+                    loop={true}
+                  >
+                    {actionDialog.data?.post?.listImageofPost?.map(
+                      (item: any, index: number) => (
+                        <SwiperSlide key={item.id}>
+                          <CardMedia
+                            loading="lazy"
+                            key={index + item.id}
+                            component={
+                              isImage(item.imageUrl) === "image"
+                                ? "img"
+                                : isImage(item.imageUrl) === "video"
+                                ? "video"
+                                : "div"
+                            }
+                            controls={isImage(item.imageUrl) === "video"}
+                            image={item?.imageUrl}
+                            alt={item?.postID}
+                            sx={{
+                              objectFit: "cover",
+                              maxWidth: "100%",
+                              width: `100%`,
+                              borderRadius: "16px",
+                              maxHeight: "500px",
+                            }}
+                          />
+                        </SwiperSlide>
+                      )
+                    )}
+                  </Swiper>
+                  {/* <ImageList
+                  variant="masonry"
+                    cols={2}
+                  >
+                    {actionDialog.data?.post?.listImageofPost?.map(
+                      (item: any, index: number) => (
+                        <ImageListItem key={item.id}>
+                          <CardMedia
+                            loading="lazy"
+                            key={index + item.id}
+                            component={
+                              isImage(item.imageUrl) === "image"
+                                ? "img"
+                                : isImage(item.imageUrl) === "video"
+                                ? "video"
+                                : "div"
+                            }
+                            controls={isImage(item.imageUrl) === "video"}
+                            image={item?.imageUrl}
+                            alt={item?.postID}
+                            sx={{
+                              objectFit: "cover",
+                              maxWidth: "100%",
+                              width: ` 100%`,
+                              borderRadius: "16px",
+                            }}
+                          />
+                        </ImageListItem>
+                      )
+                    )}
+                  </ImageList> */}
                 </Box>
               </Box>
+              <TextField
+                autoFocus
+                required
+                margin="dense"
+                name="content"
+                hiddenLabel
+                fullWidth
+                variant="standard"
+                label="Nhập nội dung chia sẻ ?"
+                InputLabelProps={{
+                  style: {
+                    color: GLOBAL_COLOR_BLACK,
+                  },
+                }}
+                onChange={(e) => {
+                  setContentSharePost(e.target.value);
+
+                  if (timer) {
+                    clearTimeout(timer);
+                  }
+
+                  const newTimer = setTimeout(async () => {
+                    console.log("Stop typing");
+                    const content = badWords(e.target.value, {
+                      replacement: "*",
+                      blackList: (defaultList) => [
+                        ...defaultList,
+                        "mẹ mày",
+                        "cc",
+                        "nigga",
+                        "đmm",
+                        "mm",
+                        "đmm",
+                      ],
+                    });
+                    console.log(content);
+                    if (e.target.value.trim() != "") {
+                      setContentSharePost(content.toString());
+                    }
+                  }, 1000);
+
+                  setTimer(newTimer);
+                }}
+              />
             </>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAlerts} sx={{ color: "gray" }}>
+          <Button
+            color={`${
+              actionDialog.actionType === "deleteCmt" ? "primary" : "error"
+            }`}
+            variant="outlined"
+            onClick={handleCloseAlerts}
+          >
             Không
           </Button>
-          <Button onClick={handleAgreeAlerts} autoFocus>
+          <Button
+            color={`${
+              actionDialog.actionType === "deleteCmt" ? "error" : "primary"
+            }`}
+            variant="contained"
+            onClick={handleAgreeAlerts}
+            autoFocus
+            sx={{ minWidth: "80px" }}
+          >
             {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
           </Button>
         </DialogActions>
@@ -4121,7 +4848,7 @@ const PostProfile = ({
         fullWidth
       >
         <DialogTitle
-          sx={{ m: 0, p: 2 }}
+          sx={{ m: 0, p: 2, color: GLOBAL_COLOR_BLACK }}
           id="customized-dialog-title"
           fontSize={"18px"}
         >
@@ -4183,11 +4910,13 @@ const PostProfile = ({
         autoHideDuration={2000}
         onClose={handleCloseSnackbar}
       >
-        <Alert variant="filled" severity={dataSnackbar.type}>
-          {dataSnackbar.type == "success"
-            ? dataSnackbar.contentSnackbar
-            : GLOBAL_ERROR_MESSAGE}
-        </Alert>
+        {dataSnackbar.openSnackbar && (
+          <Alert variant="filled" severity={dataSnackbar.type}>
+            {dataSnackbar.type == "success"
+              ? dataSnackbar.contentSnackbar
+              : GLOBAL_ERROR_MESSAGE}
+          </Alert>
+        )}
       </Snackbar>
     </>
   );

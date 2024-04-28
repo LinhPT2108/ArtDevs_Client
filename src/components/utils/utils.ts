@@ -42,6 +42,12 @@ export const isImage = (url: string) => {
   }
 };
 
+export const checkAge = (dateString: string): boolean => {
+  const birthday = new Date(dateString);
+  const age =
+    (new Date().getTime() - birthday.getTime()) / (1000 * 3600 * 24 * 365.25);
+  return age >= 14;
+};
 export const isFile = (url: any) => {
   console.log(url);
   if (url instanceof File) {

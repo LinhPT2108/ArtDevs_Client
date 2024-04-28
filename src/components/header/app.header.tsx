@@ -69,6 +69,7 @@ import {
   GLOBAL_BG_NAV,
   GLOBAL_BG_NOTIFY,
   GLOBAL_BOXSHADOW,
+  GLOBAL_COLOR_BLACK,
   GLOBAL_COLOR_HEADER,
   GLOBAL_COLOR_MENU,
   GLOBAL_COLOR_NOTIFY,
@@ -306,6 +307,9 @@ export default function AppHeader(pros: IPros) {
   const handleActivity = () => {
     router.push("/activity");
   };
+  const handleUpgradeemntro = () => {
+    router.push("/upgrade-mentor");
+  };
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -324,6 +328,7 @@ export default function AppHeader(pros: IPros) {
     >
       <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
       <MenuItem onClick={handleActivity}>Lịch sử hoạt động</MenuItem>
+      <MenuItem onClick={handleUpgradeemntro}>Nâp cấp Mentor</MenuItem>
     </Menu>
   );
 
@@ -588,9 +593,9 @@ export default function AppHeader(pros: IPros) {
             ? "auto"
             : anchor === "right" && pros?.pageUrl == "chat"
             ? 280
-            : 210,
+            : 223,
         paddingTop: { xs: "58px", sm: "85px" },
-        backgroundColor: "#293145",
+        backgroundColor: GLOBAL_BG,
       }}
       role="presentation"
       onClick={
@@ -807,7 +812,7 @@ export default function AppHeader(pros: IPros) {
         sx={{
           bgcolor: GLOBAL_BG,
           color: "text.white",
-          padding: { xs: "0px", lg: "0 64px" },
+          padding: { xs: "0px", lg: "8px 64px" },
           zIndex: "1202",
         }}
       >
@@ -830,7 +835,7 @@ export default function AppHeader(pros: IPros) {
           >
             <Link href="/">
               <CardMedia
-                sx={{ width: { xs: "60px", sm: "100px" } }}
+                sx={{ width: { xs: "180px", sm: "240px" } }}
                 component="img"
                 image="/Art_Devs_y-removebg-preview.png"
                 alt="logo"
@@ -868,7 +873,7 @@ export default function AppHeader(pros: IPros) {
           <IconTabs />
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { md: "flex" }, alignItems: "center" }}>
-            <IconButton
+            {/* <IconButton
               size="large"
               color="inherit"
               sx={{
@@ -896,7 +901,7 @@ export default function AppHeader(pros: IPros) {
                   }}
                 />
               </Badge>
-            </IconButton>
+            </IconButton> */}
             {windowSize >= 900 && (
               <ToggleButton
                 onClick={() => {
@@ -971,7 +976,7 @@ export default function AppHeader(pros: IPros) {
                     onClose={toggleDrawer(anchor, false)}
                     sx={{
                       "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-                        backgroundColor: "#293145",
+                        backgroundColor: GLOBAL_BG,
                       },
                     }}
                   >
@@ -1457,11 +1462,12 @@ export default function AppHeader(pros: IPros) {
                     setSelectedMenu(!selectedMenu);
                   }}
                   sx={{
-                    color: "#ffffff",
+                    color: GLOBAL_COLOR_BLACK,
                     borderRadius: "100%",
-                    display: { xs: "inline", sm: "none" },
-                    minWidth: { xs: "36px", sm: "48px" },
-                    padding: { xs: "3px", sm: "6px" },
+                    display: { xs: "inline-flex", sm: "none" },
+                    // minWidth: { xs: "36px", sm: "48px" },
+                    padding: { xs: "6px", sm: "6px" },
+                    marginLeft: "6px",
                   }}
                 >
                   <MenuIcon />
@@ -1472,7 +1478,7 @@ export default function AppHeader(pros: IPros) {
                   onClose={toggleDrawer(anchor, false)}
                   sx={{
                     "& .css-4t3x6l-MuiPaper-root-MuiDrawer-paper": {
-                      backgroundColor: "#293145",
+                      backgroundColor: GLOBAL_BG,
                     },
                   }}
                 >

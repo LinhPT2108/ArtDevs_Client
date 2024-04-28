@@ -213,13 +213,13 @@ const ProgamingLanguageTable = (props: Props) => {
             {">"}
           </button>
           <span className="text-gray-700">
-            Page{" "}
+            Trang{" "}
             <strong>
-              {pageIndex + 1} of {pageOptions.length}
+              {pageIndex + 1} của {pageOptions.length}
             </strong>{" "}
           </span>
 
-          <span className="text-gray-700">| Show </span>
+          <span className="text-gray-700">| Hiển thị </span>
           <select
             value={pageSize}
             onChange={(e) => {
