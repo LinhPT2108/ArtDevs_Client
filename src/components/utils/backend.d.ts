@@ -247,11 +247,12 @@ declare global {
     postIdByHashTag: string;
   }
   interface ImageofPost {
-    id: number;
+    // id: number;
     cloudinaryPublicId: string;
     imageUrl: string;
     postID: string;
     time: string;
+    valid: boolean;
   }
   interface PostDetails {
     createDate: string;
@@ -268,7 +269,8 @@ declare global {
     userId: string;
     time: Date;
     timelineUserId: Date;
-    listImageofPost: File[] | null;
+    // listImageofPost: File[] | null;
+    listImageofPost: ImageofPost[] | null;
     privacyPostDetails: number;
     listHashtag: string[] | null;
   }

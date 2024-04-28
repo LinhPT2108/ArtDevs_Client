@@ -23,6 +23,7 @@ import "swiper/css/free-mode";
 import "swiper/css/pagination";
 import "swiper/css";
 import { FreeMode, Pagination } from "swiper/modules";
+import { CldUploadWidget } from "next-cloudinary";
 import {
   Alert,
   AppBar,
@@ -120,6 +121,7 @@ import Stomp from "stompjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import InfiniteScroll from "../hash-tag/Infinite.scroll";
 import PostSkeleton from "../posts/post.skeleton";
+import { analyzeImage, findMaxValue } from "../utils/sightengineAPI";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -141,6 +143,43 @@ interface PreviewImageOfPostProps {
   index: number;
   handleRemoveImageOfPost: (index: number) => void;
 }
+interface PreviewImageOfPostProps2 {
+  url: ImageofPost;
+  index: number;
+  handleRemoveImageOfPost: (index: number) => void;
+}
+
+const PreviewImageOfPost2: React.FC<PreviewImageOfPostProps2> = ({
+  url,
+  index,
+  handleRemoveImageOfPost,
+}) => {
+  const imageUrl = url.imageUrl;
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-block",
+        mr: "8px",
+      }}
+    >
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="100%"
+        height="100%"
+        loading="lazy"
+        style={{
+          filter: url.valid ? "none" : "blur(5px)",
+        }}
+      />
+
+      <RemoveButton onClick={() => handleRemoveImageOfPost(index)}>
+        <ClearIcon />
+      </RemoveButton>
+    </Box>
+  );
+};
 
 const PreviewImageOfPost: React.FC<PreviewImageOfPostProps> = ({
   url,
@@ -259,10 +298,11 @@ const PostProfile = ({
   search,
   friendPost,
 }: IPros) => {
-   
-    console.log(stompClient);
+  // console.log(stompClient);
   const themeS = useTheme();
+  const [validPost, setValidPost] = React.useState<boolean>(true);
   const [activeStep, setActiveStep] = React.useState(0);
+  const [countImgCloud, setCountImgCloud] = React.useState(0);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -305,7 +345,7 @@ const PostProfile = ({
       // : friendPost
       // ? friendPost
       "/news-feed";
-  console.log(">>> check url: ", url);
+  // console.log(">>> check url: ", url);
   const searchParams = useSearchParams();
 
   //get data bài đăng
@@ -516,7 +556,7 @@ const PostProfile = ({
     time: new Date(),
     timelineUserId: new Date(),
     userId: session ? session?.user?.userId : "",
-    listImageofPost: null,
+    listImageofPost: [],
     privacyPostDetails: 1,
     listHashtag: [],
   });
@@ -551,18 +591,22 @@ const PostProfile = ({
       time: new Date(),
       timelineUserId: new Date(),
       userId: post?.postId?.userPost?.userId,
-      listImageofPost: (await Promise.all(
-        post?.postId?.listImageofPost?.map(async (image) => {
-          const file = await fetchImageAsFile(image.imageUrl);
-          return file;
-        })
-      )) as File[],
+      listImageofPost: post?.postId?.listImageofPost?.map((image) => ({
+        ...image,
+        valid: true,
+      })),
+      // listImageofPost: (await Promise.all(
+      //   post?.postId?.listImageofPost?.map(async (image) => {
+      //     const file = await fetchImageAsFile(image.imageUrl);
+      //     return file;
+      //   })
+      // )) as File[],
       privacyPostDetails: selectedPrivacy?.privacyPostId as number,
       listHashtag: post?.postId?.listHashtag.map(
         (hashtag) => hashtag.hashtagDetailName
       ),
     };
-    console.log(">>> check editedPostData: ", selectedPrivacy);
+    console.log(">>> check editedPostData: ", editedPostData);
     setPostData(editedPostData);
   };
   const handleClosePost = () => setOpenPost(false);
@@ -581,7 +625,8 @@ const PostProfile = ({
   const [selectPost, setSelectPost] = useState<any>();
   const [showAllComments, setShowAllComments] = useState([]);
   const [isShowReplies, setIsShowReplies] = useState(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<ImageofPost[]>([]);
   const [isLoadingComment, setIsLoadingComment] = useState(false);
   const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
   const [isComment, setIsComment] = useState<boolean>(false);
@@ -706,64 +751,87 @@ const PostProfile = ({
   ) => {
     const fileInput = event.target as HTMLInputElement;
     const selected = fileInput.files;
+    // setPostData((prevData) => ({
+    //   ...prevData,
+    //   listImageofPost: [
+    //     ...(prevData.listImageofPost || []),
+    //     ...(selected ? Array.from(selected) : []),
+    //   ] as File[],
+    // }));
+  };
 
-    console.log(selected);
-
+  const handleChangeImageByCloud = async (imageOfPostdto: ImageofPost) => {
+    console.log("check image");
+    console.log(await analyzeImage(imageOfPostdto.imageUrl));
+    const resp = await analyzeImage(imageOfPostdto.imageUrl);
+    const { property, value } = findMaxValue(resp);
+    console.log(property, value);
+    if (value > 0.5) {
+      imageOfPostdto.valid = false;
+      setValidPost(false);
+    }
     setPostData((prevData) => ({
       ...prevData,
       listImageofPost: [
         ...(prevData.listImageofPost || []),
-        ...(selected ? Array.from(selected) : []),
-      ] as File[],
+        imageOfPostdto,
+      ] as ImageofPost[],
     }));
-
-    // nsfwjs
-    //   .load()
-    //   .then(function (model) {
-    //     // Classify the image
-    //     return model.classify(selected![0]);
-    //   })
-    //   .then(function (predictions) {
-    //     console.log("Predictions: ", predictions);
-    //   });
   };
+
   const handleSaveEditPost = async () => {
     console.log(postData);
-    const formData = new FormData();
-    formData.append(
-      "postDTO",
-      new Blob(
-        [
-          JSON.stringify({
-            postId: postData.postId,
-            content: postData.content,
-            listHashtag: postData.listHashtag,
-            timelineUserId: postData.timelineUserId,
-            time: postData.time,
-            privacyPostDetails: postData.privacyPostDetails,
-          }),
-        ],
-        { type: "application/json" }
-      )
-    );
 
-    if (postData.listImageofPost) {
-      postData.listImageofPost.forEach((file: any, index: any) => {
-        formData.append("listImageofPost", file);
-      });
-    } else {
-      formData.append("listImageofPost", "");
-    }
+    handleClickOpenLoaderPost();
+
+    // const formData = new FormData();
+    // formData.append(
+    //   "postDTO",
+    //   new Blob(
+    //     [
+    //       JSON.stringify({
+    //         postId: postData.postId,
+    //         content: postData.content,
+    //         listHashtag: postData.listHashtag,
+    //         timelineUserId: postData.timelineUserId,
+    //         time: postData.time,
+    //         privacyPostDetails: postData.privacyPostDetails,
+    //       }),
+    //     ],
+    //     { type: "application/json" }
+    //   )
+    // );
+
+    // if (postData.listImageofPost) {
+    //   postData.listImageofPost.forEach((file: any, index: any) => {
+    //     formData.append("listImageofPost", file);
+    //   });
+    // } else {
+    //   formData.append("listImageofPost", "");
+    // }
     const response = await fetch(
       GLOBAL_URL + "/api/update-post/" + postData.postId,
       {
         method: "PUT",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        body: formData,
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: postData.content,
+          listHashtag: postData.listHashtag,
+          timelineUserId: postData.timelineUserId,
+          time: postData.time,
+          privacyPostDetails: postData.privacyPostDetails,
+          postId: postData.postId,
+          listImageofPost: postData.listImageofPost,
+        }),
       }
     );
     console.log(">>> check post update: ", response.status);
     if (response.status == 200) {
+      handleCloseLoaderPost();
+      handleClosePost();
       const data: ResPost = await response.json();
       console.log(data);
 
@@ -791,32 +859,65 @@ const PostProfile = ({
     const formData = new FormData();
     formData.append(
       "postDTO",
-      new Blob(
-        [
-          JSON.stringify({
-            content: postData.content,
-            listHashtag: postData.listHashtag,
-            timelineUserId: postData.timelineUserId,
-            time: postData.time,
-            privacyPostDetails: postData.privacyPostDetails,
-            postId: postData.postId,
-          }),
-        ],
-        { type: "application/json" }
-      )
+      // new Blob(
+      //   [
+      JSON.stringify({
+        content: postData.content,
+        listHashtag: postData.listHashtag,
+        timelineUserId: postData.timelineUserId,
+        time: postData.time,
+        privacyPostDetails: postData.privacyPostDetails,
+        postId: postData.postId,
+      })
+      //   ],
+      //   { type: "application/json" }
+      // )
     );
-
+    console.log(postData.listImageofPost);
     if (postData.listImageofPost) {
-      postData.listImageofPost.forEach((file: any, index: any) => {
-        formData.append("listImageofPost", file);
-      });
+      console.log("có ảnh");
+
+      postData.listImageofPost.forEach(
+        (imageOfPost: ImageofPost, index: number) => {
+          const imageJson = JSON.stringify(imageOfPost);
+          formData.append(`listImageofPost`, imageJson);
+        }
+      );
+      // postData.listImageofPost.forEach((file: ImageofPost, index: any) => {
+      //   formData.append(
+      //     "listImageofPost",
+      //     new Blob(
+      //       [
+      //         JSON.stringify({
+      //           cloudinaryPublicId: file.cloudinaryPublicId,
+      //           imageUrl: file.imageUrl,
+      //           postID: file.postID,
+      //           time: file.time,
+      //         }),
+      //       ],
+      //       { type: "application/json" }
+      //     )
+      //   );
+      // });
     } else {
+      console.log("rỗng ảnh");
       formData.append("listImageofPost", "");
     }
     const response = await fetch(GLOBAL_URL + "/api/post", {
       method: "POST",
-      headers: { authorization: `Bearer ${session?.access_token}` },
-      body: formData,
+      headers: {
+        authorization: `Bearer ${session?.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: postData.content,
+        listHashtag: postData.listHashtag,
+        timelineUserId: postData.timelineUserId,
+        time: postData.time,
+        privacyPostDetails: postData.privacyPostDetails,
+        postId: postData.postId,
+        listImageofPost: postData.listImageofPost,
+      }),
     });
     console.log(">>> check post data: ", response.status);
     if (response.status == 200) {
@@ -850,7 +951,8 @@ const PostProfile = ({
     }
   };
   const handleRemoveImageOfPost = (index: number) => {
-    const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    // const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    const newSelectedFiles = [...(postData.listImageofPost as ImageofPost[])];
     newSelectedFiles.splice(index, 1);
     setSelectedFiles(newSelectedFiles);
     console.log(newSelectedFiles);
@@ -859,6 +961,28 @@ const PostProfile = ({
       listImageofPost: newSelectedFiles,
     }));
   };
+
+  useEffect(() => {
+    console.log(postData);
+    let isStill = false;
+    if (postData.listImageofPost) {
+      if (postData.listImageofPost?.length > 0) {
+        postData.listImageofPost?.map((i) => {
+          if (!i.valid) {
+            isStill = true;
+            return;
+          }
+        });
+      } else {
+        setValidPost(true);
+      }
+    }
+    if (isStill) {
+      setValidPost(false);
+    } else {
+      setValidPost(true);
+    }
+  }, [postData]);
 
   // ham copy post.main
   const handleCloseSnackbar = (
@@ -1805,7 +1929,7 @@ const PostProfile = ({
     if (isComment) {
       console.log(formDataComment);
       setIsLoadingComment(true);
-      const response = share
+      const response: any = share
         ? await postCommentOfShareApi(formDataCommentOfShare, session)
         : await postCommentApi(formDataComment, session);
 
@@ -1820,7 +1944,7 @@ const PostProfile = ({
               senderId: session?.user?.userId,
               postId: "",
               shareId: formDataCommentOfShare?.shareId,
-              type: "commentSharev",
+              type: "commentShare",
             };
             stompClient.send(
               `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
@@ -2292,16 +2416,16 @@ const PostProfile = ({
                 width: "100%",
                 borderRadius: "12px",
               },
-              component: "form",
-              onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                event.preventDefault();
-                const formData = new FormData(event.currentTarget);
-                const formJson = Object.fromEntries(
-                  (formData as any).entries()
-                );
-                console.log(formJson);
-                handleClosePost();
-              },
+              // component: "form",
+              // onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+              //   event.preventDefault();
+              //   const formData = new FormData(event.currentTarget);
+              //   const formJson = Object.fromEntries(
+              //     (formData as any).entries()
+              //   );
+              //   console.log(formJson);
+              //   handleClosePost();
+              // },
             }}
           >
             <Box className="dialog-header">
@@ -2568,9 +2692,10 @@ const PostProfile = ({
                     alignItems: "center",
                     justifyContent: "center",
                     display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <Button
+                  {/* <Button
                     component="label"
                     variant="contained"
                     sx={{
@@ -2592,10 +2717,70 @@ const PostProfile = ({
                       multiple
                       name="listImageofComment"
                     />
-                  </Button>
+                  </Button> */}
+
+                  <CldUploadWidget
+                    uploadPreset="g4py7mwy"
+                    onSuccess={(result: any, { widget }) => {
+                      console.log(result?.info);
+                      const imgOfPostSave: ImageofPost = {
+                        cloudinaryPublicId: result?.info?.asset_id,
+                        imageUrl: result?.info?.secure_url,
+                        postID: "",
+                        time: result?.info?.created_at,
+                        valid: true,
+                      };
+                      handleChangeImageByCloud(imgOfPostSave);
+                      // widget.close();
+                    }}
+                  >
+                    {({ open }) => {
+                      function handleOnClick() {
+                        open();
+                      }
+                      return (
+                        <Button
+                          variant="contained"
+                          onClick={handleOnClick}
+                          sx={{
+                            p: "8px",
+                            "&:hover": {
+                              boxShadow: GLOBAL_BOXSHADOW,
+                            },
+                            boxShadow: "none",
+                          }}
+                        >
+                          <AddPhotoAlternate /> Thêm ảnh hoặc Video
+                        </Button>
+                      );
+                    }}
+                  </CldUploadWidget>
+                  {countImgCloud}
+                  {!validPost ? (
+                    <FormHelperText
+                      sx={{
+                        color: "red",
+                      }}
+                    >
+                      Ảnh hoặc video không hợp lệ, vui lòng kiểm tra lại !
+                    </FormHelperText>
+                  ) : (
+                    <></>
+                  )}
                 </CardContent>
                 <Grid container rowSpacing={1} mt={1}>
-                  {postData.listImageofPost?.map((url: File, index: any) => (
+                  {postData.listImageofPost?.map(
+                    (url: ImageofPost, index: any) => (
+                      <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                        <PreviewImageOfPost2
+                          url={url}
+                          index={index}
+                          handleRemoveImageOfPost={handleRemoveImageOfPost}
+                        />
+                      </Grid>
+                    )
+                  )}
+                  {/* {postData.listImageofPost?.map((url: File, index: any) => (
                     <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
                       <PreviewImageOfPost
                         // key={index}
@@ -2604,7 +2789,7 @@ const PostProfile = ({
                         handleRemoveImageOfPost={handleRemoveImageOfPost}
                       />
                     </Grid>
-                  ))}
+                  ))} */}
                 </Grid>
               </Card>
             </DialogContent>
@@ -2620,7 +2805,12 @@ const PostProfile = ({
               {isEditPost ? (
                 <Button onClick={handleSaveEditPost}>Lưu</Button>
               ) : (
-                <Button onClick={handlePost}>Đăng</Button>
+                <Button
+                  onClick={handlePost}
+                  disabled={!postData.content || !validPost}
+                >
+                  Đăng
+                </Button>
               )}
             </DialogActions>
           </Dialog>
@@ -2637,7 +2827,7 @@ const PostProfile = ({
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
                 <Loader />
-                <Typography
+                {/* <Typography
                   sx={{
                     textAlign: "center",
                     fontWeight: "bold",
@@ -2645,7 +2835,7 @@ const PostProfile = ({
                   }}
                 >
                   Đang đăng bài
-                </Typography>
+                </Typography> */}
               </DialogContentText>
             </DialogContent>
           </Dialog>
@@ -2913,7 +3103,28 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {session?.user?.userId == item?.postId.userPost.userId ? (
+                    {item?.typePost == "share" && (
+                      <Box>
+                        <MenuItem
+                          onClick={() =>
+                            handleDeletePost(selectedItemId, index)
+                          }
+                        >
+                          <ListItemIcon>
+                            <DeleteIcon fontSize="small" />
+                          </ListItemIcon>
+                          Xóa bài viết chia sẻ
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                          <ListItemIcon>
+                            <EditIcon fontSize="small" />
+                          </ListItemIcon>
+                          Chỉnh sửa bài viết chia sẻ
+                        </MenuItem>
+                      </Box>
+                    )}
+                    {item?.typePost != "share" &&
+                    session?.user?.userId == item?.postId.userPost.userId ? (
                       <Box>
                         <MenuItem
                           onClick={() =>
@@ -3408,12 +3619,8 @@ const PostProfile = ({
                           vertical: "bottom",
                         }}
                       >
-                        {(session?.user?.userId ==
-                          item?.postId?.userPost?.userId ||
-                          //@ts-ignore
-                          session?.user?.userId == item?.userPostDto?.userId) &&
-                        !searchParams.get("id") ? (
-                          <Box>
+                        {/* {searchParams.get("id") != session?.user?.userId ? ( */}
+                        {/* <Box>
                             <MenuItem
                               onClick={() =>
                                 handleDeletePost(selectedItemId, index)
@@ -3422,7 +3629,7 @@ const PostProfile = ({
                               <ListItemIcon>
                                 <DeleteIcon fontSize="small" />
                               </ListItemIcon>
-                              Xóa bài viết{" "}
+                              Xóa bài viết chia sẻ{session?.user?.userId}
                             </MenuItem>
                             <MenuItem
                               onClick={() => handleEditPost(postModal!)}
@@ -3430,23 +3637,24 @@ const PostProfile = ({
                               <ListItemIcon>
                                 <EditIcon fontSize="small" />
                               </ListItemIcon>
-                              Chỉnh sửa bài viết{" "}
+                              Chỉnh sửa bài viết chia sẻ
+                              {item?.userPostDto?.userId}
                             </MenuItem>
-                          </Box>
-                        ) : (
-                          <Box>
-                            <MenuItem
-                              onClick={() =>
-                                handleOpenDialogReportPost(postModal!)
-                              }
-                            >
-                              <ReportGmailerrorredOutlinedIcon
-                                sx={{ marginRight: "6px" }}
-                              />
-                              Báo cáo bài viết
-                            </MenuItem>
-                          </Box>
-                        )}
+                          </Box> */}
+                        {/* ) : ( */}
+                        <Box>
+                          <MenuItem
+                            onClick={() =>
+                              handleOpenDialogReportPost(postModal!)
+                            }
+                          >
+                            <ReportGmailerrorredOutlinedIcon
+                              sx={{ marginRight: "6px" }}
+                            />
+                            Báo cáo bài viết
+                          </MenuItem>
+                        </Box>
+                        {/* )}  */}
                       </Menu>
                     </Box>
                   </Box>
@@ -3556,7 +3764,7 @@ const PostProfile = ({
                 {item?.typePost == "share" ? (
                   <Grid
                     container
-                    columns={3}
+                    columns={2}
                     sx={{
                       borderTop: " 1px solid #3333",
                     }}
@@ -3607,7 +3815,7 @@ const PostProfile = ({
                               component={"span"}
                               sx={{ marginLeft: "5px" }}
                             >
-                              Thích Share
+                              Thích
                             </Typography>
                           </>
                         )}
@@ -3650,7 +3858,7 @@ const PostProfile = ({
                         </Typography>
                       </IconButton>
                     </Grid>
-                    <Grid
+                    {/* <Grid
                       item
                       xs={1}
                       sx={{
@@ -3681,7 +3889,7 @@ const PostProfile = ({
                       <Typography component={"span"} sx={{ marginLeft: "5px" }}>
                         Chia sẻ
                       </Typography>
-                    </Grid>
+                    </Grid> */}
                   </Grid>
                 ) : (
                   <Grid
@@ -4403,6 +4611,7 @@ const PostProfile = ({
                                               )}
                                             </Typography>
                                           </Tooltip>
+                                          
                                           <Button
                                             size="small"
                                             onClick={() =>
