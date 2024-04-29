@@ -55,6 +55,7 @@ import { ProcessingLoading } from "../utils/component.global";
 import { deleteSpace, formatBirthDay } from "../utils/utils";
 import { GLOBAL_SEND_FRIEND, GLOBAL_URL } from "../utils/veriable.global";
 import PostProfile from "./post.profile";
+import HomeMedia from "./home.media";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -1950,21 +1951,13 @@ const HomeProfile = ({ session }: IPros) => {
           >
             <Box
               sx={{
-                width: {
-                  xs: "98%",
-                  sm: "95%",
-                  md: "90%",
-                  lg: "80%",
-                  xl: "70%",
-                },
-                maxWidth: "1000px",
-                margin: " auto",
-                display: " grid",
-                gridTemplateColumns: { xs: "1fr", sm: " 2fr 3fr" },
-                gridColumnGap: " 15px",
+                width: {},
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
               }}
             >
-              Media
+              <HomeMedia session={session} />
             </Box>
           </Box>
         </CustomTabPanel>{" "}
