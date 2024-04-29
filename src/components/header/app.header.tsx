@@ -307,7 +307,7 @@ export default function AppHeader(pros: IPros) {
 
   const menuId = "primary-search-account-menu";
   const handleActivity = () => {
-    router.push("/activity");
+    router.push("/activity?tab=like");
   };
   const handleUpgradeemntro = () => {
     router.push("/upgrade-mentor");

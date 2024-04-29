@@ -22,7 +22,7 @@ const BodyWrapper = ({ children, session }: IPros) => {
   const router = usePathname();
   return (
     <>
-      {router != "/chat" && router != "/search" ? (
+      {router != "/activity" && router != "/search" ? (
         <Box
           sx={{
             paddingLeft: { xs: "0", sm: "215px" },

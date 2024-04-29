@@ -10,21 +10,21 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Snowfall from "react-snowfall";
 import "../../style/loading.css";
+import KnowlegdeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
-import { checkAge } from "../utils/utils";
+import { checkAge, removeExtraSpaces } from "../utils/utils";
 import { GLOBAL_URL } from "../utils/veriable.global";
-import InforSign from "./sign-up/infor.sign";
-import KnowlegdeSign from "./sign-up/knowledge.sign";
+import FirstLoginInforModel from "./first.login.infor.model";
 
 const steps = [`Thông tin cá nhân`, "Danh mục quan tâm"];
 
 interface MyData {
   programingLanguage: MyLanguageProgram[];
-  setDataRegister: (value: UserRegister) => void;
+  setDataRegister: (value: UserLogin) => void;
   address: { provinces: Province[]; districts: District[]; wards: Ward[] };
   setCitys: (value: Province) => void;
   setDistricts: (value: District) => void;
-  errorRegister: string;
+  session: User;
 }
 
 interface State extends SnackbarOrigin {
@@ -42,14 +42,14 @@ const CubeSpan: React.FC<CubeSpanProps> = ({ index }) => {
   return <span style={spanStyle} className="cube-span"></span>;
 };
 
-const SignUp = (props: MyData) => {
+const FirstLoginInfor = (props: MyData) => {
   const {
     address,
     programingLanguage,
     setDataRegister,
     setCitys,
     setDistricts,
-    errorRegister,
+    session,
   } = props;
 
   const [activeStep, setActiveStep] = useState<number>(0);
@@ -57,12 +57,6 @@ const SignUp = (props: MyData) => {
   const [skipped, setSkipped] = useState(new Set<number>());
   const [isErrorFirstName, setIsErrorFirstName] = useState<boolean>(false);
   const [isErrorLastName, setIsErrorLastName] = useState<boolean>(false);
-  const [isErrorEmail, setIsErrorEmail] = useState<boolean>(false);
-  const [isErrorEmailExist, setIsErrorEmailExist] = useState<boolean>(false);
-  const [emailExist, setEmailExist] = useState<string>("");
-  const [isErrorPassword, setIsErrorPassword] = useState<boolean>(false);
-  const [isErrorConfirmPassword, setIsErrorConfirmPassword] =
-    useState<boolean>(false);
   const [disableButton, setDisableButton] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [errorDemand, setErrorDemand] = useState<boolean>(false);
@@ -82,25 +76,7 @@ const SignUp = (props: MyData) => {
     (newState: SnackbarOrigin) => (event: React.MouseEvent) => {
       setState({ ...newState, open: true });
     };
-  const [data, setData] = useState<UserRegister>({
-    lastName: "",
-    middleName: "",
-    firstName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    birthday: "",
-    gender: 1,
-    city: "",
-    district: "",
-    ward: "",
-    role: { id: 2, roleName: "user" },
-    userId: "",
-    username: "",
-    isOnline: false,
-    listDemandOfUser: [],
-    listSkillOfUser: [],
-  });
+  const [data, setData] = useState<UserLogin>(session?.user);
   const handleUserName = (
     firstName: string,
     middleName: string,
@@ -120,39 +96,22 @@ const SignUp = (props: MyData) => {
   const handleLastName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
-      lastName: value,
+      lastName: removeExtraSpaces(value),
     }));
   };
   const handleMiddleName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
-      middleName: value,
+      middleName: removeExtraSpaces(value),
     }));
   };
   const handleFirstName = (value: string) => {
     setData((prevData) => ({
       ...prevData,
-      firstName: value,
+      firstName: removeExtraSpaces(value),
     }));
   };
-  const handleEmail = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      email: value,
-    }));
-  };
-  const handlePassword = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      password: value,
-    }));
-  };
-  const handleConfirmPassword = (value: string) => {
-    setData((prevData) => ({
-      ...prevData,
-      confirmPassword: value,
-    }));
-  };
+
   const handleDateOfBirth = (value: string) => {
     if (value) {
       if (checkAge(value)) {
@@ -160,7 +119,7 @@ const SignUp = (props: MyData) => {
         setMessageDateOfBirth("");
       } else {
         setErrorDateOfBirth(true);
-        setMessageDateOfBirth("Bạn chưa đủ 14 tuổi");
+        setMessageDateOfBirth("Tuổi không hợp lệ");
       }
     } else {
       setErrorDateOfBirth(true);
@@ -219,12 +178,6 @@ const SignUp = (props: MyData) => {
       }));
     }
   };
-  const handleRole = (value: Role) => {
-    setData((prevData) => ({
-      ...prevData,
-      role: value,
-    }));
-  };
   const handleListDemandOfUser = (myLanguageProgram: MyLanguageProgram[]) => {
     let arrayOfValues: string[] = [];
     if (myLanguageProgram) {
@@ -256,47 +209,10 @@ const SignUp = (props: MyData) => {
       listSkillOfUser: arrayOfValues,
     }));
   };
-  const isStepOptional = (step: number) => {
-    return step === 1;
-  };
 
   const isStepSkipped = (step: number) => {
     return skipped.has(step);
   };
-  const [count, setCount] = useState<number>(0);
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  useEffect(() => {
-    const fetchDataDemand = async () => {
-      try {
-        if (data?.email && emailRegex.test(data?.email)) {
-          const response = await sendRequest<IBackendRes<UserRegister>[]>({
-            url: GLOBAL_URL + "/api/user-by-email",
-            // url: process.env.PUBLIC_NEXT_BACKEND_URL + "/api/programingLanguage",
-            // url: "http://localhost:8080/api/user-by-email",
-            method: "GET",
-            queryParams: {
-              email: `${data?.email}`,
-            },
-          });
-          console.log(">>> check usser exist: ", response);
-          //@ts-ignore
-          if (response?.errorCode === 200) {
-            setIsErrorEmailExist(false);
-            setEmailExist("");
-            setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
-          } else {
-            setIsErrorEmailExist(true);
-            //@ts-ignore
-            setEmailExist(response?.message);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchDataDemand();
-  }, [count]);
 
   const handleNext = () => {
     let newSkipped = skipped;
@@ -305,9 +221,7 @@ const SignUp = (props: MyData) => {
       newSkipped.delete(activeStep);
     }
 
-    activeStep == 0
-      ? setCount((preCount) => preCount + 1)
-      : setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
+    setActiveStep((prevActiveStep: number) => prevActiveStep + 1);
 
     setSkipped(newSkipped);
     handleUserName(data.firstName, data.middleName, data.lastName);
@@ -317,7 +231,8 @@ const SignUp = (props: MyData) => {
     setActiveStep((prevActiveStep: number) => prevActiveStep - 1);
   };
 
-  const handleSignUp = () => {
+  const handleFirstLoginInfor = () => {
+    console.log(">>> check data:564 ");
     if (
       (data && !data?.listDemandOfUser) ||
       (data?.listDemandOfUser && data?.listDemandOfUser.length > 0)
@@ -334,7 +249,7 @@ const SignUp = (props: MyData) => {
   };
 
   const handleClick = () => {
-    activeStep >= steps.length - 1 ? handleSignUp() : handleNext();
+    activeStep >= steps.length - 1 ? handleFirstLoginInfor() : handleNext();
   };
 
   const [snowfallImages, setSnowfallImages] = useState<HTMLImageElement[]>([]);
@@ -350,26 +265,6 @@ const SignUp = (props: MyData) => {
     loadImage();
   }, []);
 
-  const handleRequest = (event: React.KeyboardEvent | React.MouseEvent) => {
-    setLoading(false);
-    setActiveStep((prevActiveStep: number) => prevActiveStep - 2);
-  };
-
-  useEffect(() => {
-    const handleFailRegister = async () => {
-      if (errorRegister) {
-        if (activeStep !== 0) {
-          setFinish(false);
-          handleRequest({} as React.MouseEvent);
-          handleShowErrorMessage({ vertical: "top", horizontal: "center" })(
-            {} as React.MouseEvent
-          );
-        }
-      }
-    };
-    handleFailRegister();
-  }, [errorRegister]);
-
   console.log(">>> check data: ", data);
 
   useEffect(() => {
@@ -379,25 +274,6 @@ const SignUp = (props: MyData) => {
         return;
       }
       if (!data.lastName) {
-        setDisableButton(true);
-        return;
-      }
-      if (!data.email) {
-        setDisableButton(true);
-        return;
-      }
-      if (!data.password) {
-        setDisableButton(true);
-        return;
-      }
-      if (data.confirmPassword !== data.password || !data.confirmPassword) {
-        setDisableButton(true);
-        return;
-      }
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!passwordRegex.test(data.password) || !emailRegex.test(data.email)) {
         setDisableButton(true);
         return;
       }
@@ -537,18 +413,15 @@ const SignUp = (props: MyData) => {
               display: "flex",
               flexDirection: "column",
               boxShadow: "0px -3px 3px 0px rgba(0,0,0,0.35) inset",
-              minHeight: "620px",
+              minHeight: "380px",
             }}
           >
             <Box sx={{ mt: 2, mb: 1, mx: 2, flex: "1", paddingX: "24px" }}>
               {activeStep === 0 ? (
-                <InforSign
+                <FirstLoginInforModel
                   handleLastName={handleLastName}
                   handleMiddleName={handleMiddleName}
                   handleFirstName={handleFirstName}
-                  handleEmail={handleEmail}
-                  handlePassword={handlePassword}
-                  handleConfirmPassword={handleConfirmPassword}
                   handleDateOfBirth={handleDateOfBirth}
                   handleGender={handleGender}
                   handleCity={handleCity}
@@ -560,19 +433,8 @@ const SignUp = (props: MyData) => {
                   data={data}
                   isErrorFirstName={isErrorFirstName}
                   isErrorLastName={isErrorLastName}
-                  isErrorEmail={isErrorEmail}
-                  isErrorPassword={isErrorPassword}
-                  isErrorConfirmPassword={isErrorConfirmPassword}
                   setIsErrorFirstName={setIsErrorFirstName}
                   setIsErrorLastName={setIsErrorLastName}
-                  setIsErrorEmail={setIsErrorEmail}
-                  setIsErrorPassword={setIsErrorPassword}
-                  setIsErrorConfirmPassword={setIsErrorConfirmPassword}
-                  isErrorEmailExist={isErrorEmailExist}
-                  setIsErrorEmailExist={setIsErrorEmailExist}
-                  emailExist={emailExist}
-                  setEmailExist={setEmailExist}
-                  errorRegister={errorRegister}
                   messageDateOfBirth={messageDateOfBirth}
                   errorDateOfBirth={errorDateOfBirth}
                 />
@@ -622,6 +484,7 @@ const SignUp = (props: MyData) => {
                     width: "160px",
                     fontSize: "16px",
                     paddingY: "11px",
+                    marginLeft: "24px",
                   }}
                 >
                   Back
@@ -635,7 +498,12 @@ const SignUp = (props: MyData) => {
                   disabled={disableButton}
                   variant="contained"
                   color="primary"
-                  sx={{ fontSize: "16px", width: "160px", paddingY: "11px" }}
+                  sx={{
+                    fontSize: "16px",
+                    width: "160px",
+                    paddingY: "11px",
+                    marginRight: "24px",
+                  }}
                 >
                   {activeStep === steps.length - 1 ? "Hoàn tất" : "Tiếp tục"}
                 </Button>
@@ -685,4 +553,4 @@ const SignUp = (props: MyData) => {
   );
 };
 
-export default SignUp;
+export default FirstLoginInfor;

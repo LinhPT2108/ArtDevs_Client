@@ -46,8 +46,9 @@ export const checkAge = (dateString: string): boolean => {
   const birthday = new Date(dateString);
   const age =
     (new Date().getTime() - birthday.getTime()) / (1000 * 3600 * 24 * 365.25);
-  return age >= 14;
+  return age >= 14 && age <= 99;
 };
+
 export const isFile = (url: any) => {
   console.log(url);
   if (url instanceof File) {
@@ -179,6 +180,12 @@ export function deleteSpace(value: string): string {
 
   return result;
 }
+
+export const removeExtraSpaces = (str: string): string => {
+  str = str.trim();
+  str = str.replace(/\s+/g, " ");
+  return str;
+};
 
 export function calculateTimeDifference(timeRelation: string): string {
   // Convert timeRelation to a Date object

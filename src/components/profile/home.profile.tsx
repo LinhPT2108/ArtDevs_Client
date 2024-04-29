@@ -1904,7 +1904,6 @@ const HomeProfile = ({ session }: IPros) => {
                         sessionGuest={dataProfile}
                         session={session}
                         profile={url}
-                        programingLanguage={programingLanguage}
                       />
                     )}
                   </Box>

@@ -582,4 +582,15 @@ declare global {
     userId: string;
     listImage: ImageofFeedback[] | null;
   }
+
+  interface LogDTO {
+    id: number;
+    action: string;
+    receiver: UserPost;
+    postId: string;
+    shareId: string;
+    content: string;
+    timeLog: string;
+    userPostDTO: UserPost;
+  }
 }

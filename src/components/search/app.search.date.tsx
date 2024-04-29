@@ -45,7 +45,7 @@ export default function DateCalendar({ text, startDate, setStartDate }: IPros) {
   return (
     <Stack
       direction="row"
-      spacing={2}
+      spacing={0}
       sx={{ display: "inline", width: "auto" }}
     >
       <Button
@@ -80,7 +80,13 @@ export default function DateCalendar({ text, startDate, setStartDate }: IPros) {
                 placement === "bottom-start" ? "left top" : "left bottom",
             }}
           >
-            <Paper>
+            <Paper
+              sx={{
+                "& .react-calendar": {
+                  width: "auto",
+                },
+              }}
+            >
               <Calendar
                 onClickDay={handleClose}
                 onChange={setStartDate}

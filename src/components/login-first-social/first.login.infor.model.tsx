@@ -13,14 +13,12 @@ import {
   TextField,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import { deleteSpace, removeExtraSpaces } from "../utils/utils";
 
 interface IPros {
   handleLastName: (data: string) => void;
   handleMiddleName: (data: string) => void;
   handleFirstName: (data: string) => void;
-  handleEmail: (data: string) => void;
-  handlePassword: (data: string) => void;
-  handleConfirmPassword: (data: string) => void;
   handleDateOfBirth: (data: string) => void;
   handleGender: (data: number) => void;
   handleCity: (data: Province) => void;
@@ -29,33 +27,19 @@ interface IPros {
   address: { provinces: Province[]; districts: District[]; wards: Ward[] };
   setCitys: (value: Province) => void;
   setDistricts: (value: District) => void;
-  data: UserRegister;
+  data: UserLogin;
   isErrorFirstName: boolean;
   isErrorLastName: boolean;
-  isErrorEmail: boolean;
-  isErrorPassword: boolean;
-  isErrorConfirmPassword: boolean;
   setIsErrorFirstName: (value: boolean) => void;
   setIsErrorLastName: (value: boolean) => void;
-  setIsErrorEmail: (value: boolean) => void;
-  setIsErrorPassword: (value: boolean) => void;
-  setIsErrorConfirmPassword: (value: boolean) => void;
-  errorRegister: string;
-  isErrorEmailExist: boolean;
-  setIsErrorEmailExist: (value: boolean) => void;
-  emailExist: string;
-  setEmailExist: (value: string) => void;
   errorDateOfBirth: boolean;
   messageDateOfBirth: string;
 }
-const InforSign = (props: IPros) => {
+const FirstLoginInforModel = (props: IPros) => {
   const {
     handleLastName,
     handleMiddleName,
     handleFirstName,
-    handleEmail,
-    handlePassword,
-    handleConfirmPassword,
     handleDateOfBirth,
     handleGender,
     handleCity,
@@ -67,35 +51,17 @@ const InforSign = (props: IPros) => {
     data,
     isErrorFirstName,
     isErrorLastName,
-    isErrorEmail,
-    isErrorPassword,
-    isErrorConfirmPassword,
     setIsErrorFirstName,
     setIsErrorLastName,
-    setIsErrorEmail,
-    setIsErrorPassword,
-    setIsErrorConfirmPassword,
-    errorRegister,
-    isErrorEmailExist,
-    setIsErrorEmailExist,
-    emailExist,
-    setEmailExist,
     messageDateOfBirth,
     errorDateOfBirth,
   } = props;
   const { provinces, districts, wards } = address;
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
   const [gender, setGender] = useState<number>(data?.gender);
 
   const [messageFirstName, setMessageFirstName] = useState<string>("");
   const [messageLastName, setMessageLastName] = useState<string>("");
-  const [messageEmail, setMessageEmail] = useState<string>("");
-  const [messagePassword, setMessagePassword] = useState<string>("");
-  const [messageConfirmPassword, setMessageConfirmPassword] =
-    useState<string>("");
 
   const handleChangeLastName = (value: string) => {
     if (value) {
@@ -105,7 +71,7 @@ const InforSign = (props: IPros) => {
       setIsErrorLastName(true);
       setMessageLastName("Vui lòng nhập họ của bạn !");
     }
-    handleLastName(value);
+    handleLastName(removeExtraSpaces(value));
   };
 
   const handleChangeFirstName = (value: string) => {
@@ -116,87 +82,9 @@ const InforSign = (props: IPros) => {
       setIsErrorFirstName(true);
       setMessageFirstName("Vui lòng nhập tên của bạn !");
     }
-    handleFirstName(value);
+    handleFirstName(removeExtraSpaces(value));
   };
-  const handleChangeEmail = (value: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    setIsErrorEmailExist(false);
-    setEmailExist("");
-    if (value) {
-      if (emailRegex.test(value)) {
-        setIsErrorEmail(false);
-        setMessageEmail("");
-      } else {
-        setIsErrorEmail(true);
-        setMessageEmail("Email không hợp lệ !");
-      }
-    } else {
-      setIsErrorEmail(true);
-      setMessageEmail("Vui lòng nhập email !");
-    }
-    handleEmail(value);
-  };
-  const handleChangePassword = (value: string) => {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).{6,}$/;
-    if (value) {
-      if (passwordRegex.test(value)) {
-        if (data.confirmPassword) {
-          if (data.confirmPassword !== value) {
-            setIsErrorConfirmPassword(true);
-            setMessageConfirmPassword("Mật khẩu chưa khớp !");
-          } else {
-            setIsErrorConfirmPassword(false);
-            setMessageConfirmPassword("");
-          }
-        }
-        setIsErrorPassword(false);
-        setMessagePassword("");
-      } else {
-        setIsErrorPassword(true);
-        setMessagePassword(
-          "Mật khẩu ít nhất 6 ký tự (hoa, thường, đặc biệt) !"
-        );
-      }
-    } else {
-      setIsErrorPassword(true);
-      setMessagePassword("Mật khẩu không được để trống !");
-    }
-    handlePassword(value);
-  };
-  const handleChangeConfirmPassword = (value: string) => {
-    if (value) {
-      if (data.password === value) {
-        setIsErrorConfirmPassword(false);
-        setMessageConfirmPassword("");
-      } else {
-        setIsErrorConfirmPassword(true);
-        setMessageConfirmPassword("Mật khẩu chưa khớp !");
-      }
-    } else {
-      setIsErrorConfirmPassword(true);
-      setMessageConfirmPassword("Xác nhận mật khẩu không hợp lệ !");
-    }
-    handleConfirmPassword(value);
-  };
-  const handleChangeDateOfBirth = (value: string) => {
-    if (value) {
-      setIsErrorConfirmPassword(false);
-    } else {
-      setIsErrorConfirmPassword(true);
-      setMessageConfirmPassword("Chưa chọn ngày sinh !");
-    }
-    handleDateOfBirth(value);
-  };
-  const handleFailRegister = () => {
-    setMessageEmail(errorRegister);
-    setIsErrorEmail(true);
-  };
-  useEffect(() => {
-    if (errorRegister) {
-      handleFailRegister();
-    }
-  }, [errorRegister]);
+
   return (
     <Box>
       <Box sx={{ fontWeight: 700, fontSize: { xs: 18, sm: 24 } }}>
@@ -300,132 +188,14 @@ const InforSign = (props: IPros) => {
               />
             </Grid>
           </Grid>
+
           <Grid
             item
             xs={24}
             columns={24}
             container
             spacing={2}
-            sx={{ paddingLeft: "0 !important", paddingTop: "0 !important" }}
-          >
-            <Grid item xs={24}>
-              <TextField
-                onChange={(e) => handleChangeEmail(e.target.value)}
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email"
-                name="email"
-                autoComplete="new-email"
-                autoFocus
-                value={data?.email}
-                error={isErrorEmail || isErrorEmailExist}
-                helperText={messageEmail || emailExist}
-                sx={{ marginBottom: "0" }}
-              />
-            </Grid>
-          </Grid>
-          <Grid
-            item
-            xs={24}
-            columns={24}
-            container
-            spacing={2}
-            sx={{ paddingLeft: "0 !important", paddingTop: "0 !important" }}
-          >
-            <Grid item xs={24} md={12}>
-              <TextField
-                onChange={(e) => handleChangePassword(e.target.value)}
-                // onKeyDown={(e) => {
-                //   if (e.key === "Enter") {
-                //     handleSubmit();
-                //   }
-                // }}
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Mật khẩu"
-                type={!showPassword ? "password" : "text"}
-                id="password"
-                autoComplete="new-password"
-                value={data?.password}
-                error={isErrorPassword}
-                helperText={messagePassword}
-                sx={{ mb: { xs: 0, md: 3 } }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid
-              item
-              xs={24}
-              md={12}
-              sx={{ paddingTop: { xs: "0 !important", md: "16px !important" } }}
-            >
-              <TextField
-                onChange={(e) => handleChangeConfirmPassword(e.target.value)}
-                // onKeyDown={(e) => {
-                //   if (e.key === "Enter") {
-                //     handleSubmit();
-                //   }
-                // }}
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                name="confirm-password"
-                label="Xác nhận mật khẩu"
-                type={!showConfirmPassword ? "password" : "text"}
-                id="confirm-password"
-                autoComplete="new-confirm-password"
-                value={data?.confirmPassword}
-                error={isErrorConfirmPassword}
-                helperText={messageConfirmPassword}
-                sx={{ mb: { xs: 0, md: 3 } }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        edge="end"
-                      >
-                        {showConfirmPassword ? (
-                          <VisibilityOff />
-                        ) : (
-                          <Visibility />
-                        )}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-          </Grid>
-          <Grid
-            item
-            xs={24}
-            columns={24}
-            container
-            spacing={2}
-            sx={{ paddingLeft: "0 !important", paddingTop: "0 !important" }}
+            sx={{ paddingLeft: "0 !important" }}
           >
             <Grid
               item
@@ -485,13 +255,13 @@ const InforSign = (props: IPros) => {
             xs={24}
             columns={24}
             container
-            spacing={2}
+            spacing={1}
             sx={{ paddingLeft: "0 !important" }}
           >
             <Grid item xs={24} md={8}>
               <Autocomplete
                 id="country-select-demo"
-                sx={{ width: 300 }}
+                // sx={{ width: 300 }}
                 options={provinces || []}
                 autoHighlight
                 getOptionLabel={(province) => province?.province_name}
@@ -522,7 +292,7 @@ const InforSign = (props: IPros) => {
             <Grid item xs={24} md={8}>
               <Autocomplete
                 id="district-select-demo"
-                sx={{ width: 300 }}
+                // sx={{ width: 300 }}
                 options={districts || []}
                 autoHighlight
                 getOptionLabel={(district) => district.district_name}
@@ -557,7 +327,7 @@ const InforSign = (props: IPros) => {
             <Grid item xs={24} md={8}>
               <Autocomplete
                 id="district-select-demo"
-                sx={{ width: 300 }}
+                // sx={{ width: 300 }}
                 options={wards || []}
                 autoHighlight
                 getOptionLabel={(ward) => ward.ward_name}
@@ -587,22 +357,10 @@ const InforSign = (props: IPros) => {
               />
             </Grid>
           </Grid>
-          <Grid
-            item
-            xs={24}
-            columns={24}
-            container
-            spacing={2}
-            sx={{ paddingLeft: "0 !important" }}
-          >
-            <Grid item xs={24}>
-              Điều khoản và chính sách
-            </Grid>
-          </Grid>
         </Grid>
       </Box>
     </Box>
   );
 };
 
-export default InforSign;
+export default FirstLoginInforModel;

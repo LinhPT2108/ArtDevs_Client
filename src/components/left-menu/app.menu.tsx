@@ -109,45 +109,38 @@ const AppMenu = ({ session }: { session: User }) => {
   const recent: ListItem[] = [
     {
       index: 5,
-      content: "Hộp thư điện tử",
-      icon: <SmsIcon />,
-      bgColor: "#004AAD",
-      url: "/chat",
-    },
-    {
-      index: 6,
       content: "Bài viết của bạn bè",
       icon: <RecentActorsIcon />,
       bgColor: "#004AAD",
       url: "/friend-post",
     },
     {
-      index: 7,
+      index: 6,
       content: "Bảo mật",
       icon: <SecurityIcon />,
       bgColor: "#004AAD",
       url: "/secure",
     },
     {
-      index: 8,
+      index: 7,
       content: "Thông tin chung",
       icon: <InfoIcon />,
       bgColor: "#004AAD",
       url: "/infor",
     },
     {
-      index: 9,
+      index: 8,
       content: "Đóng góp ý kiến",
       icon: <FeedbackIcon />,
       bgColor: "#004AAD",
       url: "/feedback",
     },
     {
-      index: 10,
+      index: 9,
       content: "Đăng xuất",
       icon: <LogoutIcon />,
       bgColor: "#004AAD",
-      url: "/",
+      url: "#",
     },
   ];
   leftMenu.push(info);
@@ -158,7 +151,7 @@ const AppMenu = ({ session }: { session: User }) => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
-    if (index == 10) {
+    if (index == 9) {
       handleOpen();
     }
     setSelectedIndex(index);

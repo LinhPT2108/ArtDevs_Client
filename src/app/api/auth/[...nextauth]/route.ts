@@ -58,7 +58,7 @@ export const authOptions: AuthOptions = {
           body: {
             lastName: "",
             middleName: "",
-            firstName: `${token?.name}`,
+            firstName: "",
             email: `${token?.email}`,
             password: "",
             dateOfBirth: "",

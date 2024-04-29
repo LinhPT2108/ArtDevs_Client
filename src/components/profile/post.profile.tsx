@@ -5137,7 +5137,7 @@ const PostProfile = ({
             </Typography>
           ) : (
             <>
-              <TextField
+              {/* <TextField
                 autoFocus
                 margin="dense"
                 name="content"
@@ -5151,11 +5151,6 @@ const PostProfile = ({
                     color: "white",
                   },
                 }}
-                // InputProps={{
-                //   style:{
-                //     color:"white"
-                //   }
-                // }}
                 onChange={(e) => {
                   setContentSharePost(e.target.value);
 
@@ -5185,7 +5180,7 @@ const PostProfile = ({
 
                   setTimer(newTimer);
                 }}
-              />
+              /> */}
               <Box
                 className="block-post-share"
                 sx={{
