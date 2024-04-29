@@ -468,7 +468,7 @@ const InforSign = (props: IPros) => {
             <Grid item xs={24} md={12}>
               <FormControl>
                 <FormLabel id="demo-row-radio-buttons-group-label">
-                  Gender
+                  Giới tính
                 </FormLabel>
                 <RadioGroup
                   row
@@ -482,11 +482,6 @@ const InforSign = (props: IPros) => {
                 >
                   <FormControlLabel value="1" control={<Radio />} label="Nam" />
                   <FormControlLabel value="2" control={<Radio />} label="Nữ" />
-                  <FormControlLabel
-                    value="3"
-                    control={<Radio />}
-                    label="Khác"
-                  />
                 </RadioGroup>
               </FormControl>
             </Grid>

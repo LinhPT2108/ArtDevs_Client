@@ -309,6 +309,8 @@ declare global {
     totalPostUseHashtag: number;
     timeCreate: string;
     isDel: Boolean;
+    report: number;
+    userAction: UserPost;
   }
   interface ReponseHashtagInfor {
     statusCode: number;

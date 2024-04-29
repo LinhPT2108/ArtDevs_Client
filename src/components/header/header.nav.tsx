@@ -1,11 +1,14 @@
 "use client";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import PhoneIcon from "@mui/icons-material/Phone";
+import HomeIcon from "@mui/icons-material/Home";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PersonPinIcon from "@mui/icons-material/PersonPin";
 import { GLOBAL_BG_NAV, GLOBAL_COLOR_NAV } from "../utils/veriable.global";
 import { useEffect, useState } from "react";
+import SchoolIcon from "@mui/icons-material/School";
 import { usePathname, useRouter } from "next/navigation";
 
 const IconTabs = () => {
@@ -38,7 +41,7 @@ const IconTabs = () => {
       } else if (newValue == 1 && currentPath != "/friend-post") {
         router.push("/friend-post");
       } else if (newValue == 2 && currentPath != "/mentor") {
-        router.push("/mentor");
+        router.push("/mentor?tab=all");
       } else if (newValue == 3 && currentPath != "/profile") {
         router.push("/profile");
       } else {
@@ -81,7 +84,7 @@ const IconTabs = () => {
           backgroundColor: GLOBAL_BG_NAV,
           color: GLOBAL_COLOR_NAV,
         }}
-        icon={<PhoneIcon />}
+        icon={<HomeIcon />}
         aria-label="phone"
       />
       <Tab
@@ -93,7 +96,7 @@ const IconTabs = () => {
           backgroundColor: GLOBAL_BG_NAV,
           color: GLOBAL_COLOR_NAV,
         }}
-        icon={<FavoriteIcon />}
+        icon={<RecentActorsIcon />}
         aria-label="favorite"
       />
       <Tab
@@ -105,7 +108,7 @@ const IconTabs = () => {
           color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
-        icon={<PersonPinIcon />}
+        icon={<SchoolIcon />}
         aria-label="person"
       />
       <Tab
@@ -117,7 +120,7 @@ const IconTabs = () => {
           color: GLOBAL_COLOR_NAV,
           borderRadius: "100%",
         }}
-        icon={<FavoriteIcon />}
+        icon={<AccountCircleIcon />}
         aria-label="favorite"
       />
     </Tabs>

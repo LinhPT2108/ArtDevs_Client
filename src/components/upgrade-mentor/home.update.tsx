@@ -214,7 +214,7 @@ export default function HomeUpgradeMentor({ session }: IPros) {
               <CheckIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary="Bạn phải có ít nhất 5 bài viết hữu ít" />
+          <ListItemText primary="Bạn phải có ít nhất 5 bài viết hữu ích" />
         </ListItem>
         <ListItem>
           <ListItemAvatar>
@@ -222,7 +222,7 @@ export default function HomeUpgradeMentor({ session }: IPros) {
               <CheckIcon />
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary="Có ít nhất 1000 lượt thích cho bài viết và phản hồi" />
+          <ListItemText primary="Có ít nhất 1000 lượt thích cho bài viết" />
         </ListItem>
         <ListItem>
           <ListItemAvatar>

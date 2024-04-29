@@ -114,6 +114,8 @@ interface IPros {
   pageUrl: string;
   session: User | null;
 }
+const socket = new SockJS("http://localhost:8080/wss");
+const stompClient = Stomp.over(socket);
 
 export default function AppHeader(pros: IPros) {
   const router = useRouter();
@@ -310,6 +312,9 @@ export default function AppHeader(pros: IPros) {
   const handleUpgradeemntro = () => {
     router.push("/upgrade-mentor");
   };
+  const handleProfile = () => {
+    router.push("/profile");
+  };
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -326,9 +331,11 @@ export default function AppHeader(pros: IPros) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+      <MenuItem onClick={handleMenuClose}>Trang cá nhân</MenuItem>
       <MenuItem onClick={handleActivity}>Lịch sử hoạt động</MenuItem>
-      <MenuItem onClick={handleUpgradeemntro}>Nâp cấp Mentor</MenuItem>
+      <MenuItem onClick={handleUpgradeemntro}>
+        Nâng cấp thành người hướng dẫn
+      </MenuItem>
     </Menu>
   );
 
@@ -364,8 +371,6 @@ export default function AppHeader(pros: IPros) {
     typeof window !== "undefined" ? window.innerWidth : 900
   );
 
-  const socket = new SockJS("http://localhost:8080/wss");
-  const stompClient = Stomp.over(socket);
   const connectAndSubscribe = () => {
     stompClient.connect(
       {},

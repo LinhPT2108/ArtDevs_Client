@@ -1453,6 +1453,8 @@ const PostProfile = ({
   //   }
   // );
 
+  console.log(">>> check posts: ", data);
+
   const handleLike = async (
     entityId: string,
     item: ResPost,

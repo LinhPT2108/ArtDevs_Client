@@ -1,12 +1,16 @@
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import FeedIcon from "@mui/icons-material/Feed";
-import PersonSearchIcon from "@mui/icons-material/PersonSearch";
-import SmsIcon from "@mui/icons-material/Sms";
+import FeedbackIcon from "@mui/icons-material/Feedback";
+import GroupIcon from "@mui/icons-material/Group";
+import InfoIcon from "@mui/icons-material/Info";
 import LogoutIcon from "@mui/icons-material/Logout";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import SchoolIcon from "@mui/icons-material/School";
+import SecurityIcon from "@mui/icons-material/Security";
+import SmsIcon from "@mui/icons-material/Sms";
 import {
   Box,
-  Button,
   CardMedia,
   Divider,
   List,
@@ -20,13 +24,14 @@ import {
 } from "@mui/material";
 import { getSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { sendRequest } from "../utils/api";
 import {
   GLOBAL_BG,
   GLOBAL_BG_BLUE_300,
   GLOBAL_BG_BLUE_900,
   GLOBAL_BG_NAV,
-  GLOBAL_BG_NOTIFY,
   GLOBAL_BG_RED_300,
   GLOBAL_BG_RED_900,
   GLOBAL_BOXSHADOW,
@@ -35,13 +40,6 @@ import {
   GLOBAL_COLOR_WHITE,
   GLOBAL_URL,
 } from "../utils/veriable.global";
-import { usePathname, useRouter } from "next/navigation";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
-import { useEffect, useState } from "react";
-import InfoIcon from "@mui/icons-material/Info";
-import GroupIcon from "@mui/icons-material/Group";
-import SecurityIcon from "@mui/icons-material/Security";
-import FeedbackIcon from "@mui/icons-material/Feedback";
 const style = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -82,7 +80,7 @@ const AppMenu = ({ session }: { session: User }) => {
     {
       index: 1,
       content: `${session?.user?.role?.id == 3 ? "Match" : "Giảng viên"}`,
-      icon: <PersonSearchIcon />,
+      icon: <SchoolIcon />,
       bgColor: "#004AAD",
       url: "/mentor?tab=all",
     },

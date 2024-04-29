@@ -104,7 +104,11 @@ const KnowlegdeSign = (props: IProps) => {
             )}
             style={{ width: "100%" }}
             renderInput={(params) => (
-              <TextField {...params} label="Chủ đề" placeholder="Favorites" />
+              <TextField
+                {...params}
+                label="Chủ đề"
+                placeholder="Hãy chọn chủ đề quan tâm"
+              />
             )}
           />
         </Grid>
