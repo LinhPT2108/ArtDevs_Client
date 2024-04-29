@@ -25,6 +25,7 @@ import "swiper/css/pagination";
 import "swiper/css";
 import { FreeMode, Pagination } from "swiper/modules";
 import { CldUploadWidget } from "next-cloudinary";
+import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
 import {
   Alert,
   AppBar,
@@ -102,6 +103,7 @@ import postCommentApi, {
 
 import {
   GLOBAL_BG,
+  GLOBAL_BG_BLUE_900,
   GLOBAL_BG_NAV,
   GLOBAL_BG_NOTIFY,
   GLOBAL_BOXSHADOW,
@@ -109,10 +111,13 @@ import {
   GLOBAL_COLOR_MENU,
   GLOBAL_COLOR_WHITE,
   GLOBAL_DELETE_COMMENT_MESSAGE,
+  GLOBAL_DELETE_POST_MESSAGE,
+  GLOBAL_DELETE_POST_SHARE_MESSAGE,
   GLOBAL_ERROR_MESSAGE,
   GLOBAL_NOTIFI,
   GLOBAL_REPORT_POST,
   GLOBAL_SHARE_MESSAGE,
+  GLOBAL_UPDATE_POST_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
   GLOBAL_URL_SOCKET,
@@ -165,6 +170,8 @@ const PreviewImageOfPost2: React.FC<PreviewImageOfPostProps2> = ({
         position: "relative",
         display: "inline-block",
         mr: "8px",
+        height: "100%",
+        width: "100%",
       }}
     >
       <FadeInImage
@@ -175,6 +182,9 @@ const PreviewImageOfPost2: React.FC<PreviewImageOfPostProps2> = ({
         loading="lazy"
         style={{
           filter: url.valid ? "none" : "blur(5px)",
+          objectFit: "contain",
+          borderRadius: "10px",
+          backgroundColor: "rgb(145 145 145 / 50%)",
         }}
       />
 
@@ -467,6 +477,46 @@ const PostProfile = ({
         };
         mutate(newData, false);
       }
+
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_DELETE_POST_MESSAGE,
+        type: "success",
+      });
+    }
+    handleCloses(ind);
+  };
+
+  const handleDeletePostShare = async (postId: string | null, ind: number) => {
+    console.log(">>> check postID: ", postId);
+    let res = await sendRequest<boolean>({
+      url: GLOBAL_URL + `/api/deleteshare/${postId}`,
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      method: "POST",
+    });
+    if (res) {
+      const previousData = data?.result!;
+      if (ind !== -1) {
+        previousData && previousData.splice(ind, 1);
+        const newData: IModelPaginate<ResPost> = {
+          meta: data
+            ? data.meta
+            : { current: 0, pageSize: 0, pages: 0, total: 0 },
+          result: previousData,
+        };
+        mutate(newData, false);
+      }
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_DELETE_POST_SHARE_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_ERROR_MESSAGE,
+        type: "error",
+      });
     }
     handleCloses(ind);
   };
@@ -807,34 +857,7 @@ const PostProfile = ({
 
   const handleSaveEditPost = async () => {
     console.log(postData);
-
     handleClickOpenLoaderPost();
-
-    // const formData = new FormData();
-    // formData.append(
-    //   "postDTO",
-    //   new Blob(
-    //     [
-    //       JSON.stringify({
-    //         postId: postData.postId,
-    //         content: postData.content,
-    //         listHashtag: postData.listHashtag,
-    //         timelineUserId: postData.timelineUserId,
-    //         time: postData.time,
-    //         privacyPostDetails: postData.privacyPostDetails,
-    //       }),
-    //     ],
-    //     { type: "application/json" }
-    //   )
-    // );
-
-    // if (postData.listImageofPost) {
-    //   postData.listImageofPost.forEach((file: any, index: any) => {
-    //     formData.append("listImageofPost", file);
-    //   });
-    // } else {
-    //   formData.append("listImageofPost", "");
-    // }
     const response = await fetch(
       GLOBAL_URL + "/api/update-post/" + postData.postId,
       {
@@ -866,6 +889,11 @@ const PostProfile = ({
           p?.postId?.postId === data?.postId?.postId ? { ...p, ...data } : p
         )
       );
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_UPDATE_POST_MESSAGE,
+        type: "success",
+      });
     } else {
       setDataSnackbar({
         openSnackbar: true,
@@ -1042,6 +1070,22 @@ const PostProfile = ({
           index: index,
         },
       });
+    } else if (actionType == "deletePost") {
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          postId: dataId,
+          index: index,
+        },
+      });
+    } else if (actionType == "deletePostShare") {
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          postId: dataId,
+          index: index,
+        },
+      });
     } else {
       setContentSharePost("");
       setActionDialog({
@@ -1064,12 +1108,16 @@ const PostProfile = ({
   const handleAgreeAlerts = () => {
     console.log("agree");
     console.log(contentSharePost);
-    if (actionDialog.actionType === "deleteCmt") {
+    if (actionDialog.actionType == "deleteCmt") {
       handleDeleteCommentOrReplyComment(
         actionDialog.data.comment,
         actionDialog.data.isComment,
         actionDialog.data.index
       );
+    } else if (actionDialog.actionType == "deletePost") {
+      handleDeletePost(actionDialog.data.postId, actionDialog.data.index);
+    } else if (actionDialog.actionType == "deletePostShare") {
+      handleDeletePostShare(actionDialog.data.postId, actionDialog.data.index);
     } else {
       handleSharePost(
         actionDialog.data.post.postId,
@@ -2718,7 +2766,6 @@ const PostProfile = ({
                       );
                     }}
                   </CldUploadWidget>
-                  {countImgCloud}
                   {!validPost ? (
                     <FormHelperText
                       sx={{
@@ -2734,7 +2781,14 @@ const PostProfile = ({
                 <Grid container rowSpacing={1} mt={1}>
                   {postData.listImageofPost?.map(
                     (url: ImageofPost, index: any) => (
-                      <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                      <Grid
+                        item
+                        xs={12}
+                        key={"imageOfPost" + index}
+                        p={"8px"}
+                        sm={6}
+                        maxHeight={"300px"}
+                      >
                         <PreviewImageOfPost2
                           url={url}
                           index={index}
@@ -3088,8 +3142,16 @@ const PostProfile = ({
                     {item?.typePost == "share" && (
                       <Box>
                         <MenuItem
-                          onClick={() =>
-                            handleDeletePost(selectedItemId, index)
+                          onClick={
+                            () =>
+                              handleClickOpenAlerts(
+                                item.postId.postId,
+                                "deletePostShare",
+                                false,
+                                index,
+                                false
+                              )
+                            // handleDeletePost(selectedItemId, index)
                           }
                         >
                           <ListItemIcon>
@@ -3106,37 +3168,45 @@ const PostProfile = ({
                       </Box>
                     )}
                     {item?.typePost != "share" &&
-                    session?.user?.userId == item?.postId.userPost.userId ? (
-                      <Box>
-                        <MenuItem
-                          onClick={() =>
-                            handleDeletePost(selectedItemId, index)
-                          }
-                        >
-                          <ListItemIcon>
-                            <DeleteIcon fontSize="small" />
-                          </ListItemIcon>
-                          Xóa bài viết
-                        </MenuItem>
-                        <MenuItem onClick={() => handleEditPost(postModal!)}>
-                          <ListItemIcon>
-                            <EditIcon fontSize="small" />
-                          </ListItemIcon>
-                          Chỉnh sửa bài viết
-                        </MenuItem>
-                      </Box>
-                    ) : (
-                      <Box>
-                        <MenuItem
-                          onClick={() => handleOpenDialogReportPost(postModal!)}
-                        >
-                          <ReportGmailerrorredOutlinedIcon
-                            sx={{ marginRight: "6px" }}
-                          />
-                          Báo cáo bài viết
-                        </MenuItem>
-                      </Box>
-                    )}
+                      (session?.user?.userId == item?.postId.userPost.userId ? (
+                        <Box>
+                          <MenuItem
+                            onClick={() =>
+                              handleClickOpenAlerts(
+                                item.postId.postId,
+                                "deletePost",
+                                false,
+                                index,
+                                false
+                              )
+                            }
+                          >
+                            <ListItemIcon>
+                              <DeleteIcon fontSize="small" />
+                            </ListItemIcon>
+                            Xóa bài viết
+                          </MenuItem>
+                          <MenuItem onClick={() => handleEditPost(postModal!)}>
+                            <ListItemIcon>
+                              <EditIcon fontSize="small" />
+                            </ListItemIcon>
+                            Chỉnh sửa bài viết
+                          </MenuItem>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <MenuItem
+                            onClick={() =>
+                              handleOpenDialogReportPost(postModal!)
+                            }
+                          >
+                            <ReportGmailerrorredOutlinedIcon
+                              sx={{ marginRight: "6px" }}
+                            />
+                            Báo cáo bài viết
+                          </MenuItem>
+                        </Box>
+                      ))}
                   </Menu>
                 </Box>
               </Box>
@@ -3569,7 +3639,7 @@ const PostProfile = ({
                         </Box>
                       </Box>
                     </Box>
-                    <Box
+                    {/* <Box
                       sx={{
                         transform: "rotate(90deg)",
                       }}
@@ -3644,13 +3714,12 @@ const PostProfile = ({
                         }}
                       >
                         {/* {searchParams.get("id") != session?.user?.userId ? ( */}
-                        {/* <Box>
+                    {/* <Box>
                             <MenuItem
                               onClick={() =>
                                 handleDeletePost(selectedItemId, index)
                               }
                             >
-                              <ListItemIcon>
                                 <DeleteIcon fontSize="small" />
                               </ListItemIcon>
                               Xóa bài viết chia sẻ{session?.user?.userId}
@@ -3665,8 +3734,8 @@ const PostProfile = ({
                               {item?.userPostDto?.userId}
                             </MenuItem>
                           </Box> */}
-                        {/* ) : ( */}
-                        <Box>
+                    {/* ) : ( */}
+                    {/* <Box>
                           <MenuItem
                             onClick={() =>
                               handleOpenDialogReportPost(postModal!)
@@ -3677,10 +3746,10 @@ const PostProfile = ({
                             />
                             Báo cáo bài viết
                           </MenuItem>
-                        </Box>
-                        {/* )}  */}
-                      </Menu>
-                    </Box>
+                        </Box> */}
+                    {/* )}  */}
+                    {/* </Menu> */}
+                    {/* </Box> */}
                   </Box>
                 )}
                 {item?.typePost === "share" && (
@@ -3806,7 +3875,7 @@ const PostProfile = ({
                 {item?.typePost == "share" ? (
                   <Grid
                     container
-                    columns={2}
+                    columns={3}
                     sx={{
                       borderTop: " 1px solid #3333",
                     }}
@@ -3900,7 +3969,7 @@ const PostProfile = ({
                         </Typography>
                       </IconButton>
                     </Grid>
-                    {/* <Grid
+                    <Grid
                       item
                       xs={1}
                       sx={{
@@ -3931,7 +4000,7 @@ const PostProfile = ({
                       <Typography component={"span"} sx={{ marginLeft: "5px" }}>
                         Chia sẻ
                       </Typography>
-                    </Grid> */}
+                    </Grid>
                   </Grid>
                 ) : (
                   <Grid
@@ -4153,6 +4222,33 @@ const PostProfile = ({
                 }}
               >
                 <Box sx={{ my: 2, color: GLOBAL_COLOR_BLACK }}>
+                  {comment.length == 0 && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItem: "center",
+                        flexDirection: "column",
+                        p: 2,
+                      }}
+                    >
+                      <CommentsDisabledIcon
+                        sx={{
+                          mx: "auto",
+                          fontSize: "5rem",
+                          color: "gray",
+                        }}
+                      />
+                      <Typography
+                        variant="body1"
+                        color="gray"
+                        fontWeight={"bold"}
+                        mx={"auto"}
+                      >
+                        Bài viết chưa có bình luận
+                      </Typography>
+                    </Box>
+                  )}
                   {comment &&
                     comment?.map((c: CommentOfPost, index) => (
                       <Box key={"comment" + index + c.id}>
@@ -4927,13 +5023,17 @@ const PostProfile = ({
               >
                 <Avatar
                   sx={{
-                    bgcolor: red[500],
+                    // bgcolor: red[500],
                     color: "#000000",
                     marginRight: "12px",
                   }}
                   aria-label="recipe"
                   alt="Profile Picture"
-                  src={session?.user?.profileImageUrl}
+                  src={
+                    session?.user?.profileImageUrl
+                      ? session?.user?.profileImageUrl
+                      : "/profile/user.jpg"
+                  }
                 ></Avatar>
                 <Box
                   sx={{
@@ -4986,7 +5086,6 @@ const PostProfile = ({
                       label="Viết bình luận..."
                       variant="outlined"
                       multiline
-                      rows={3}
                       fullWidth
                       sx={{
                         backgroundColor: GLOBAL_BG,
@@ -4994,12 +5093,12 @@ const PostProfile = ({
                         color: GLOBAL_COLOR_BLACK,
                         "& label.Mui-focused": { color: GLOBAL_COLOR_BLACK },
                         "& .MuiOutlinedInput-root": {
-                          "& fieldset": { borderColor: GLOBAL_COLOR_BLACK },
+                          "& fieldset": { borderColor: GLOBAL_BG_BLUE_900 },
                           "&:hover fieldset": {
-                            borderColor: GLOBAL_COLOR_BLACK,
+                            borderColor: GLOBAL_BG_BLUE_900,
                           },
                           "&.Mui-focused fieldset": {
-                            borderColor: GLOBAL_COLOR_BLACK,
+                            borderColor: GLOBAL_BG_BLUE_900,
                           },
                         },
                         "& label": { color: GLOBAL_COLOR_BLACK },
@@ -5021,7 +5120,7 @@ const PostProfile = ({
                       variant="contained"
                       startIcon={<AddPhotoAlternate />}
                       sx={{
-                        p: "0px",
+                        // p: "0px",
                         backgroundColor: "transparent",
                         color: GLOBAL_COLOR_BLACK,
                         "&:hover": {
@@ -5029,6 +5128,7 @@ const PostProfile = ({
                           boxShadow: "none",
                         },
                         boxShadow: "none",
+                        height: "100%",
                       }}
                     >
                       <VisuallyHiddenInput
@@ -5042,9 +5142,9 @@ const PostProfile = ({
                     <IconButton
                       color="primary"
                       sx={{
-                        marginLeft: "8px",
-                        backgroundColor: "#30363d",
-                        "&:hover": { backgroundColor: "#50595f" },
+                        // marginLeft: "8px",
+                        // backgroundColor: "#30363d",
+                        "&:hover": { backgroundColor: "#c1c1c1" },
                       }}
                       onClick={handlePostComment}
                       disabled={
@@ -5127,6 +5227,10 @@ const PostProfile = ({
         >
           {actionDialog.actionType == "deleteCmt"
             ? "Xóa bình luận?"
+            : actionDialog.actionType == "deletePost"
+            ? "Xóa bài viết"
+            : actionDialog.actionType == "deletePostShare"
+            ? "Xóa bài viết chia sẻ"
             : "Chia sẻ bài viết"}
         </DialogTitle>
         <Divider />
@@ -5135,52 +5239,16 @@ const PostProfile = ({
             <Typography sx={{ color: GLOBAL_COLOR_BLACK }}>
               Bạn có chắc chắn muốn xóa bình luận này không?
             </Typography>
+          ) : actionDialog.actionType == "deletePost" ? (
+            <Typography sx={{ color: GLOBAL_COLOR_BLACK }}>
+              Bạn có chắc chắn muốn xóa bài viết này không?
+            </Typography>
+          ) : actionDialog.actionType == "deletePostShare" ? (
+            <Typography sx={{ color: GLOBAL_COLOR_BLACK }}>
+              Bạn có chắc chắn muốn xóa bài viết đã chia sẻ này không?
+            </Typography>
           ) : (
             <>
-              {/* <TextField
-                autoFocus
-                margin="dense"
-                name="content"
-                hiddenLabel
-                fullWidth
-                variant="standard"
-                label="Nội dung chia sẻ ?"
-                autoComplete="off"
-                InputLabelProps={{
-                  style: {
-                    color: "white",
-                  },
-                }}
-                onChange={(e) => {
-                  setContentSharePost(e.target.value);
-
-                  if (timer) {
-                    clearTimeout(timer);
-                  }
-
-                  const newTimer = setTimeout(async () => {
-                    console.log("Stop typing");
-                    const content = badWords(e.target.value, {
-                      replacement: "*",
-                      blackList: (defaultList) => [
-                        ...defaultList,
-                        "mẹ mày",
-                        "cc",
-                        "nigga",
-                        "đmm",
-                        "mm",
-                        "đmm",
-                      ],
-                    });
-                    console.log(content);
-                    if (e.target.value.trim() != "") {
-                      setContentSharePost(content.toString());
-                    }
-                  }, 1000);
-
-                  setTimer(newTimer);
-                }}
-              /> */}
               <Box
                 className="block-post-share"
                 sx={{
@@ -5313,7 +5381,6 @@ const PostProfile = ({
               </Box>
               <TextField
                 autoFocus
-                required
                 margin="dense"
                 name="content"
                 hiddenLabel
@@ -5361,7 +5428,10 @@ const PostProfile = ({
         <DialogActions>
           <Button
             color={`${
-              actionDialog.actionType === "deleteCmt" ? "primary" : "error"
+              actionDialog.actionType == "deleteCmt" ||
+              actionDialog.actionType == "deletePost"
+                ? "primary"
+                : "error"
             }`}
             variant="outlined"
             onClick={handleCloseAlerts}
@@ -5370,14 +5440,22 @@ const PostProfile = ({
           </Button>
           <Button
             color={`${
-              actionDialog.actionType === "deleteCmt" ? "error" : "primary"
+              actionDialog.actionType == "deleteCmt" ||
+              actionDialog.actionType == "deletePost" ||
+              actionDialog.actionType == "deletePostShare"
+                ? "error"
+                : "primary"
             }`}
             variant="contained"
             onClick={handleAgreeAlerts}
             autoFocus
             sx={{ minWidth: "80px" }}
           >
-            {actionDialog.actionType === "deleteCmt" ? "Xóa" : "Chia sẻ"}
+            {actionDialog.actionType == "deleteCmt" ||
+            actionDialog.actionType == "deletePost" ||
+            actionDialog.actionType == "deletePostShare"
+              ? "Xóa"
+              : "Chia sẻ"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -5449,7 +5527,7 @@ const PostProfile = ({
       </BootstrapDialog>
       <Snackbar
         open={dataSnackbar.openSnackbar}
-        autoHideDuration={2000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
       >
         {dataSnackbar.openSnackbar && (
