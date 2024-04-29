@@ -131,6 +131,7 @@ import PostSkeleton from "../posts/post.skeleton";
 import ContentPost from "./post.content";
 import HashtagPost from "./post.hashtag";
 import { analyzeImage, findMaxValue } from "../utils/sightengineAPI";
+import Image from "next/image";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -2866,6 +2867,23 @@ const PostProfile = ({
             </DialogContent>
           </Dialog>
         </Box>
+      )}
+      {posts.length == 0 && (
+        <Typography
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "60vh",
+          }}
+        >
+          <Image
+            src="/profile/notpost.png"
+            width={500}
+            height={350}
+            alt="no activity"
+          />
+        </Typography>
       )}
       <InfiniteScroll
         loader={<Loader />}

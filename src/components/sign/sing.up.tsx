@@ -160,7 +160,7 @@ const SignUp = (props: MyData) => {
         setMessageDateOfBirth("");
       } else {
         setErrorDateOfBirth(true);
-        setMessageDateOfBirth("Bạn chưa đủ 14 tuổi");
+        setMessageDateOfBirth("Tuổi không hợp lệ");
       }
     } else {
       setErrorDateOfBirth(true);

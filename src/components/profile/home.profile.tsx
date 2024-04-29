@@ -56,6 +56,7 @@ import { deleteSpace, formatBirthDay } from "../utils/utils";
 import { GLOBAL_SEND_FRIEND, GLOBAL_URL } from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import HomeMedia from "./home.media";
+import HomeAbout from "./home.about";
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -1841,10 +1842,10 @@ const HomeProfile = ({ session }: IPros) => {
                   }}
                 >
                   <span>
-                    Friends <br />
+                    Bạn bè <br />
                     <p>
-                      <span> 3641 </span>
-                      Friends
+                      <span> 0 </span>
+                      bạn
                     </p>
                   </span>
 
@@ -1886,9 +1887,6 @@ const HomeProfile = ({ session }: IPros) => {
                       }}
                     >
                       <img src="/profile/cover-image.jpg" alt="cover-image" />
-                      <p>
-                        <a href="#">Example</a>
-                      </p>
                     </Box>
                   </Box>
                 </Box>
@@ -1937,7 +1935,7 @@ const HomeProfile = ({ session }: IPros) => {
                 gridColumnGap: " 15px",
               }}
             >
-              About
+              <HomeAbout session={session} />
             </Box>
           </Box>
         </CustomTabPanel>
