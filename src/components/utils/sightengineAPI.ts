@@ -18,6 +18,7 @@ const sightengineAPI = "https://api.sightengine.com";
       api_user: 18014339,
       api_secret: zXxhbjXSUymsrdCRUKoAgZAko9AxBPGF
     }
+
  } 
 */
 export const analyzeImage = async (imageURL: string) => {
@@ -52,14 +53,22 @@ export function findMaxValue(jsonObject: JsonObject): {
   let maxProperty: string | undefined = undefined;
 
   for (const key in jsonObject) {
-    
-    if (key === "request"|| key === "none"|| key === "context"|| key === "suggestive_classes") continue;
+    if (
+      key === "request" ||
+      key === "none" ||
+      key === "context" ||
+      key === "suggestive_classes"
+    )
+      continue;
 
     const value = jsonObject[key];
 
     if (typeof value === "object") {
       const nestedMaxValue = findMaxValue(value);
-      if (nestedMaxValue.value !== undefined && nestedMaxValue.value > (maxValue || 0)) {
+      if (
+        nestedMaxValue.value !== undefined &&
+        nestedMaxValue.value > (maxValue || 0)
+      ) {
         maxValue = nestedMaxValue.value;
         maxProperty = `${key}.${nestedMaxValue.property}`;
       }

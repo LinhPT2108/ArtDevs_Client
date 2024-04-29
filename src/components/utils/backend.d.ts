@@ -248,11 +248,12 @@ declare global {
     postIdByHashTag: string;
   }
   interface ImageofPost {
-    id: number;
+    // id: number;
     cloudinaryPublicId: string;
     imageUrl: string;
     postID: string;
     time: string;
+    valid: boolean;
   }
   interface PostDetails {
     createDate: string;
@@ -269,7 +270,8 @@ declare global {
     userId: string;
     time: Date;
     timelineUserId: Date;
-    listImageofPost: File[] | null;
+    // listImageofPost: File[] | null;
+    listImageofPost: ImageofPost[] | null;
     privacyPostDetails: number;
     listHashtag: string[] | null;
   }
@@ -344,7 +346,7 @@ declare global {
     userReceive: UserPost;
   }
 
-  interface ListReplyComment {
+  interface ListReplyCommentOfShare {
     id: number;
     content: string;
     timeComment: string;
@@ -354,6 +356,31 @@ declare global {
     userReceiveDto: UserPost;
   }
 
+  interface CommentOfShareToGetDTO {
+    id: number;
+    content: string;
+    listImageofComment: string[];
+    timeComment: string;
+    userID: UserPost;
+    userReceiveDto: UserPost;
+    listReplyComment: ListReplyComment[] | null;
+  }
+  interface CommentOfShareToPostDTO {
+    listImageofComment: any;
+    content: string;
+    userToPost: string;
+    userReceive: string;
+    shareId: string;
+  }
+  interface ListReplyComment {
+    id: number;
+    content: string;
+    timeComment: string;
+    listPictureOfComment: any[] | null;
+    commentId: number;
+    userAction: UserPost;
+    userReceiveDto: UserPost;
+  }
   interface Relation {
     id: string;
     userAction: UserAction;

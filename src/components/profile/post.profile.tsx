@@ -24,6 +24,7 @@ import "swiper/css/free-mode";
 import "swiper/css/pagination";
 import "swiper/css";
 import { FreeMode, Pagination } from "swiper/modules";
+import { CldUploadWidget } from "next-cloudinary";
 import {
   Alert,
   AppBar,
@@ -98,6 +99,7 @@ import postCommentApi, {
   isImage,
   postReplyCommentApi,
 } from "../utils/utils";
+
 import {
   GLOBAL_BG,
   GLOBAL_BG_NAV,
@@ -123,6 +125,7 @@ import InfiniteScroll from "../hash-tag/Infinite.scroll";
 import PostSkeleton from "../posts/post.skeleton";
 import ContentPost from "./post.content";
 import HashtagPost from "./post.hashtag";
+import { analyzeImage, findMaxValue } from "../utils/sightengineAPI";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -144,6 +147,43 @@ interface PreviewImageOfPostProps {
   index: number;
   handleRemoveImageOfPost: (index: number) => void;
 }
+interface PreviewImageOfPostProps2 {
+  url: ImageofPost;
+  index: number;
+  handleRemoveImageOfPost: (index: number) => void;
+}
+
+const PreviewImageOfPost2: React.FC<PreviewImageOfPostProps2> = ({
+  url,
+  index,
+  handleRemoveImageOfPost,
+}) => {
+  const imageUrl = url.imageUrl;
+  return (
+    <Box
+      sx={{
+        position: "relative",
+        display: "inline-block",
+        mr: "8px",
+      }}
+    >
+      <FadeInImage
+        src={imageUrl}
+        alt={`Preview ${index}`}
+        width="100%"
+        height="100%"
+        loading="lazy"
+        style={{
+          filter: url.valid ? "none" : "blur(5px)",
+        }}
+      />
+
+      <RemoveButton onClick={() => handleRemoveImageOfPost(index)}>
+        <ClearIcon />
+      </RemoveButton>
+    </Box>
+  );
+};
 
 const PreviewImageOfPost: React.FC<PreviewImageOfPostProps> = ({
   url,
@@ -262,6 +302,23 @@ const PostProfile = ({
   search,
   friendPost,
 }: IPros) => {
+  // console.log(stompClient);
+  const themeS = useTheme();
+  const [validPost, setValidPost] = React.useState<boolean>(true);
+  const [activeStep, setActiveStep] = React.useState(0);
+  const [countImgCloud, setCountImgCloud] = React.useState(0);
+
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleStepChange = (step: number) => {
+    setActiveStep(step);
+  };
   //tạo biến xử lý modal report
   const [anchorEl, setAnchorEl] = React.useState<
     ((EventTarget & HTMLElement) | null)[]
@@ -292,7 +349,7 @@ const PostProfile = ({
       // : friendPost
       // ? friendPost
       "/news-feed";
-  console.log(">>> check url: ", url);
+  // console.log(">>> check url: ", url);
   const searchParams = useSearchParams();
 
   //get data bài đăng
@@ -525,7 +582,7 @@ const PostProfile = ({
     time: new Date(),
     timelineUserId: new Date(),
     userId: session ? session?.user?.userId : "",
-    listImageofPost: null,
+    listImageofPost: [],
     privacyPostDetails: 1,
     listHashtag: [],
   });
@@ -560,18 +617,22 @@ const PostProfile = ({
       time: new Date(),
       timelineUserId: new Date(),
       userId: post?.postId?.userPost?.userId,
-      listImageofPost: (await Promise.all(
-        post?.postId?.listImageofPost?.map(async (image) => {
-          const file = await fetchImageAsFile(image.imageUrl);
-          return file;
-        })
-      )) as File[],
+      listImageofPost: post?.postId?.listImageofPost?.map((image) => ({
+        ...image,
+        valid: true,
+      })),
+      // listImageofPost: (await Promise.all(
+      //   post?.postId?.listImageofPost?.map(async (image) => {
+      //     const file = await fetchImageAsFile(image.imageUrl);
+      //     return file;
+      //   })
+      // )) as File[],
       privacyPostDetails: selectedPrivacy?.privacyPostId as number,
       listHashtag: post?.postId?.listHashtag.map(
         (hashtag) => hashtag.hashtagDetailName
       ),
     };
-    console.log(">>> check editedPostData: ", selectedPrivacy);
+    console.log(">>> check editedPostData: ", editedPostData);
     setPostData(editedPostData);
   };
   const handleClosePost = () => setOpenPost(false);
@@ -582,11 +643,16 @@ const PostProfile = ({
   const [page, setPage] = useState<number>(0);
   const [posts, setPosts] = useState<ResPost[]>([]);
   const [comment, setComment] = useState<CommentOfPost[]>([]);
+  const [commentOfShare, setCommentOfShare] = useState<
+    CommentOfShareToGetDTO[]
+  >([]);
+  const [share, setShare] = useState<boolean>(false);
   const [openModalCmt, setOpenModalCmt] = useState(false);
   const [selectPost, setSelectPost] = useState<any>();
   const [showAllComments, setShowAllComments] = useState([]);
   const [isShowReplies, setIsShowReplies] = useState(null);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<ImageofPost[]>([]);
   const [isLoadingComment, setIsLoadingComment] = useState(false);
   const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
   const [isComment, setIsComment] = useState<boolean>(false);
@@ -711,64 +777,87 @@ const PostProfile = ({
   ) => {
     const fileInput = event.target as HTMLInputElement;
     const selected = fileInput.files;
+    // setPostData((prevData) => ({
+    //   ...prevData,
+    //   listImageofPost: [
+    //     ...(prevData.listImageofPost || []),
+    //     ...(selected ? Array.from(selected) : []),
+    //   ] as File[],
+    // }));
+  };
 
-    console.log(selected);
-
+  const handleChangeImageByCloud = async (imageOfPostdto: ImageofPost) => {
+    console.log("check image");
+    console.log(await analyzeImage(imageOfPostdto.imageUrl));
+    const resp = await analyzeImage(imageOfPostdto.imageUrl);
+    const { property, value } = findMaxValue(resp);
+    console.log(property, value);
+    if (value > 0.5) {
+      imageOfPostdto.valid = false;
+      setValidPost(false);
+    }
     setPostData((prevData) => ({
       ...prevData,
       listImageofPost: [
         ...(prevData.listImageofPost || []),
-        ...(selected ? Array.from(selected) : []),
-      ] as File[],
+        imageOfPostdto,
+      ] as ImageofPost[],
     }));
-
-    // nsfwjs
-    //   .load()
-    //   .then(function (model) {
-    //     // Classify the image
-    //     return model.classify(selected![0]);
-    //   })
-    //   .then(function (predictions) {
-    //     console.log("Predictions: ", predictions);
-    //   });
   };
+
   const handleSaveEditPost = async () => {
     console.log(postData);
-    const formData = new FormData();
-    formData.append(
-      "postDTO",
-      new Blob(
-        [
-          JSON.stringify({
-            postId: postData.postId,
-            content: postData.content,
-            listHashtag: postData.listHashtag,
-            timelineUserId: postData.timelineUserId,
-            time: postData.time,
-            privacyPostDetails: postData.privacyPostDetails,
-          }),
-        ],
-        { type: "application/json" }
-      )
-    );
 
-    if (postData.listImageofPost) {
-      postData.listImageofPost.forEach((file: any, index: any) => {
-        formData.append("listImageofPost", file);
-      });
-    } else {
-      formData.append("listImageofPost", "");
-    }
+    handleClickOpenLoaderPost();
+
+    // const formData = new FormData();
+    // formData.append(
+    //   "postDTO",
+    //   new Blob(
+    //     [
+    //       JSON.stringify({
+    //         postId: postData.postId,
+    //         content: postData.content,
+    //         listHashtag: postData.listHashtag,
+    //         timelineUserId: postData.timelineUserId,
+    //         time: postData.time,
+    //         privacyPostDetails: postData.privacyPostDetails,
+    //       }),
+    //     ],
+    //     { type: "application/json" }
+    //   )
+    // );
+
+    // if (postData.listImageofPost) {
+    //   postData.listImageofPost.forEach((file: any, index: any) => {
+    //     formData.append("listImageofPost", file);
+    //   });
+    // } else {
+    //   formData.append("listImageofPost", "");
+    // }
     const response = await fetch(
       GLOBAL_URL + "/api/update-post/" + postData.postId,
       {
         method: "PUT",
-        headers: { authorization: `Bearer ${session?.access_token}` },
-        body: formData,
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: postData.content,
+          listHashtag: postData.listHashtag,
+          timelineUserId: postData.timelineUserId,
+          time: postData.time,
+          privacyPostDetails: postData.privacyPostDetails,
+          postId: postData.postId,
+          listImageofPost: postData.listImageofPost,
+        }),
       }
     );
     console.log(">>> check post update: ", response.status);
     if (response.status == 200) {
+      handleCloseLoaderPost();
+      handleClosePost();
       const data: ResPost = await response.json();
       console.log(data);
 
@@ -796,32 +885,65 @@ const PostProfile = ({
     const formData = new FormData();
     formData.append(
       "postDTO",
-      new Blob(
-        [
-          JSON.stringify({
-            content: postData.content,
-            listHashtag: postData.listHashtag,
-            timelineUserId: postData.timelineUserId,
-            time: postData.time,
-            privacyPostDetails: postData.privacyPostDetails,
-            postId: postData.postId,
-          }),
-        ],
-        { type: "application/json" }
-      )
+      // new Blob(
+      //   [
+      JSON.stringify({
+        content: postData.content,
+        listHashtag: postData.listHashtag,
+        timelineUserId: postData.timelineUserId,
+        time: postData.time,
+        privacyPostDetails: postData.privacyPostDetails,
+        postId: postData.postId,
+      })
+      //   ],
+      //   { type: "application/json" }
+      // )
     );
-
+    console.log(postData.listImageofPost);
     if (postData.listImageofPost) {
-      postData.listImageofPost.forEach((file: any, index: any) => {
-        formData.append("listImageofPost", file);
-      });
+      console.log("có ảnh");
+
+      postData.listImageofPost.forEach(
+        (imageOfPost: ImageofPost, index: number) => {
+          const imageJson = JSON.stringify(imageOfPost);
+          formData.append(`listImageofPost`, imageJson);
+        }
+      );
+      // postData.listImageofPost.forEach((file: ImageofPost, index: any) => {
+      //   formData.append(
+      //     "listImageofPost",
+      //     new Blob(
+      //       [
+      //         JSON.stringify({
+      //           cloudinaryPublicId: file.cloudinaryPublicId,
+      //           imageUrl: file.imageUrl,
+      //           postID: file.postID,
+      //           time: file.time,
+      //         }),
+      //       ],
+      //       { type: "application/json" }
+      //     )
+      //   );
+      // });
     } else {
+      console.log("rỗng ảnh");
       formData.append("listImageofPost", "");
     }
     const response = await fetch(GLOBAL_URL + "/api/post", {
       method: "POST",
-      headers: { authorization: `Bearer ${session?.access_token}` },
-      body: formData,
+      headers: {
+        authorization: `Bearer ${session?.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: postData.content,
+        listHashtag: postData.listHashtag,
+        timelineUserId: postData.timelineUserId,
+        time: postData.time,
+        privacyPostDetails: postData.privacyPostDetails,
+        postId: postData.postId,
+        listImageofPost: postData.listImageofPost,
+      }),
     });
     console.log(">>> check post data: ", response.status);
     if (response.status == 200) {
@@ -855,7 +977,8 @@ const PostProfile = ({
     }
   };
   const handleRemoveImageOfPost = (index: number) => {
-    const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    // const newSelectedFiles = [...(postData.listImageofPost as File[])];
+    const newSelectedFiles = [...(postData.listImageofPost as ImageofPost[])];
     newSelectedFiles.splice(index, 1);
     setSelectedFiles(newSelectedFiles);
     console.log(newSelectedFiles);
@@ -864,6 +987,28 @@ const PostProfile = ({
       listImageofPost: newSelectedFiles,
     }));
   };
+
+  useEffect(() => {
+    console.log(postData);
+    let isStill = false;
+    if (postData.listImageofPost) {
+      if (postData.listImageofPost?.length > 0) {
+        postData.listImageofPost?.map((i) => {
+          if (!i.valid) {
+            isStill = true;
+            return;
+          }
+        });
+      } else {
+        setValidPost(true);
+      }
+    }
+    if (isStill) {
+      setValidPost(false);
+    } else {
+      setValidPost(true);
+    }
+  }, [postData]);
 
   // ham copy post.main
   const handleCloseSnackbar = (
@@ -1055,14 +1200,17 @@ const PostProfile = ({
         formData.append("listImageofComment", "");
       }
       try {
-        const response = await fetch(
-          GLOBAL_URL + "/api/comment/" + commentObject.id,
-          {
-            method: "PUT",
-            headers: { authorization: `Bearer ${session?.access_token}` },
-            body: formData,
-          }
-        );
+        const response = share
+          ? await fetch(GLOBAL_URL + "/api/share/comment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            })
+          : await fetch(GLOBAL_URL + "/api/comment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            });
 
         if (response.status == 200) {
           setEditingIndexComment("");
@@ -1095,14 +1243,20 @@ const PostProfile = ({
         formData.append("listImageofComment", "");
       }
       try {
-        const response = await fetch(
-          GLOBAL_URL + "/api/replyComment/" + commentObject.id,
-          {
-            method: "PUT",
-            headers: { authorization: `Bearer ${session?.access_token}` },
-            body: formData,
-          }
-        );
+        const response = share
+          ? await fetch(
+              GLOBAL_URL + "/api/share/replyComment/" + commentObject.id,
+              {
+                method: "PUT",
+                headers: { authorization: `Bearer ${session?.access_token}` },
+                body: formData,
+              }
+            )
+          : await fetch(GLOBAL_URL + "/api/replyComment/" + commentObject.id, {
+              method: "PUT",
+              headers: { authorization: `Bearer ${session?.access_token}` },
+              body: formData,
+            });
 
         if (response.status == 200) {
           setEditingIndexReplyComment("");
@@ -1110,8 +1264,8 @@ const PostProfile = ({
           setEditedImageReplyComment("");
           const data = await response.json();
           console.log(data);
-          setComment((prevComments) => {
-            return prevComments.map((comment) => {
+          setComment((prevComments: any) => {
+            return prevComments.map((comment: CommentOfPost) => {
               if (comment.id === data.commentID) {
                 return {
                   ...comment,
@@ -1140,7 +1294,11 @@ const PostProfile = ({
   ) => {
     console.log("Delete:", commentObject);
     const url = isComment2
-      ? GLOBAL_URL + "/api/comment/" + commentObject.id
+      ? share
+        ? GLOBAL_URL + "/api/share/comment/" + commentObject.id
+        : GLOBAL_URL + "/api/comment/" + commentObject.id
+      : share
+      ? GLOBAL_URL + "/api/share/replyComment/" + commentObject.id
       : GLOBAL_URL + "/api/replyComment/" + commentObject.id;
 
     const response = await sendRequest<boolean>({
@@ -1192,6 +1350,14 @@ const PostProfile = ({
       postToPost: "",
       userReceive: "",
     });
+  const [formDataCommentOfShare, setFormDataCommentOfShare] =
+    React.useState<CommentOfShareToPostDTO>({
+      content: "",
+      listImageofComment: null,
+      userToPost: session?.user?.userId,
+      shareId: "",
+      userReceive: "",
+    });
   const [formDataReplyComment, setFormDataReplyComment] =
     React.useState<ReplyCommentToPostDTO>({
       content: "",
@@ -1203,30 +1369,76 @@ const PostProfile = ({
   const handleCloseModalCmt = () => {
     setOpenModalCmt(false);
     setIsShowReplies(null);
-  };
-  const handleOpenModalCmt = async (post: Post) => {
-    setIsComment(true);
+    setShare(false);
+    setEditedContentComment("");
+    setEditedContentReplyComment("");
     setFormDataComment({
       content: "",
       listImageofComment: null,
       postToPost: "",
+      userToPost: "",
+      userReceive: "",
     } as CommentToPostDTO);
+    setFormDataCommentOfShare({
+      content: "",
+      listImageofComment: null,
+      shareId: "",
+      userToPost: "",
+      userReceive: "",
+    } as CommentOfShareToPostDTO);
+  };
+  const handleOpenModalCmt = async (
+    post: Post,
+    resPost: ResPost,
+    isShare: boolean
+  ) => {
+    setIsComment(true);
     setOpenModalCmt(true);
-    setSelectPost(post.userPost.fullname);
-
-    const getCommentOfPost = await sendRequest<CommentOfPost[]>({
-      url: GLOBAL_URL + "/api/comment/" + post.postId,
-      method: "GET",
-      queryParams: {
-        page: 0,
-      },
-    });
-    setComment(getCommentOfPost);
-    setFormDataComment((prevData) => ({
-      ...prevData,
-      postToPost: post?.postId,
-      userReceive: post.userPost.userId,
-    }));
+    setShare(isShare);
+    if (isShare) {
+      //share
+      setSelectPost(post.userPost.fullname);
+      const newData = await sendRequest<IModelPaginate<CommentOfShareToGetDTO>>(
+        {
+          url: GLOBAL_URL + "/api/share/comment/" + resPost.id,
+          method: "GET",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          queryParams: {
+            page: 0,
+            // keyword: searchParams.get("keyword") as string,
+          },
+        }
+      );
+      console.log(newData);
+      // setCommentOfShare(newData?.result);
+      setComment(newData?.result);
+      setFormDataCommentOfShare((prevData) => ({
+        ...prevData,
+        shareId: resPost?.id,
+        userReceive: post.userPost.userId,
+      }));
+    } else {
+      //comment
+      setFormDataComment({
+        content: "",
+        listImageofComment: null,
+        postToPost: "",
+      } as CommentToPostDTO);
+      setSelectPost(post.userPost.fullname);
+      const getCommentOfPost = await sendRequest<CommentOfPost[]>({
+        url: GLOBAL_URL + "/api/comment/" + post.postId,
+        method: "GET",
+        queryParams: {
+          page: 0,
+        },
+      });
+      setComment(getCommentOfPost);
+      setFormDataComment((prevData) => ({
+        ...prevData,
+        postToPost: post?.postId,
+        userReceive: post.userPost.userId,
+      }));
+    }
   };
   const toggleShowReplyCmt = (cmtId: any) => {
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
@@ -1282,7 +1494,7 @@ const PostProfile = ({
                 : resPost
             )
           );
-          console.log(data);
+          // console.log(data);
           if (session?.user?.userId != item?.userPostDto.userId) {
             const notificationToPostDTO: notificationToPostDTO = {
               message: "likeShare",
@@ -1465,9 +1677,7 @@ const PostProfile = ({
   };
   const handleReplyComment = (cmt: CommentOfPost, user: UserPost) => {
     console.log(cmt);
-
     console.log(user);
-
     setIsComment(false);
     setFormDataReplyComment((prevData) => {
       return {
@@ -1480,10 +1690,17 @@ const PostProfile = ({
 
   const handleChangeContentComment = (value: string) => {
     if (isComment) {
-      setFormDataComment((prevFormData) => ({
-        ...prevFormData,
-        content: value,
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevFormData) => ({
+          ...prevFormData,
+          content: value,
+        }));
+      } else {
+        setFormDataComment((prevFormData) => ({
+          ...prevFormData,
+          content: value,
+        }));
+      }
       if (timer) {
         clearTimeout(timer);
       }
@@ -1553,13 +1770,23 @@ const PostProfile = ({
     console.log(fileInput.files);
     const selected = fileInput.files;
     if (isComment) {
-      setFormDataComment((prevData) => ({
-        ...prevData,
-        listImageofComment: [
-          ...(prevData.listImageofComment || []),
-          ...(selected ? Array.from(selected) : []),
-        ] as File[],
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevData) => ({
+          ...prevData,
+          listImageofComment: [
+            ...(prevData.listImageofComment || []),
+            ...(selected ? Array.from(selected) : []),
+          ] as File[],
+        }));
+      } else {
+        setFormDataComment((prevData) => ({
+          ...prevData,
+          listImageofComment: [
+            ...(prevData.listImageofComment || []),
+            ...(selected ? Array.from(selected) : []),
+          ] as File[],
+        }));
+      }
     } else {
       setFormDataReplyComment((prevData) => ({
         ...prevData,
@@ -1572,17 +1799,26 @@ const PostProfile = ({
   };
   const handleRemoveImage = (index: number, isComment: boolean) => {
     const newSelectedFiles = isComment
-      ? [...formDataComment.listImageofComment]
+      ? share
+        ? [...formDataCommentOfShare.listImageofComment]
+        : [...formDataComment.listImageofComment]
       : [...formDataReplyComment.listImageofComment];
     newSelectedFiles.splice(index, 1);
     setSelectedFiles(newSelectedFiles);
     console.log(newSelectedFiles);
 
     if (isComment) {
-      setFormDataComment((prevData) => ({
-        ...prevData,
-        listImageofComment: newSelectedFiles,
-      }));
+      if (share) {
+        setFormDataCommentOfShare((prevData) => ({
+          ...prevData,
+          listImageofComment: newSelectedFiles,
+        }));
+      } else {
+        setFormDataComment((prevData) => ({
+          ...prevData,
+          listImageofComment: newSelectedFiles,
+        }));
+      }
     } else {
       setFormDataReplyComment((prevData) => ({
         ...prevData,
@@ -1608,11 +1844,120 @@ const PostProfile = ({
     console.log(newSelectedFiles);
   };
   const handleCancelReplyComment = () => setIsComment(true);
+
+  const postReplyCommentOfShareApi = async (
+    replyCommentToPostDTO: ReplyCommentToPostDTO,
+    session: User
+  ) => {
+    const formData = new FormData();
+    formData.append(
+      "repcommentDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: replyCommentToPostDTO.content,
+            commentToPost: replyCommentToPostDTO.commentToPost.id,
+            userToPost: replyCommentToPostDTO.userToPost,
+            userReceive: replyCommentToPostDTO.userReceive.userId,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (replyCommentToPostDTO.listImageofComment) {
+      replyCommentToPostDTO.listImageofComment.forEach(
+        (file: any, index: any) => {
+          formData.append("listImageofComment", file);
+        }
+      );
+    } else {
+      formData.append("listImageofComment", "");
+    }
+    console.log(formData.getAll("listImageofComment"));
+
+    try {
+      // let urlThis =
+      //   GLOBAL_URL +
+      //   "/api/share/repcomment/" +
+      //   replyCommentToPostDTO.commentToPost.id;
+      const response = await fetch(
+        `${GLOBAL_URL}/api/share/repcomment/${replyCommentToPostDTO.commentToPost.id}`,
+        {
+          method: "POST",
+          headers: { authorization: `Bearer ${session?.access_token}` },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+      return responseData;
+    } catch (error) {
+      console.error("Error uploading content and files: ", error);
+      throw error;
+    }
+  };
+
+  const postCommentOfShareApi = async (
+    commentToPostDTO: CommentOfShareToPostDTO,
+    session: User
+  ) => {
+    const formData = new FormData();
+    formData.append(
+      "commentOfShareToPostDTO",
+      new Blob(
+        [
+          JSON.stringify({
+            content: commentToPostDTO.content,
+            shareId: commentToPostDTO.shareId,
+            userToPost: commentToPostDTO.userToPost,
+            userReceive: commentToPostDTO.userReceive,
+          }),
+        ],
+        { type: "application/json" }
+      )
+    );
+
+    if (commentToPostDTO.listImageofComment) {
+      commentToPostDTO.listImageofComment.forEach((file: any, index: any) => {
+        formData.append("listImageofComment", file);
+      });
+    } else {
+      formData.append("listImageofComment", "");
+    }
+    console.log(formData.getAll("listImageofComment"));
+
+    try {
+      const response = await fetch(GLOBAL_URL + "/api/share/comment", {
+        method: "POST",
+        headers: { authorization: `Bearer ${session?.access_token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        return false;
+      }
+
+      const responseData = await response.json();
+      console.log(responseData);
+      return responseData;
+    } catch (error) {
+      console.error("Error uploading content and files: ", error);
+      throw error;
+    }
+  };
   const handlePostComment = async () => {
     if (isComment) {
       console.log(formDataComment);
       setIsLoadingComment(true);
-      const response = await postCommentApi(formDataComment, session);
+      const response: any = share
+        ? await postCommentOfShareApi(formDataCommentOfShare, session)
+        : await postCommentApi(formDataComment, session);
 
       if (response != false) {
         setComment((preData) => [response, ...preData]);
@@ -1625,28 +1970,66 @@ const PostProfile = ({
               // postToPost: "",
             } as CommentToPostDTO)
         );
+
         setIsLoadingComment(false);
-        if (session?.user?.userId !== formDataComment?.userReceive) {
-          const notificationToPostDTO: notificationToPostDTO = {
-            message: "comment",
-            receiverId: `${formDataComment?.userReceive}`,
-            senderId: session?.user?.userId,
-            postId: formDataComment?.postToPost,
+        if (share) {
+          if (session?.user?.userId !== formDataCommentOfShare?.userReceive) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "commentShare",
+              receiverId: `${formDataCommentOfShare?.userReceive}`,
+              senderId: session?.user?.userId,
+              postId: "",
+              shareId: formDataCommentOfShare?.shareId,
+              type: "commentShare",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        } else {
+          if (session?.user?.userId !== formDataComment?.userReceive) {
+            const notificationToPostDTO: notificationToPostDTO = {
+              message: "comment",
+              receiverId: `${formDataComment?.userReceive}`,
+              senderId: session?.user?.userId,
+              postId: formDataComment?.postToPost,
+              shareId: "",
+              type: "comment",
+            };
+            stompClient.send(
+              `${GLOBAL_NOTIFI}/${formDataCommentOfShare?.userReceive}`,
+              {},
+              JSON.stringify(notificationToPostDTO)
+            );
+          }
+        }
+        if (share) {
+          setFormDataCommentOfShare({
+            content: "",
+            listImageofComment: null,
             shareId: "",
-            type: "comment",
-          };
-          stompClient.send(
-            `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
-            {},
-            JSON.stringify(notificationToPostDTO)
-          );
+            userToPost: "",
+            userReceive: "",
+          } as CommentOfShareToPostDTO);
+        } else {
+          setFormDataComment({
+            content: "",
+            listImageofComment: null,
+            postToPost: "",
+            userToPost: "",
+            userReceive: "",
+          } as CommentToPostDTO);
         }
       }
       setIsComment(true);
     } else {
       console.log(formDataReplyComment);
       setIsLoadingComment(true);
-      const response = await postReplyCommentApi(formDataReplyComment, session);
+      const response = share
+        ? await postReplyCommentOfShareApi(formDataReplyComment, session)
+        : await postReplyCommentApi(formDataReplyComment, session);
       console.log(response);
       if (response != false) {
         setFormDataReplyComment(
@@ -1659,8 +2042,8 @@ const PostProfile = ({
               // commentToPost: null as unknown as number,
             } as ReplyCommentToPostDTO)
         );
-        setComment((prevComments) => {
-          return prevComments.map((comment) => {
+        setComment((prevComments: any) => {
+          return prevComments.map((comment: CommentOfPost) => {
             if (comment.id === response.commentID) {
               return {
                 ...comment,
@@ -1778,7 +2161,7 @@ const PostProfile = ({
     setOpenLoaderPost(false);
   };
 
-  console.log(">>> check data posst: ", data);
+  // console.log(">>> check data posst: ", data);
 
   useEffect(() => {
     (async () => {
@@ -1907,7 +2290,7 @@ const PostProfile = ({
   if (isLoading) {
     return <PostSkeleton />;
   }
-  console.log(">>> check posts123: ", posts);
+  // console.log(">>> check posts123: ", posts);
   return (
     <>
       {!searchParams.get("id") && (
@@ -1995,16 +2378,16 @@ const PostProfile = ({
                 width: "100%",
                 borderRadius: "12px",
               },
-              component: "form",
-              onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
-                event.preventDefault();
-                const formData = new FormData(event.currentTarget);
-                const formJson = Object.fromEntries(
-                  (formData as any).entries()
-                );
-                console.log(formJson);
-                handleClosePost();
-              },
+              // component: "form",
+              // onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+              //   event.preventDefault();
+              //   const formData = new FormData(event.currentTarget);
+              //   const formJson = Object.fromEntries(
+              //     (formData as any).entries()
+              //   );
+              //   console.log(formJson);
+              //   handleClosePost();
+              // },
             }}
           >
             <Box className="dialog-header">
@@ -2270,9 +2653,10 @@ const PostProfile = ({
                     alignItems: "center",
                     justifyContent: "center",
                     display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  <Button
+                  {/* <Button
                     component="label"
                     variant="contained"
                     sx={{
@@ -2294,10 +2678,70 @@ const PostProfile = ({
                       multiple
                       name="listImageofComment"
                     />
-                  </Button>
+                  </Button> */}
+
+                  <CldUploadWidget
+                    uploadPreset="g4py7mwy"
+                    onSuccess={(result: any, { widget }) => {
+                      console.log(result?.info);
+                      const imgOfPostSave: ImageofPost = {
+                        cloudinaryPublicId: result?.info?.asset_id,
+                        imageUrl: result?.info?.secure_url,
+                        postID: "",
+                        time: result?.info?.created_at,
+                        valid: true,
+                      };
+                      handleChangeImageByCloud(imgOfPostSave);
+                      // widget.close();
+                    }}
+                  >
+                    {({ open }) => {
+                      function handleOnClick() {
+                        open();
+                      }
+                      return (
+                        <Button
+                          variant="contained"
+                          onClick={handleOnClick}
+                          sx={{
+                            p: "8px",
+                            "&:hover": {
+                              boxShadow: GLOBAL_BOXSHADOW,
+                            },
+                            boxShadow: "none",
+                          }}
+                        >
+                          <AddPhotoAlternate /> Thêm ảnh hoặc Video
+                        </Button>
+                      );
+                    }}
+                  </CldUploadWidget>
+                  {countImgCloud}
+                  {!validPost ? (
+                    <FormHelperText
+                      sx={{
+                        color: "red",
+                      }}
+                    >
+                      Ảnh hoặc video không hợp lệ, vui lòng kiểm tra lại !
+                    </FormHelperText>
+                  ) : (
+                    <></>
+                  )}
                 </CardContent>
                 <Grid container rowSpacing={1} mt={1}>
-                  {postData.listImageofPost?.map((url: File, index: any) => (
+                  {postData.listImageofPost?.map(
+                    (url: ImageofPost, index: any) => (
+                      <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
+                        <PreviewImageOfPost2
+                          url={url}
+                          index={index}
+                          handleRemoveImageOfPost={handleRemoveImageOfPost}
+                        />
+                      </Grid>
+                    )
+                  )}
+                  {/* {postData.listImageofPost?.map((url: File, index: any) => (
                     <Grid item xs={12} key={"imageOfPost" + index} sm={6}>
                       <PreviewImageOfPost
                         // key={index}
@@ -2306,7 +2750,7 @@ const PostProfile = ({
                         handleRemoveImageOfPost={handleRemoveImageOfPost}
                       />
                     </Grid>
-                  ))}
+                  ))} */}
                 </Grid>
               </Card>
             </DialogContent>
@@ -2331,8 +2775,9 @@ const PostProfile = ({
                 <Button
                   color="primary"
                   variant="contained"
-                  onClick={handlePost}
                   sx={{ minWidth: "120px" }}
+                  onClick={handlePost}
+                  disabled={!postData.content || !validPost}
                 >
                   Đăng
                 </Button>
@@ -2352,7 +2797,7 @@ const PostProfile = ({
             <DialogContent>
               <DialogContentText id="alert-dialog-description">
                 <Loader />
-                <Typography
+                {/* <Typography
                   sx={{
                     textAlign: "center",
                     fontWeight: "bold",
@@ -2360,7 +2805,7 @@ const PostProfile = ({
                   }}
                 >
                   Đang đăng bài
-                </Typography>
+                </Typography> */}
               </DialogContentText>
             </DialogContent>
           </Dialog>
@@ -2638,7 +3083,28 @@ const PostProfile = ({
                     transformOrigin={{ horizontal: "right", vertical: "top" }}
                     anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
                   >
-                    {session?.user?.userId == item?.postId.userPost.userId ? (
+                    {item?.typePost == "share" && (
+                      <Box>
+                        <MenuItem
+                          onClick={() =>
+                            handleDeletePost(selectedItemId, index)
+                          }
+                        >
+                          <ListItemIcon>
+                            <DeleteIcon fontSize="small" />
+                          </ListItemIcon>
+                          Xóa bài viết chia sẻ
+                        </MenuItem>
+                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                          <ListItemIcon>
+                            <EditIcon fontSize="small" />
+                          </ListItemIcon>
+                          Chỉnh sửa bài viết chia sẻ
+                        </MenuItem>
+                      </Box>
+                    )}
+                    {item?.typePost != "share" &&
+                    session?.user?.userId == item?.postId.userPost.userId ? (
                       <Box>
                         <MenuItem
                           onClick={() =>
@@ -3175,12 +3641,8 @@ const PostProfile = ({
                           vertical: "bottom",
                         }}
                       >
-                        {(session?.user?.userId ==
-                          item?.postId?.userPost?.userId ||
-                          //@ts-ignore
-                          session?.user?.userId == item?.userPostDto?.userId) &&
-                        !searchParams.get("id") ? (
-                          <Box>
+                        {/* {searchParams.get("id") != session?.user?.userId ? ( */}
+                        {/* <Box>
                             <MenuItem
                               onClick={() =>
                                 handleDeletePost(selectedItemId, index)
@@ -3189,7 +3651,7 @@ const PostProfile = ({
                               <ListItemIcon>
                                 <DeleteIcon fontSize="small" />
                               </ListItemIcon>
-                              Xóa bài viết{" "}
+                              Xóa bài viết chia sẻ{session?.user?.userId}
                             </MenuItem>
                             <MenuItem
                               onClick={() => handleEditPost(postModal!)}
@@ -3197,23 +3659,24 @@ const PostProfile = ({
                               <ListItemIcon>
                                 <EditIcon fontSize="small" />
                               </ListItemIcon>
-                              Chỉnh sửa bài viết{" "}
+                              Chỉnh sửa bài viết chia sẻ
+                              {item?.userPostDto?.userId}
                             </MenuItem>
-                          </Box>
-                        ) : (
-                          <Box>
-                            <MenuItem
-                              onClick={() =>
-                                handleOpenDialogReportPost(postModal!)
-                              }
-                            >
-                              <ReportGmailerrorredOutlinedIcon
-                                sx={{ marginRight: "6px" }}
-                              />
-                              Báo cáo bài viết
-                            </MenuItem>
-                          </Box>
-                        )}
+                          </Box> */}
+                        {/* ) : ( */}
+                        <Box>
+                          <MenuItem
+                            onClick={() =>
+                              handleOpenDialogReportPost(postModal!)
+                            }
+                          >
+                            <ReportGmailerrorredOutlinedIcon
+                              sx={{ marginRight: "6px" }}
+                            />
+                            Báo cáo bài viết
+                          </MenuItem>
+                        </Box>
+                        {/* )}  */}
                       </Menu>
                     </Box>
                   </Box>
@@ -3341,7 +3804,7 @@ const PostProfile = ({
                 {item?.typePost == "share" ? (
                   <Grid
                     container
-                    columns={3}
+                    columns={2}
                     sx={{
                       borderTop: " 1px solid #3333",
                     }}
@@ -3392,7 +3855,7 @@ const PostProfile = ({
                               component={"span"}
                               sx={{ marginLeft: "5px" }}
                             >
-                              Thích Share
+                              Thích
                             </Typography>
                           </>
                         )}
@@ -3422,7 +3885,9 @@ const PostProfile = ({
                           width: "100%",
                           borderRadius: "0",
                         }}
-                        onClick={() => handleOpenModalCmt(item?.postId)}
+                        onClick={() =>
+                          handleOpenModalCmt(item?.postId, item, true)
+                        }
                       >
                         <CommentIcon />
                         <Typography
@@ -3433,7 +3898,7 @@ const PostProfile = ({
                         </Typography>
                       </IconButton>
                     </Grid>
-                    <Grid
+                    {/* <Grid
                       item
                       xs={1}
                       sx={{
@@ -3464,7 +3929,7 @@ const PostProfile = ({
                       <Typography component={"span"} sx={{ marginLeft: "5px" }}>
                         Chia sẻ
                       </Typography>
-                    </Grid>
+                    </Grid> */}
                   </Grid>
                 ) : (
                   <Grid
@@ -3555,7 +4020,9 @@ const PostProfile = ({
                           width: "100%",
                           borderRadius: "0",
                         }}
-                        onClick={() => handleOpenModalCmt(item?.postId)}
+                        onClick={() =>
+                          handleOpenModalCmt(item?.postId, item, false)
+                        }
                       >
                         <CommentIcon />
                         <Typography
@@ -4049,7 +4516,7 @@ const PostProfile = ({
                                 >
                                   <Avatar
                                     alt=""
-                                    src={rl.userID.profilePicUrl}
+                                    src={rl.userAction.profilePicUrl}
                                     sx={{ width: 30, height: 30 }}
                                   />
                                   {editingIndexReplyComment !=
@@ -4072,7 +4539,7 @@ const PostProfile = ({
                                           }}
                                         >
                                           <Link
-                                            href="/1"
+                                            href={`/profile?userId=${rl.userAction.userId}`}
                                             style={{ textDecoration: "none" }}
                                           >
                                             <Typography
@@ -4084,7 +4551,7 @@ const PostProfile = ({
                                                 fontWeight: 700,
                                               }}
                                             >
-                                              {rl.userID.fullname}
+                                              {rl.userAction.fullname}
                                             </Typography>
                                           </Link>
                                           <CardContent
@@ -4152,11 +4619,7 @@ const PostProfile = ({
                                                 md={4}
                                                 lg={3}
                                               >
-                                                <ImageViewer
-                                                  imageUrl={
-                                                    item2.imageOfCommentUrl
-                                                  }
-                                                />
+                                                <ImageViewer imageUrl={item2} />
                                               </Grid>
                                             )
                                           )}
@@ -4201,17 +4664,21 @@ const PostProfile = ({
                                               )}
                                             </Typography>
                                           </Tooltip>
+
                                           <Button
                                             size="small"
                                             onClick={() =>
-                                              handleReplyComment(c, rl.userID)
+                                              handleReplyComment(
+                                                c,
+                                                rl.userAction
+                                              )
                                             }
                                           >
                                             Phản hồi
                                           </Button>
                                         </Box>
                                       </Box>
-                                      {rl.userID.userId ==
+                                      {rl.userAction.userId ==
                                         session?.user?.userId && (
                                         <div>
                                           <Button
@@ -4538,7 +5005,9 @@ const PostProfile = ({
                       InputProps={{ sx: { color: GLOBAL_COLOR_BLACK } }}
                       value={
                         isComment
-                          ? formDataComment.content
+                          ? share
+                            ? formDataCommentOfShare.content
+                            : formDataComment.content
                           : formDataReplyComment.content
                       }
                       onChange={(e) =>
@@ -4578,7 +5047,10 @@ const PostProfile = ({
                       onClick={handlePostComment}
                       disabled={
                         (isComment
-                          ? !formDataComment.content || isLoadingComment
+                          ? share
+                            ? !formDataCommentOfShare.content ||
+                              isLoadingComment
+                            : !formDataComment.content || isLoadingComment
                           : !formDataReplyComment.content) || isLoadingComment
                       }
                     >
@@ -4590,17 +5062,29 @@ const PostProfile = ({
                     </IconButton>
                   </Box>
                   {isComment
-                    ? formDataComment.listImageofComment?.map(
-                        (url: File, index: any) => (
-                          <PreviewImage
-                            key={index}
-                            url={url}
-                            index={index}
-                            isComment={true}
-                            handleRemoveImage={handleRemoveImage}
-                          />
+                    ? share
+                      ? formDataCommentOfShare.listImageofComment?.map(
+                          (url: File, index: any) => (
+                            <PreviewImage
+                              key={index}
+                              url={url}
+                              index={index}
+                              isComment={true}
+                              handleRemoveImage={handleRemoveImage}
+                            />
+                          )
                         )
-                      )
+                      : formDataComment.listImageofComment?.map(
+                          (url: File, index: any) => (
+                            <PreviewImage
+                              key={index}
+                              url={url}
+                              index={index}
+                              isComment={true}
+                              handleRemoveImage={handleRemoveImage}
+                            />
+                          )
+                        )
                     : formDataReplyComment.listImageofComment?.map(
                         (url: File, index: any) => (
                           <PreviewImage
@@ -4651,6 +5135,55 @@ const PostProfile = ({
             </Typography>
           ) : (
             <>
+              <TextField
+                autoFocus
+                margin="dense"
+                name="content"
+                hiddenLabel
+                fullWidth
+                variant="standard"
+                label="Nội dung chia sẻ ?"
+                autoComplete="off"
+                InputLabelProps={{
+                  style: {
+                    color: "white",
+                  },
+                }}
+                // InputProps={{
+                //   style:{
+                //     color:"white"
+                //   }
+                // }}
+                onChange={(e) => {
+                  setContentSharePost(e.target.value);
+
+                  if (timer) {
+                    clearTimeout(timer);
+                  }
+
+                  const newTimer = setTimeout(async () => {
+                    console.log("Stop typing");
+                    const content = badWords(e.target.value, {
+                      replacement: "*",
+                      blackList: (defaultList) => [
+                        ...defaultList,
+                        "mẹ mày",
+                        "cc",
+                        "nigga",
+                        "đmm",
+                        "mm",
+                        "đmm",
+                      ],
+                    });
+                    console.log(content);
+                    if (e.target.value.trim() != "") {
+                      setContentSharePost(content.toString());
+                    }
+                  }, 1000);
+
+                  setTimer(newTimer);
+                }}
+              />
               <Box
                 className="block-post-share"
                 sx={{
@@ -4779,37 +5312,6 @@ const PostProfile = ({
                       )
                     )}
                   </Swiper>
-                  {/* <ImageList
-                  variant="masonry"
-                    cols={2}
-                  >
-                    {actionDialog.data?.post?.listImageofPost?.map(
-                      (item: any, index: number) => (
-                        <ImageListItem key={item.id}>
-                          <CardMedia
-                            loading="lazy"
-                            key={index + item.id}
-                            component={
-                              isImage(item.imageUrl) === "image"
-                                ? "img"
-                                : isImage(item.imageUrl) === "video"
-                                ? "video"
-                                : "div"
-                            }
-                            controls={isImage(item.imageUrl) === "video"}
-                            image={item?.imageUrl}
-                            alt={item?.postID}
-                            sx={{
-                              objectFit: "cover",
-                              maxWidth: "100%",
-                              width: ` 100%`,
-                              borderRadius: "16px",
-                            }}
-                          />
-                        </ImageListItem>
-                      )
-                    )}
-                  </ImageList> */}
                 </Box>
               </Box>
               <TextField

@@ -215,6 +215,54 @@ export function calculateTimeDifference(timeRelation: string): string {
   }
 }
 
+const postCommentOfShareApi = async (
+  commentToPostDTO: CommentOfShareToPostDTO,
+  session: User
+) => {
+  const formData = new FormData();
+  formData.append(
+    "commentOfShareToPostDTO",
+    new Blob(
+      [
+        JSON.stringify({
+          content: commentToPostDTO.content,
+          shareId: commentToPostDTO.shareId,
+          userToPost: commentToPostDTO.userToPost,
+          userReceive: commentToPostDTO.userReceive,
+        }),
+      ],
+      { type: "application/json" }
+    )
+  );
+
+  if (commentToPostDTO.listImageofComment) {
+    commentToPostDTO.listImageofComment.forEach((file: any, index: any) => {
+      formData.append("listImageofComment", file);
+    });
+  } else {
+    formData.append("listImageofComment", "");
+  }
+  console.log(formData.getAll("listImageofComment"));
+
+  try {
+    const response = await fetch(GLOBAL_URL + "/api/share/comment", {
+      method: "POST",
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const responseData = await response.json();
+    console.log(responseData);
+    return responseData;
+  } catch (error) {
+    console.error("Error uploading content and files: ", error);
+    throw error;
+  }
+};
 const postCommentApi = async (
   commentToPostDTO: CommentToPostDTO,
   session: User

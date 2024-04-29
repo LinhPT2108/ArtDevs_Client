@@ -200,11 +200,11 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string): Promise<boolean> => {
+  const refusedAddfriend = async (UserId: string, status:number): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
-        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}`,
+        `${GLOBAL_URL}/api/cancel-request-friend/${UserId}?status=${status}`,
         {
           method: "POST", // hoặc 'GET' tùy thuộc vào yêu cầu của bạn
           headers: {
@@ -224,9 +224,9 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string, type: boolean) => {
+  const handlerefusedAddfriend = async (UserId: string, type: boolean, status:number) => {
     try {
-      const apiResult = await refusedAddfriend(UserId);
+      const apiResult = await refusedAddfriend(UserId, status);
 
       console.log("test Result" + apiResult);
       if (apiResult === true) {
@@ -472,7 +472,7 @@ const UserAccept = ({ session }: IPros) => {
                     </Box>
                     <Box
                       onClick={() =>
-                        handlerefusedAddfriend(item?.userAction?.userId, true)
+                        handlerefusedAddfriend(item?.userAction?.userId, true,0)
                       }
                       sx={{
                         minWidth: "60px",
