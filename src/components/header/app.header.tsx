@@ -1228,18 +1228,18 @@ export default function AppHeader(pros: IPros) {
                                               padding={"5px"}
                                               sx={{
                                                 backgroundColor:
-                                                  e.message == "like"
+                                                  e.message == "like" || "likeShare"
                                                     ? "#0683FE"
                                                     : e.message == "share"
                                                     ? "#666768"
                                                     : e.message == "comment" ||
-                                                      "replyComment"
+                                                      "replyComment" ||"commentShare"
                                                     ? "#61e081"
                                                     : "",
                                                 borderRadius: "50%",
                                               }}
                                             >
-                                              {e.message == "like" ? (
+                                              {e.message == "like" ||"likeShare" ? (
                                                 <ThumbUpIcon
                                                   fontSize="small"
                                                   sx={{ color: "white" }}
@@ -1294,6 +1294,10 @@ export default function AppHeader(pros: IPros) {
                                             >
                                               {e.message == "like"
                                                 ? " đã thích bài viết của bạn"
+                                                :e.message == "likeShare"
+                                                ?" đã thích bài viết bạn đã chia sẻ"
+                                                :e.message == "commentShare"
+                                                ?" đã bình luận bài viết bạn đã chia sẻ"
                                                 : e.message == "share"
                                                 ? " đã chia sẻ bài viết của bạn"
                                                 : e.message == "comment"

@@ -1,7 +1,10 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import HomeHashtag from "@/components/hash-tag/home.hashtag";
 import { GLOBAL_COLOR_MENU } from "@/components/utils/veriable.global";
 import { Box, Divider, Typography } from "@mui/material";
-const AppMentor = () => {
+import { getServerSession } from "next-auth";
+const AppMentor = async () => {
+  const session: User | null = await getServerSession(authOptions);
   return (
     <Box>
       <Box sx={{ marginY: "12px" }}>
@@ -20,7 +23,7 @@ const AppMentor = () => {
         </Typography>
       </Box>
       <Divider />
-      <HomeHashtag />
+     {session && <HomeHashtag session={session}/>}
     </Box>
   );
 };

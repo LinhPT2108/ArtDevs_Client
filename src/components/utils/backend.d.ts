@@ -453,6 +453,7 @@ declare global {
     reportDetail: string;
     postId: string;
   }
+  
   interface ReponseReportFormAdmin {
     statusCode: number;
     message: string;

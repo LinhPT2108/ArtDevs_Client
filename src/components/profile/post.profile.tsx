@@ -117,6 +117,7 @@ import {
   GLOBAL_NOTIFI,
   GLOBAL_REPORT_POST,
   GLOBAL_SHARE_MESSAGE,
+  GLOBAL_UPDATE_MESSAGE,
   GLOBAL_UPDATE_POST_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
@@ -903,6 +904,7 @@ const PostProfile = ({
       });
     }
   };
+
   const handlePost = async () => {
     handleClickOpenLoaderPost();
     setOpenBackdrop(true);
@@ -1058,7 +1060,7 @@ const PostProfile = ({
     actionType: string,
     isComment: boolean,
     index: number,
-    isDataLoading: boolean
+    itemS: ResPost | null
   ) => {
     console.log(dataId);
 
@@ -1087,6 +1089,17 @@ const PostProfile = ({
           index: index,
         },
       });
+    } else if (actionType == "updateShare") {
+      setActionDialog({
+        actionType: actionType,
+        data: {
+          post: dataId,
+          index: index,
+          itemS: itemS,
+        },
+      });
+
+      setContentSharePost(itemS?.content ? itemS?.content! : "");
     } else {
       setContentSharePost("");
       setActionDialog({
@@ -1095,7 +1108,6 @@ const PostProfile = ({
           post: dataId,
           isComment: isComment,
           index: index,
-          isDataloading: isDataLoading,
         },
       });
     }
@@ -1119,11 +1131,10 @@ const PostProfile = ({
       handleDeletePost(actionDialog.data.postId, actionDialog.data.index);
     } else if (actionDialog.actionType == "deletePostShare") {
       handleDeletePostShare(actionDialog.data.postId, actionDialog.data.index);
+    } else if (actionDialog.actionType == "updateShare") {
+      handleUpdateShare(actionDialog.data.itemS.id);
     } else {
-      handleSharePost(
-        actionDialog.data.post.postId,
-        actionDialog.data.isDataloading
-      );
+      handleSharePost(actionDialog.data.post.postId);
     }
     console.log(dataSnackbar);
     handleCloseAlerts();
@@ -1694,7 +1705,7 @@ const PostProfile = ({
       );
       try {
         const response = await sendRequest<Post[]>({
-          url: GLOBAL_URL + "/api/share/unlike/" + entityId,
+          url: GLOBAL_URL + "/api/unlike/" + entityId,
           method: "POST",
           headers: { authorization: `Bearer ${session?.access_token}` },
         });
@@ -2132,7 +2143,7 @@ const PostProfile = ({
 
     setIsLoadingComment(false);
   };
-  const handleSharePost = async (postId: string, isDataLoading: boolean) => {
+  const handleSharePost = async (postId: string) => {
     console.log(postId);
     const response: any = await sendRequest({
       url: GLOBAL_URL + "/api/share/" + postId,
@@ -2151,30 +2162,30 @@ const PostProfile = ({
       });
       console.log(dataSnackbar);
     } else {
-      if (isDataLoading) {
-        console.log(isDataLoading);
-        setDataLoading(
-          dataLoading.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  totalShare: resPost?.postId?.totalShare + 1,
-                }
-              : resPost
-          )
-        );
-      } else {
-        setPosts(
-          posts.map((resPost) =>
-            resPost?.postId?.postId === postId
-              ? {
-                  ...resPost,
-                  totalShare: resPost?.postId?.totalShare + 1,
-                }
-              : resPost
-          )
-        );
-      }
+      // if (isDataLoading) {
+      //   console.log(isDataLoading);
+      //   setDataLoading(
+      //     dataLoading.map((resPost) =>
+      //       resPost?.postId?.postId === postId
+      //         ? {
+      //             ...resPost,
+      //             totalShare: resPost?.postId?.totalShare + 1,
+      //           }
+      //         : resPost
+      //     )
+      //   );
+      // } else {
+      setPosts(
+        posts.map((resPost) =>
+          resPost?.postId?.postId === postId
+            ? {
+                ...resPost,
+                totalShare: resPost?.postId?.totalShare + 1,
+              }
+            : resPost
+        )
+      );
+      // }
       setDataSnackbar({
         openSnackbar: true,
         contentSnackbar: GLOBAL_SHARE_MESSAGE,
@@ -2184,7 +2195,7 @@ const PostProfile = ({
       if (session?.user?.userId !== response?.postId?.userPost?.userId) {
         const notificationToPostDTO: notificationToPostDTO = {
           message: "share",
-          receiverId: response.userPostDto.userId,
+          receiverId: response.postId?.userPost?.userId,
           senderId: session?.user?.userId,
           postId: "",
           shareId: response?.id,
@@ -2199,6 +2210,45 @@ const PostProfile = ({
     }
   };
 
+  const handleUpdateShare = async (shareId: String) => {
+    console.log(shareId);
+    console.log(contentSharePost);
+    const response: boolean = await sendRequest({
+      url: GLOBAL_URL + "/api/update-share/" + shareId,
+      headers: { authorization: `Bearer ${session?.access_token}` },
+      method: "PUT",
+      queryParams: {
+        content: contentSharePost,
+      },
+    });
+    console.log(response);
+    if (response) {
+      setPosts(
+        posts.map((resPost) => {
+          if (resPost?.id === shareId) {
+            return {
+              ...resPost,
+              content: contentSharePost,
+            };
+          }
+          return resPost;
+        })
+      );
+
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_UPDATE_MESSAGE,
+        type: "success",
+      });
+    } else {
+      setDataSnackbar({
+        openSnackbar: true,
+        contentSnackbar: GLOBAL_SHARE_MESSAGE,
+        type: "error",
+      });
+      console.log(dataSnackbar);
+    }
+  };
   // modal loading openLoaderPost
   const [openLoaderPost, setOpenLoaderPost] = useState<boolean>(false);
 
@@ -3167,7 +3217,7 @@ const PostProfile = ({
                                 "deletePostShare",
                                 false,
                                 index,
-                                false
+                                null
                               )
                             // handleDeletePost(selectedItemId, index)
                           }
@@ -3177,7 +3227,17 @@ const PostProfile = ({
                           </ListItemIcon>
                           Xóa bài viết chia sẻ
                         </MenuItem>
-                        <MenuItem onClick={() => handleEditPost(postModal!)}>
+                        <MenuItem
+                          onClick={() =>
+                            handleClickOpenAlerts(
+                              item.postId,
+                              "updateShare",
+                              false,
+                              -1,
+                              item
+                            )
+                          }
+                        >
                           <ListItemIcon>
                             <EditIcon fontSize="small" />
                           </ListItemIcon>
@@ -3195,7 +3255,7 @@ const PostProfile = ({
                                 "deletePost",
                                 false,
                                 index,
-                                false
+                                null
                               )
                             }
                           >
@@ -4010,7 +4070,7 @@ const PostProfile = ({
                           "share",
                           false,
                           -1,
-                          false
+                          null
                         )
                       }
                     >
@@ -4145,7 +4205,7 @@ const PostProfile = ({
                           "share",
                           false,
                           -1,
-                          false
+                          null
                         )
                       }
                     >
@@ -4434,7 +4494,7 @@ const PostProfile = ({
                                               "deleteCmt",
                                               true,
                                               index,
-                                              false
+                                              null
                                             )
                                           // handleDeleteCommentOrReplyComment(
                                           //   c,
@@ -4847,7 +4907,7 @@ const PostProfile = ({
                                                     "deleteCmt",
                                                     false,
                                                     ir,
-                                                    false
+                                                    null
                                                   )
                                                 // handleDeleteCommentOrReplyComment(
                                                 //   rl,
@@ -5249,6 +5309,8 @@ const PostProfile = ({
             ? "Xóa bài viết"
             : actionDialog.actionType == "deletePostShare"
             ? "Xóa bài viết chia sẻ"
+            : actionDialog.actionType == "updateShare"
+            ? "Cập nhật bài viết chia sẻ"
             : "Chia sẻ bài viết"}
         </DialogTitle>
         <Divider />
@@ -5410,6 +5472,7 @@ const PostProfile = ({
                     color: GLOBAL_COLOR_BLACK,
                   },
                 }}
+                value={contentSharePost}
                 onChange={(e) => {
                   setContentSharePost(e.target.value);
 
@@ -5473,6 +5536,8 @@ const PostProfile = ({
             actionDialog.actionType == "deletePost" ||
             actionDialog.actionType == "deletePostShare"
               ? "Xóa"
+              : actionDialog.actionType == "updateShare"
+              ? "Lưu"
               : "Chia sẻ"}
           </Button>
         </DialogActions>
