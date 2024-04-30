@@ -4,6 +4,7 @@ import {
   Alert,
   Backdrop,
   Button,
+  ButtonGroup,
   Dialog,
   DialogActions,
   DialogContent,
@@ -21,12 +22,15 @@ import {
   Slide,
   Snackbar,
   Stack,
+  Tab,
+  Tabs,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
   styled,
 } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import Box from "@mui/material/Box";
 import ReportIcon from "@mui/icons-material/Report";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -75,7 +79,13 @@ const HomeHashtag = ({ session }: Ips) => {
   const router = useRouter();
 
   const searchParam = useSearchParams();
-  const [site, setSite] = useState(true);
+  const [site, setSite] = useState(
+    !searchParam.get("show") || (searchParam.get("show") as string) == "all"
+      ? true
+      : (searchParam.get("show") as string) == "my"
+      ? false
+      : true
+  );
 
   const [openAlert, setOpenAlert] = useState(false);
   const [selectedHashtag, setSelectedHashtag] = useState<HashtagInfor | null>(
@@ -134,7 +144,9 @@ const HomeHashtag = ({ session }: Ips) => {
     console.log("close modal report");
   };
 
-  const [searchHashtag, setSearchHashTag] = useState<string>("");
+  const [searchHashtag, setSearchHashTag] = useState<string>(
+    searchParam.get("keyword") ? (searchParam.get("keyword") as string) : ""
+  );
   const [dataHashtag, setDatahashtag] = useState<HashtagInfor[]>([]);
   const [page, setPage] = useState<number>(0);
 
@@ -220,30 +232,82 @@ const HomeHashtag = ({ session }: Ips) => {
     });
   };
 
-  const [alignment, setAlignment] = useState("popular");
+  const [alignment, setAlignment] = useState(
+    searchParam.get("tab") ? (searchParam.get("tab") as string) : "popular"
+  );
   const [sortOrder, setSortOrder] = useState("desc");
 
-  const handleAlignment = async (
-    event: React.MouseEvent<HTMLElement>,
-    newAlignment: string | null
+  const handleRedireactSearch = (
+    sites: boolean,
+    newAlignment: string,
+    sorter: string,
+    search: string
   ) => {
-    setPage(0);
-    if (newAlignment != null) {
-      if (alignment === newAlignment) {
-        const newSortOrder = sortOrder === "desc" ? "asc" : "desc";
-        await setSortOrder(newSortOrder);
+    console.log(">>> check value: ", search);
+
+    router.replace(
+      `/hash-tag?show=${
+        sites ? "all" : "my"
+      }&tab=${newAlignment}&sort=${sorter}&keyword=${search}`
+    );
+  };
+
+  const [value, setValue] = useState<number>(0);
+  const [isSort, setIsSort] = useState<boolean>(false);
+
+  const handleAlignment = (event: React.SyntheticEvent, newValue: number) => {
+    setValue(newValue);
+  };
+
+  const handleRedirectHashs = (newValue: number) => {
+    if (newValue == 0) {
+      // phổ biến
+      if (isSort) {
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "popular", "desc", searchHashtag);
       } else {
-        await setAlignment(newAlignment);
-        await setSortOrder("desc");
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "popular", "asc", searchHashtag);
+      }
+    } else if (newValue == 1) {
+      // tên
+      if (isSort) {
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "name", "desc", searchHashtag);
+      } else {
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "name", "asc", searchHashtag);
       }
     } else {
-      let newSortOrder = null;
-      if (sortOrder == "desc") newSortOrder = "asc";
-      if (sortOrder == "asc") newSortOrder = "desc";
-      await setSortOrder(newSortOrder!);
+      // ngày tạo
+      if (isSort) {
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "createDate", "desc", searchHashtag);
+      } else {
+        setIsSort(!isSort);
+        handleRedireactSearch(site, "createDate", "asc", searchHashtag);
+      }
     }
-    await fetchHashtagSearch("", alignment, sortOrder);
   };
+
+  useEffect(() => {
+    const handleRefeshDate = async () => {
+      setPage(0);
+      let searchTab = searchParam.get("tab") as string;
+      let searchSort = searchParam.get("sort") as string;
+      searchTab &&
+        searchSort &&
+        fetchHashtagSearch(searchHashtag, searchTab, searchSort, site);
+      searchTab && setAlignment(alignment);
+      searchSort && setSortOrder(searchSort);
+    };
+    handleRefeshDate();
+  }, [
+    searchParam.get("tab"),
+    searchParam.get("sort"),
+    searchParam.get("keyword"),
+    site,
+  ]);
 
   const handleRedirectHashtag = (hashtagText: string) => {
     router.push(`/hash-tag/${hashtagText}`);
@@ -254,10 +318,15 @@ const HomeHashtag = ({ session }: Ips) => {
     setPage(0);
     const { value } = event.target;
     setSearchHashTag(value);
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-      fetchHashtagSearch(value, "", "");
-    }, 1500);
+    // clearTimeout(typingTimeout);
+
+    // typingTimeout = setTimeout(() => {
+    //   handleRedireactSearch(
+    //     searchTab ? searchTab : "popular",
+    //     searchSort ? searchSort : "desc",
+    //     value
+    //   );
+    // }, 1500);
   };
 
   // const fetchHashtagSearch = async (v: string) => {
@@ -271,9 +340,7 @@ const HomeHashtag = ({ session }: Ips) => {
   //   }
   // };
 
-  
-  const fetchHashtagUserLogged = async (
-  ) => {
+  const fetchHashtagUserLogged = async () => {
     const newData = await sendRequest<IModelPaginate<HashtagInfor>>({
       url: GLOBAL_URL + `/api/detailhashtag-userLogged`,
       method: "GET",
@@ -281,7 +348,7 @@ const HomeHashtag = ({ session }: Ips) => {
       queryParams: { keyword: "" },
     });
     console.log(newData);
-    
+
     if (newData) {
       mutate(newData, false);
     }
@@ -290,7 +357,8 @@ const HomeHashtag = ({ session }: Ips) => {
   const fetchHashtagSearch = async (
     v: string,
     tab: string,
-    sortType: string
+    sortType: string,
+    site: boolean
   ) => {
     console.log(tab, sortType);
     const queryParams: Record<string, string | number | null> = {
@@ -300,8 +368,9 @@ const HomeHashtag = ({ session }: Ips) => {
     };
 
     const newData = await sendRequest<IModelPaginate<HashtagInfor>>({
-      url: GLOBAL_URL + `/api/detailhashtag`,
+      url: GLOBAL_URL + `/api/detailhashtag${!site ? "-userLogged" : ""}`,
       method: "GET",
+      headers: { authorization: `Bearer ${session?.access_token}` },
       queryParams: queryParams,
     });
 
@@ -509,8 +578,14 @@ const HomeHashtag = ({ session }: Ips) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAlert}>Hủy</Button>
-          <Button onClick={() => handleDeleteHashtag(selectedHashtag?.id)}>
+          <Button variant="outlined" color="primary" onClick={handleCloseAlert}>
+            Hủy
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleDeleteHashtag(selectedHashtag?.id)}
+          >
             Xóa
           </Button>
         </DialogActions>
@@ -583,6 +658,64 @@ const HomeHashtag = ({ session }: Ips) => {
       </BootstrapDialog>
       <Box
         sx={{
+          mb: 1,
+        }}
+      >
+        <Button
+          variant={site ? "contained" : "outlined"}
+          sx={{
+            mr: 1,
+          }}
+          onClick={() => {
+            setSite(true);
+            fetchHashtagSearch(searchHashtag, "popular", "desc", true);
+            setSearchHashTag(
+              searchParam.get("keyword")
+                ? (searchParam.get("keyword") as string)
+                : ""
+            );
+            let searchTab = searchParam.get("tab") as string;
+            let searchSort = searchParam.get("sort") as string;
+            let keyword = searchParam.get("keyword") as string;
+            handleRedireactSearch(
+              true,
+              searchTab ? searchTab : "popular",
+              searchSort ? searchSort : "desc",
+              keyword ? keyword : ""
+            );
+          }}
+        >
+          Tất cả
+        </Button>
+        <Button
+          variant={!site ? "contained" : "outlined"}
+          sx={{
+            ml: 1,
+          }}
+          onClick={() => {
+            setSite(false);
+            fetchHashtagUserLogged();
+            setSearchHashTag(
+              searchParam.get("keyword")
+                ? (searchParam.get("keyword") as string)
+                : ""
+            );
+            let searchTab = searchParam.get("tab") as string;
+            let searchSort = searchParam.get("sort") as string;
+            let keyword = searchParam.get("keyword") as string;
+            handleRedireactSearch(
+              false,
+              searchTab ? searchTab : "popular",
+              searchSort ? searchSort : "desc",
+              keyword ? keyword : ""
+            );
+          }}
+        >
+          Của tôi
+        </Button>
+      </Box>
+      <Box
+        sx={{
           display: "flex",
           justifyContent: "space-between",
         }}
@@ -609,67 +742,107 @@ const HomeHashtag = ({ session }: Ips) => {
         >
           <InputBase
             onChange={handleSearchChange}
+            onKeyDown={(e) => {
+              if (e.key == "Enter") {
+                let searchTab = searchParam.get("tab") as string;
+                let searchSort = searchParam.get("sort") as string;
+                handleRedireactSearch(
+                  site,
+                  searchTab ? searchTab : "popular",
+                  searchSort ? searchSort : "desc",
+                  searchHashtag
+                );
+              }
+            }}
             sx={{
               ml: 1,
               flex: 1,
             }}
+            value={searchHashtag}
             placeholder="Tìm kiếm..."
             inputProps={{ "aria-label": "search" }}
           />
-          <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
+          <IconButton
+            type="button"
+            sx={{ p: "10px" }}
+            aria-label="search"
+            onClick={() => {
+              let searchTab = searchParam.get("tab") as string;
+              let searchSort = searchParam.get("sort") as string;
+              handleRedireactSearch(
+                site,
+                searchTab ? searchTab : "popular",
+                searchSort ? searchSort : "desc",
+                searchHashtag
+              );
+            }}
+          >
             <SearchIcon />
           </IconButton>
         </Paper>
         {/* {sortOrder + " " + alignment} */}
-        <ToggleButtonGroup
-          value={alignment}
-          exclusive
-          onChange={handleAlignment}
-          aria-label="text alignment"
-        >
-          <ToggleButton value="popular" aria-label="left aligned">
-            Phổ biến
-          </ToggleButton>
-          <ToggleButton value="name" aria-label="centered">
-            Tên
-          </ToggleButton>
-          <ToggleButton value="createDate" aria-label="right aligned">
-            Ngày tạo
-          </ToggleButton>
-        </ToggleButtonGroup>
+
+        <Tabs value={value} onChange={handleAlignment} scrollButtons={false}>
+          <Tab
+            label={
+              <Typography
+                sx={{
+                  diplay: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                Phổ biến{" "}
+                {value == 0 && (
+                  <FilterListIcon
+                    sx={{ transform: `${isSort ? "rotate(180deg)" : "none"}` }}
+                  />
+                )}
+              </Typography>
+            }
+            onClick={() => handleRedirectHashs(0)}
+          />
+          <Tab
+            label={
+              <Typography
+                sx={{
+                  diplay: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                Tên{" "}
+                {value == 1 && (
+                  <FilterListIcon
+                    sx={{ transform: `${isSort ? "rotate(180deg)" : "none"}` }}
+                  />
+                )}
+              </Typography>
+            }
+            onClick={() => handleRedirectHashs(1)}
+          />
+          <Tab
+            label={
+              <Typography
+                sx={{
+                  diplay: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                Ngày tạo{" "}
+                {value == 2 && (
+                  <FilterListIcon
+                    sx={{ transform: `${isSort ? "rotate(180deg)" : "none"}` }}
+                  />
+                )}
+              </Typography>
+            }
+            onClick={() => handleRedirectHashs(2)}
+          />
+        </Tabs>
       </Box>
 
-      <Box
-        sx={{
-          my: 4,
-        }}
-      >
-        <Button
-          variant={site?"contained":"outlined"}
-          sx={{
-            mr: 1,
-          }}
-          onClick={()=>{
-            setSite(true);
-          fetchHashtagSearch("","popular","desc");
-          }}
-        >
-          Tất cả
-        </Button>
-        <Button
-          variant={!site?"contained":"outlined"}
-          sx={{
-            ml: 1,
-          }}
-          
-          onClick={()=>{
-            setSite(false);
-            fetchHashtagUserLogged();
-          }}
-        >
-          Của tôi
-        </Button>
-      </Box>
       <InfiniteScroll
         loader={<Loader />}
         className=" my-10"
