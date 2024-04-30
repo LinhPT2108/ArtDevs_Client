@@ -3,7 +3,12 @@ import Box from "@mui/material/Box";
 
 import { sendRequest } from "@/components/utils/api";
 import useSWR, { SWRResponse } from "swr";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import {
+  GLOBAL_LISTUSERREPORT1,
+  GLOBAL_LISTUSERREPORT2,
+  GLOBAL_LISTUSERREPORT3,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
 import ComplexTable from "./table/ReportTable";
 
 import { useEffect, useState } from "react";
@@ -23,6 +28,8 @@ import {
   columnsDataReport,
 } from "../dashboard/variables/columnsData";
 import PostReportTable from "./table/PostReportTable";
+import Banner from "../dashboard/components/table/Banner";
+import Banner1 from "../feedback-user/components/Banner";
 
 const style = {
   position: "absolute" as "absolute",
@@ -62,7 +69,7 @@ const Example = () => {
   const [openModalUserReport, setOpenModalUserReport] = useState(false);
   const [openModalUserDetail, setOpenModalUserDetail] = useState(false);
   const [userData, setUserData] = useState<UserFormAdminDTO | null>(null);
-
+  const [listNameTable, setlistNameTable] = useState<string>("");
   const handleOpenModalReport = (datatable: Report[]) => {
     setOpenModalReport(true);
     setDataForTableReport(datatable);
@@ -75,10 +82,13 @@ const Example = () => {
   };
   const handleCloseModalPostReport = () => setOpenModalPostReport(false);
 
-  const handleOpenModalUserReport = (datatable: UserFormAdminDTO[]) => {
+  const handleOpenModalUserReport = (
+    datatable: UserFormAdminDTO[],
+    listnametable: string
+  ) => {
     setOpenModalUserReport(true);
     setDataForTableUserReport(datatable);
-    console.log("check data for user", datatable);
+    setlistNameTable(listnametable);
   };
   const handleCloseModalUserReport = () => setOpenModalUserReport(false);
 
@@ -88,11 +98,11 @@ const Example = () => {
     // Xử lý dữ liệu của hàng được chọn tại đây, ví dụ:
     setUserData(rowData);
     setOpenModalUserDetail(true);
-    console.log("Row data:", rowData);
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
   };
   // Xử lý lấy dữ liệu
+
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseReportFormAdmin>({
       url: url,
@@ -168,6 +178,44 @@ const Example = () => {
     }
   };
 
+  const returnlistname = (listnametable: string): UserFormAdminDTO[] | null => {
+    switch (listnametable) {
+      case GLOBAL_LISTUSERREPORT1:
+        // Xử lý trường hợp GLOBAL_LISTALLACCOUNT
+        // Ví dụ:
+        return dataGetAll?.model.listUserReport1 || [];
+      case GLOBAL_LISTUSERREPORT2:
+        // Xử lý trường hợp GLOBAL_LISTALLBAND
+        // Ví dụ:
+        return dataGetAll?.model.listUserReport2 || [];
+      case GLOBAL_LISTUSERREPORT3:
+        // Xử lý trường hợp GLOBAL_LISTMENTOR
+        // Ví dụ:
+        return dataGetAll?.model.listUserReport3 || [];
+
+      default:
+        // Trường hợp không khớp với bất kỳ giá trị nào được xác định
+        return null;
+    }
+  };
+
+  const handleWidgetClick1 = (
+    DataUser: UserFormAdminDTO,
+    typeupdate: string,
+    listname: string
+  ) => {
+    // Truyền danh sách dữ liệu từ Widget vào TopCreatorTable khi người dùng click vào Widget
+    // setDataForTable(listData);
+    const listResult: UserFormAdminDTO[] | null = returnlistname(listname);
+
+    const index: number | undefined = listResult?.findIndex(
+      (t) => t.userId == DataUser.userId
+    );
+    listResult?.splice(index!, 1, DataUser);
+
+    setDataForTableUserReport([...listResult!]);
+    handleRowClick(DataUser);
+  };
   // Sử dụng hook useEffect để cập nhật state dataForTable khi dataGetAll thay đổi
 
   return (
@@ -199,7 +247,10 @@ const Example = () => {
           description="Thông tin các tài khoản bị báo cáo lần 1"
           icon={<BsExclamationCircle />}
           onClick={() =>
-            handleOpenModalUserReport(dataGetAll?.model.listUserReport1 || [])
+            handleOpenModalUserReport(
+              dataGetAll?.model.listUserReport1 || [],
+              GLOBAL_LISTUSERREPORT1
+            )
           }
         />
 
@@ -209,7 +260,10 @@ const Example = () => {
           description="Thông tin các tài khoản bị báo cáo lần 2"
           icon={<BsExclamationCircleFill />}
           onClick={() =>
-            handleOpenModalUserReport(dataGetAll?.model.listUserReport2 || [])
+            handleOpenModalUserReport(
+              dataGetAll?.model.listUserReport2 || [],
+              GLOBAL_LISTUSERREPORT2
+            )
           }
         />
       </div>
@@ -221,7 +275,10 @@ const Example = () => {
           description="Thông tin các tài khoản bị báo cáo lần 3+"
           icon={<BsExclamationOctagonFill />}
           onClick={() =>
-            handleOpenModalUserReport(dataGetAll?.model.listUserReport3 || [])
+            handleOpenModalUserReport(
+              dataGetAll?.model.listUserReport3 || [],
+              GLOBAL_LISTUSERREPORT3
+            )
           }
         />
         <Storage
@@ -279,6 +336,7 @@ const Example = () => {
             columnsData={tableColumnsTopCreators}
             tableData={dataForTableUserReport}
             onRowClick={handleRowClick}
+            titleTable={""}
           />
         </Box>
       </Modal>
@@ -290,7 +348,15 @@ const Example = () => {
         aria-labelledby="keep-mounted-modal-title"
         aria-describedby="keep-mounted-modal-description"
       >
-        <Box sx={style2}>{userData && <UserForm user={userData} />}</Box>
+        <Box sx={style2}>
+          {userData && (
+            <UserForm
+              listnametable={listNameTable}
+              handlepropdata={handleWidgetClick1}
+              user={userData}
+            />
+          )}
+        </Box>
       </Modal>
     </Box>
   );

@@ -56,16 +56,15 @@ const DashboardPage: FC<Props> = () => {
     GLOBAL_LISTALLACCOUNT
   );
   const [userData, setUserData] = useState<UserFormAdminDTO | null>(null);
-
+  const [isUserDataSet, setIsUserDataSet] = useState(false);
   const handleRowClick = (rowData: UserFormAdminDTO) => {
     // Xử lý dữ liệu của hàng được chọn tại đây, ví dụ:
     setUserData(rowData);
-    console.log("Row data:", rowData);
+
     // Truyền dữ liệu sang component Banner
     // Implement your logic here
   };
 
-  console.log("prop", sessions);
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseAllUserFormAdmin>({
       url: url,
@@ -161,13 +160,16 @@ const DashboardPage: FC<Props> = () => {
     listResult?.splice(index!, 1, DataUser);
 
     setDataForTable([...listResult!]);
-    console.log("check data listresult", listResult);
-    console.log("check data listresult", dataForTable);
     handleRowClick(DataUser);
   };
   useEffect(() => {
-    setUserData(dataForTable[0]);
-  }, [dataForTable]);
+    // Chỉ set userData một lần khi bắt đầu và biến cờ isUserDataSet là false
+    if (!isUserDataSet) {
+      setUserData(dataForTable[0]);
+      // Đặt biến cờ là true sau khi set userData
+      setIsUserDataSet(true);
+    }
+  }, [dataForTable, isUserDataSet]);
 
   return (
     <>

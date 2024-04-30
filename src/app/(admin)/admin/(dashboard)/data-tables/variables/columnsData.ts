@@ -76,10 +76,6 @@ export const columnsDataComplex = [
 
 export const columnsHashtagTable = [
   {
-    Header: "ID",
-    accessor: "id",
-  },
-  {
     Header: "Tên Hashtag",
     accessor: "hastagname",
   },
@@ -90,6 +86,10 @@ export const columnsHashtagTable = [
   {
     Header: "Số lượng bài viết",
     accessor: "totalpost",
+  },
+  {
+    Header: "Báo Cáo",
+    accessor: "report",
   },
   {
     Header: "Thao Tác",

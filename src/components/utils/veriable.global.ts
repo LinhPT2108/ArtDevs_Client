@@ -45,6 +45,7 @@ export const GLOBAL_LISTUSER: string = "listuser";
 export const GLOBAL_LISTNEWUSER: string = "listnewuser";
 export const GLOBAL_LISTUSERREPORT1: string = "listuserreport1";
 export const GLOBAL_LISTUSERREPORT2: string = "listuserreport2";
+export const GLOBAL_LISTUSERREPORT3: string = "listuserreport3";
 
 //open menu
 let drawerOpen: boolean = true;
