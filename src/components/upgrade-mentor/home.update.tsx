@@ -110,7 +110,14 @@ export default function HomeUpgradeMentor({ session }: IPros) {
         [
           JSON.stringify({
             id: dataFeedback?.id,
-            title: dataFeedback?.title,
+            title:
+              session.user.firstName +
+              " " +
+              session.user.middleName +
+              " " +
+              session.user.lastName +
+              " " +
+              "Yêu Cầu Năng Cấp Tài khoản",
             content: dataFeedback?.content,
             status: dataFeedback?.status,
             type: dataFeedback?.type,

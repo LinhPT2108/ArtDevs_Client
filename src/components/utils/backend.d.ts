@@ -473,6 +473,11 @@ declare global {
     message: string;
     model: FeedbackDTO[];
   }
+  interface ReponseListSkillOfMentor {
+    statusCode: number;
+    message: string;
+    model: string[];
+  }
   interface RequestUserUpdateFormAdmin {
     statusCode: number;
     message: string;

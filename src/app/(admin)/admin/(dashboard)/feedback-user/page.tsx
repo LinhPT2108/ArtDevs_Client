@@ -11,6 +11,7 @@ import {
   columnsFeedbackTable,
   columnsHashtagTable,
 } from "../data-tables/variables/columnsData";
+import UpgradeTable from "./components/UpgradeTable";
 
 export const metadata: Metadata = {
   title: "NFT | Horizon UI by Ories",
@@ -28,6 +29,9 @@ const NFTMarketPlacePage = () => {
       {/* right side section */}
       <div className="col-span-1 h-full w-full rounded-xl 2xl:col-span-3">
         <FeddbackTable columnsData={columnsFeedbackTable} />
+      </div>
+      <div className="col-span-1 h-full w-full rounded-xl 2xl:col-span-3">
+        <UpgradeTable columnsData={columnsFeedbackTable} />
       </div>
     </div>
   );

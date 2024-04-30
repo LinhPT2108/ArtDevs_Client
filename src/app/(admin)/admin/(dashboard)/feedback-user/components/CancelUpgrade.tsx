@@ -1,28 +1,11 @@
 import { formatDateString } from "@/components/utils/utils";
 import { Avatar, Box, CardContent, CardHeader } from "@mui/material";
 import Link from "next/link";
-import React, { useCallback, useState } from "react";
-import ImageViewer2 from "react-simple-image-viewer";
+import React from "react";
 interface props {
-  feedback: FeedbackDTO;
+  item: FeedbackDTO;
 }
-const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
-  const [currentImage, setCurrentImage] = useState(0);
-  const [isViewerOpen, setIsViewerOpen] = useState(false);
-  const [listStringImg, setListStringImg] = useState<string[]>([]);
-  const openImageViewer = useCallback((index: any, item: FeedbackDTO) => {
-    setCurrentImage(index);
-    setIsViewerOpen(true);
-    // Đảm bảo item.listImage không phải là undefined trước khi ánh xạ
-    setListStringImg(item?.listImage?.map((i) => i.imageOfFeedbackUrl) || []);
-    console.log(item);
-  }, []);
-
-  const closeImageViewer = () => {
-    setCurrentImage(0);
-    setIsViewerOpen(false);
-    setListStringImg([]);
-  };
+const CancelUpgrade: React.FC<props> = ({ item }: props) => {
   return (
     <Box>
       <CardContent
@@ -38,8 +21,8 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
         sx={{
           color: "#000000",
         }}
-        title={feedback?.title}
-        subheader={formatDateString(feedback?.createFeedback)}
+        title={item?.title}
+        subheader={formatDateString(item?.createFeedback)}
       />
 
       <Box sx={{ marginLeft: "12px", marginBottom: "12px" }}>
@@ -47,7 +30,7 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
           Nội dung phản hồi:
         </div>
         <div className="text-xl text-navy-600 dark:text-white">
-          {feedback?.content}
+          {item?.content}
         </div>
       </Box>
       <Box
@@ -63,17 +46,16 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
           overflow: "hidden",
           display: "grid",
           gridTemplateColumns: `${
-            feedback?.listImage?.length == 1 ? "1fr" : "1fr 1fr"
+            item?.listImage?.length == 1 ? "1fr" : "1fr 1fr"
           }`,
           gridColumnGap: `${
-            feedback?.listImage && feedback.listImage.length > 1 ? "3px" : "0"
+            item?.listImage && item.listImage.length > 1 ? "3px" : "0"
           }`,
         }}
       >
-        {feedback?.listImage && feedback.listImage.length < 3 ? (
-          feedback?.listImage?.map((item, index) => (
+        {item?.listImage && item.listImage.length < 3 ? (
+          item?.listImage?.map((item, index) => (
             <Box
-              onClick={() => openImageViewer(index, feedback)}
               key={index}
               sx={{
                 "& img": {
@@ -84,15 +66,11 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
                 },
               }}
             >
-              <img
-                src={item.imageOfFeedbackUrl}
-                alt="photo"
-                onClick={() => openImageViewer(index, feedback)}
-              />
+              <img src={item.imageOfFeedbackUrl} alt="photo" />
             </Box>
           ))
-        ) : feedback?.listImage?.length == 3 ? (
-          <React.Fragment key={feedback.id}>
+        ) : item?.listImage?.length == 3 ? (
+          <React.Fragment key={item.id}>
             <Box
               sx={{
                 "& img": {
@@ -103,37 +81,13 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
                 },
               }}
             >
-              <img
-                src={feedback?.listImage[0].imageOfFeedbackUrl}
-                alt="photo"
-              />
-              {isViewerOpen && (
-                    <Box
-                      sx={{
-                        "& .react-simple-image-viewer__modal": {
-                          zIndex: 999999,
-                          "& img": {
-                            width: "auto",
-                          },
-                        },
-                      }}
-                    >
-                      <ImageViewer2
-                        src={listStringImg}
-                        currentIndex={currentImage}
-                        disableScroll={false}
-                        closeOnClickOutside={true}
-                        onClose={closeImageViewer}
-                      />
-                    </Box>
-                  )}
+              <img src={item?.listImage[0].imageOfFeedbackUrl} alt="photo" />
             </Box>
             <Box>
-              {feedback?.listImage?.map((item, index) => (
+              {item?.listImage?.map((item, index) => (
                 <React.Fragment key={index}>
                   {index > 0 ? (
                     <Box
-                      onClick={() => openImageViewer(index, feedback)}
                       sx={{
                         width: "100%",
                         height: "50%",
@@ -157,10 +111,9 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
               ))}
             </Box>
           </React.Fragment>
-        ) : feedback?.listImage?.length == 4 ? (
-          feedback?.listImage?.map((item, index) => (
+        ) : item?.listImage?.length == 4 ? (
+          item?.listImage?.map((item, index) => (
             <Box
-              onClick={() => openImageViewer(index, feedback)}
               key={index}
               sx={{
                 "& img": {
@@ -175,11 +128,10 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
             </Box>
           ))
         ) : (
-          feedback?.listImage?.map((i, index) => (
+          item?.listImage?.map((i, index) => (
             <React.Fragment key={index}>
               {index < 3 ? (
                 <Box
-                  onClick={() => openImageViewer(index, feedback)}
                   sx={{
                     "& img": {
                       width: "100%",
@@ -195,7 +147,6 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
                 <React.Fragment key={index}>
                   {index == 4 ? (
                     <Box
-                      onClick={() => openImageViewer(index, feedback)}
                       sx={{
                         position: "relative",
                         "& img": {
@@ -225,7 +176,7 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
                           fontWeight: "bold",
                         }}
                       >
-                        {feedback?.listImage && feedback.listImage.length - 4}
+                        {item?.listImage && item.listImage.length - 4}
                       </Box>
                     </Box>
                   ) : (
@@ -240,4 +191,4 @@ const FeedbackDetail: React.FC<props> = ({ feedback }: props) => {
     </Box>
   );
 };
-export default FeedbackDetail;
+export default CancelUpgrade;

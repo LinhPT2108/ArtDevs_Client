@@ -36,6 +36,9 @@ import moment from "moment";
 import FeedbackDetail from "./FeedbackDetail";
 import { SendOutlined } from "@mui/icons-material";
 import { Loader } from "@/components/utils/component.global";
+import CancelUpgrade from "./CancelUpgrade";
+import KnowlegdeSign from "@/components/sign/sign-up/knowledge.sign";
+import SkillMentor from "./skillMentor";
 
 type Props = {
   columnsData: any[];
@@ -54,22 +57,21 @@ const style = {
   px: 4,
   pb: 3,
 };
-const FeddbackTable = (props: Props) => {
+const UpgradeTable = (props: Props) => {
   const { columnsData } = props;
-  const [dataForTableFeedback, setDataForTableFeedback] = useState<
-    FeedbackDTO[]
-  >([]);
+  const [dataForTableUpgrade, setDataForTableUpgrade] = useState<FeedbackDTO[]>(
+    []
+  );
   const [openModalDetail, setOpenModalDetail] = useState(false);
   const [openModalFormReply, setOpenModalFormReply] = useState(false);
+  const [openModalAcceptUpgrade, setOpenModalAcceptUpgrade] = useState(false);
   const [dataHastagFeedback, setdataHastagFeedback] =
     useState<FeedbackDTO | null>(null);
-  const [openDeletePostDialog, setOpenDeletePostDialog] = useState(false);
-  const [hashtagID, setHashtagID] = useState(Number);
   const [openSnackbar, setopenSnackbar] = useState(false);
   const [messageReponseApi, setMessageReponseApi] = useState(String);
   const [selectedRow, setSelectedRow] = useState<Row<FeedbackDTO> | null>(null);
   const [feedbackReply, setFeedbackReply] = useState("");
-
+  const [listSkillOfMentor, setListSkillOfMentor] = useState<String[]>([]);
   // modal loading
   const [openLoading, setOpenLoading] = useState(false);
 
@@ -83,6 +85,24 @@ const FeddbackTable = (props: Props) => {
     setOpenLoading(false);
   };
 
+  const fetchDataLanguage = async (url: string) => {
+    return await sendRequest<MyLanguageProgram[]>({
+      url: url,
+      method: "GET",
+    });
+  };
+  const {
+    data: responseLanguage,
+    error: errorLanguage,
+    isLoading: isLoadingLanguage,
+  }: SWRResponse<MyLanguageProgram[], any> = useSWR(
+    `${GLOBAL_URL}/api/programingLanguage`,
+    fetchDataLanguage,
+    {
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    }
+  );
   const fetchData = async (url: string) => {
     return await sendRequest<ReponseFeedbackFormAdmin>({
       url: url,
@@ -95,16 +115,64 @@ const FeddbackTable = (props: Props) => {
     isLoading,
     mutate,
   }: SWRResponse<ReponseFeedbackFormAdmin, any> = useSWR(
-    `${GLOBAL_URL}/api/admin/get-feedback`,
+    `${GLOBAL_URL}/api/admin/get-upgrade`,
     fetchData,
     {
       shouldRetryOnError: false,
       revalidateOnFocus: false,
     }
   );
+  const handleListSkillOfUser = (
+    myLanguageProgram: MyLanguageProgram[],
+    userId: String
+  ) => {
+    let arrayOfValues: string[] = [];
+    if (myLanguageProgram) {
+      arrayOfValues = Object.values(myLanguageProgram).map(
+        (item) => item.languageName
+      );
+    }
+    setListSkillOfMentor(arrayOfValues);
+    // setData((prevData) => ({
+    //   ...prevData,
+    //   listSkillOfUser: arrayOfValues,
+    // }));
+  };
+  const handleAcceptUpgrade = async (userId: String, FeedbackId: number) => {
+    try {
+      const fetchData = await sendRequest<ReponseFeedbackFormAdmin>({
+        url: `${GLOBAL_URL}/api/admin/accept-upgrade`,
+        method: "POST",
+        queryParams: { listSkillOfMentor, userId, FeedbackId },
+      });
+      setMessageReponseApi(fetchData.message);
+      handleOpenSnackbar();
 
-  if (reponseAPI && dataForTableFeedback && dataForTableFeedback.length == 0) {
-    setDataForTableFeedback(reponseAPI.model);
+      if (fetchData.statusCode === 200) {
+        // Sao chép mảng model để tránh cập nhật trực tiếp
+        handleCloseLoading();
+        handleCloseModalDetail();
+        const updatedModel = [...dataForTableUpgrade];
+
+        const newdataupdate: FeedbackDTO = fetchData.model;
+        const index = updatedModel.findIndex(
+          (item: FeedbackDTO) => item.id === FeedbackId
+        );
+
+        if (index !== -1) {
+          // Thay thế phần tử tại index bằng newdataupdate
+          updatedModel.splice(index, 1, newdataupdate);
+          setDataForTableUpgrade(updatedModel);
+        }
+        handleCloseModalAcceptUpgrade();
+      }
+    } catch (error) {
+      console.error("Error deleting:", error);
+      // Xử lý lỗi ở đây nếu cần thiết
+    }
+  };
+  if (reponseAPI && dataForTableUpgrade && dataForTableUpgrade.length == 0) {
+    setDataForTableUpgrade(reponseAPI.model);
   }
 
   const handleOpenSnackbar = () => {
@@ -125,39 +193,13 @@ const FeddbackTable = (props: Props) => {
   const handleCloseModalFormReply = () => {
     setOpenModalFormReply(false);
   };
-  const handleCancelDelete = () => {
-    setOpenDeletePostDialog(false);
+  const handleOpenModalAcceptUpgrade = () => {
+    setOpenModalAcceptUpgrade(true);
   };
-  const handleOpenDelete = (HashtagID: number) => {
-    setHashtagID(HashtagID);
-    setOpenDeletePostDialog(true);
+  const handleCloseModalAcceptUpgrade = () => {
+    setOpenModalAcceptUpgrade(false);
   };
 
-  const handleActionDelete = async (HashtagID: number) => {
-    try {
-      const fetchData = await sendRequest<ReponseError>({
-        url: `${GLOBAL_URL}/api/delete-detailhashtag`,
-        method: "GET",
-        queryParams: { HashtagID },
-      });
-      setMessageReponseApi(fetchData.message);
-      setOpenDeletePostDialog(false);
-      handleOpenSnackbar();
-      if (fetchData.errorCode === 200) {
-        const updatedModel = [...dataForTableFeedback]; // Sao chép mảng model để tránh cập nhật trực tiếp
-        const index = updatedModel.findIndex(
-          (item: FeedbackDTO) => item.id === HashtagID
-        );
-        if (index !== -1) {
-          updatedModel.splice(index, 1);
-          setDataForTableFeedback(updatedModel);
-        }
-      }
-    } catch (error) {
-      console.error("Error deleting:", error);
-      // Xử lý lỗi ở đây nếu cần thiết
-    }
-  };
   const handleReplyFeedback = async (
     FeddbackText: string,
     userId: String,
@@ -166,29 +208,25 @@ const FeddbackTable = (props: Props) => {
     handleClickOpenLoading();
     try {
       const fetchData = await sendRequest<ReponseFeedbackFormAdmin>({
-        url: `${GLOBAL_URL}/api/admin/reply-feedback`,
+        url: `${GLOBAL_URL}/api/admin/reply-upgrade`,
         method: "POST",
         queryParams: { FeddbackText, userId, FeedbackId },
       });
       setMessageReponseApi(fetchData.message);
       handleOpenSnackbar();
+
       if (fetchData.statusCode === 200) {
         // Sao chép mảng model để tránh cập nhật trực tiếp
         handleCloseLoading();
-        const updatedModel = [...dataForTableFeedback];
-        
+        const updatedModel = [...dataForTableUpgrade];
         const newdataupdate: FeedbackDTO = fetchData.model;
-        console.log("check new model", newdataupdate);
         const index = updatedModel.findIndex(
           (item: FeedbackDTO) => item.id === FeedbackId
         );
-        console.log("check updated model", updatedModel);
-        console.log("check index", index);
         if (index !== -1) {
           // Thay thế phần tử tại index bằng newdataupdate
           updatedModel.splice(index, 1, newdataupdate);
-          setDataForTableFeedback(updatedModel);
-          console.log("check updated model 2 -", dataForTableFeedback);
+          setDataForTableUpgrade(updatedModel);
         }
         handleCloseModalDetail();
         handleCloseModalFormReply();
@@ -202,8 +240,9 @@ const FeddbackTable = (props: Props) => {
     // Lấy dữ liệu từ TextField và cập nhật vào state
     setFeedbackReply(event.target.value);
   };
+
   const columns = useMemo(() => columnsData, [columnsData]);
-  const data = useMemo(() => dataForTableFeedback, [dataForTableFeedback]);
+  const data = useMemo(() => dataForTableUpgrade, [dataForTableUpgrade]);
   // Hàm xử lý khi click vào một dòng
   const handleRowClick = (model: FeedbackDTO) => {
     setdataHastagFeedback(model);
@@ -424,7 +463,9 @@ const FeddbackTable = (props: Props) => {
         aria-labelledby="parent-modal-title"
         aria-describedby="parent-modal-description"
       >
-        <Box sx={{ ...style, width: 1000 }}>
+        <Box
+          sx={{ ...style, width: 1000, overflow: "scroll", maxHeight: "90vh" }}
+        >
           <Typography
             id="keep-mounted-modal-title"
             variant="h6"
@@ -434,7 +475,7 @@ const FeddbackTable = (props: Props) => {
               borderRadius: "5px",
             }}
           >
-            {dataHastagFeedback && <FeedbackDetail feedback={dataHastagFeedback} />}
+            {dataHastagFeedback && <CancelUpgrade item={dataHastagFeedback} />}
           </Typography>
 
           <Box
@@ -448,8 +489,16 @@ const FeddbackTable = (props: Props) => {
               variant="outlined"
               endIcon={<SendOutlined />}
               onClick={() => handleOpenModalFormReply()}
+              sx={{ marginRight: "8px" }}
             >
-              Phản Hồi Ý Kiến Người Dùng
+              Phản Hồi yêu cầu
+            </Button>
+            <Button
+              variant="outlined"
+              endIcon={<SendOutlined />}
+              onClick={() => handleOpenModalAcceptUpgrade()}
+            >
+              Nâng cấp tài khoản
             </Button>
           </Box>
         </Box>
@@ -504,6 +553,47 @@ const FeddbackTable = (props: Props) => {
           </Button>
         </Box>
       </Modal>
+      <Modal
+        open={openModalAcceptUpgrade}
+        onClose={handleCloseModalAcceptUpgrade}
+        aria-labelledby="parent-modal-title"
+        aria-describedby="parent-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            backgroundColor: "white",
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+            padding: "20px",
+            maxWidth: "700px", // Đặt chiều rộng tối đa
+            width: "100%",
+            outline: "none", // Loại bỏ viền xung quanh Modal
+          }}
+        >
+          <SkillMentor
+            programingLanguage={responseLanguage}
+            userId={dataHastagFeedback?.userId}
+            handleListSkillOfUser={handleListSkillOfUser}
+          />
+          <Button
+            variant="outlined"
+            endIcon={<SendOutlined />}
+            onClick={() =>
+              dataHastagFeedback &&
+              handleAcceptUpgrade(
+                dataHastagFeedback?.userId,
+                dataHastagFeedback?.id
+              )
+            }
+          >
+            Xác Nhận
+          </Button>
+        </Box>
+      </Modal>
       <Dialog
         open={openLoading}
         aria-labelledby="alert-dialog-title"
@@ -530,20 +620,7 @@ const FeddbackTable = (props: Props) => {
           </DialogContentText>
         </DialogContent>
       </Dialog>
-      <Dialog open={openDeletePostDialog} onClose={handleCancelDelete}>
-        <DialogTitle>Xác nhận</DialogTitle>
-        <DialogContent>
-          <p>Bạn có muốn xóa Hashtag này không?</p>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete} color="primary">
-            Hủy
-          </Button>
-          <Button onClick={() => handleActionDelete(hashtagID)} color="primary">
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={5000}
@@ -554,4 +631,4 @@ const FeddbackTable = (props: Props) => {
   );
 };
 
-export default FeddbackTable;
+export default UpgradeTable;
