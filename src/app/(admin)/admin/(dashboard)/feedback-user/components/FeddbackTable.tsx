@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Row,
   useGlobalFilter,
@@ -9,10 +9,11 @@ import {
   useTable,
 } from "react-table";
 
-import CardMenu from "@/components/admin/card/CardMenu";
 import Card from "@/components/admin/card";
-import Progress from "@/components/admin/progress";
-import { DiApple, DiAndroid, DiWindows } from "react-icons/di";
+import { sendRequest } from "@/components/utils/api";
+import { Loader } from "@/components/utils/component.global";
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import { SendOutlined } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -26,16 +27,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { sendRequest } from "@/components/utils/api";
-import useSWR, { SWRResponse } from "swr";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
-import { FilterTable } from "../../report/component/FilterTable";
 import moment from "moment";
+import useSWR, { SWRResponse } from "swr";
+import { FilterTable } from "../../report/component/FilterTable";
 import FeedbackDetail from "./FeedbackDetail";
-import { SendOutlined } from "@mui/icons-material";
-import { Loader } from "@/components/utils/component.global";
 
 type Props = {
   columnsData: any[];
@@ -103,7 +98,12 @@ const FeddbackTable = (props: Props) => {
     }
   );
 
-  if (reponseAPI && dataForTableFeedback && dataForTableFeedback.length == 0) {
+  if (
+    reponseAPI &&
+    dataForTableFeedback &&
+    dataForTableFeedback.length == 0 &&
+    reponseAPI.model.length > 0
+  ) {
     setDataForTableFeedback(reponseAPI.model);
   }
 
@@ -176,7 +176,7 @@ const FeddbackTable = (props: Props) => {
         // Sao chép mảng model để tránh cập nhật trực tiếp
         handleCloseLoading();
         const updatedModel = [...dataForTableFeedback];
-        
+        //@ts-ignore
         const newdataupdate: FeedbackDTO = fetchData.model;
         console.log("check new model", newdataupdate);
         const index = updatedModel.findIndex(
@@ -434,7 +434,9 @@ const FeddbackTable = (props: Props) => {
               borderRadius: "5px",
             }}
           >
-            {dataHastagFeedback && <FeedbackDetail feedback={dataHastagFeedback} />}
+            {dataHastagFeedback && (
+              <FeedbackDetail feedback={dataHastagFeedback} />
+            )}
           </Typography>
 
           <Box

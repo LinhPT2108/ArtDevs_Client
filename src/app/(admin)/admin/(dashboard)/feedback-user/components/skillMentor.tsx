@@ -16,10 +16,17 @@ interface IProps {
   handleListSkillOfUser: (value: MyLanguageProgram[], userId: String) => void;
   programingLanguage: MyLanguageProgram[] | undefined;
   userId: String | undefined;
+  messageDemand: string;
+  errorDemand: boolean;
 }
 
-const SkillMentor = (props: IProps) => {
-  const { handleListSkillOfUser, userId, programingLanguage } = props;
+const SkillMentor = ({
+  handleListSkillOfUser,
+  userId,
+  programingLanguage,
+  messageDemand,
+  errorDemand,
+}: IProps) => {
   const [listSkillOfMentor, setListSkillOfMentor] = useState<String[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<any>(
     listSkillOfMentor?.length
@@ -70,6 +77,17 @@ const SkillMentor = (props: IProps) => {
         >
           (sắp xếp theo độ ưu tiên giảm dần)
         </Typography>
+        {errorDemand && (
+          <Typography
+            component={"p"}
+            sx={{
+              fontSize: "14px",
+              color: "red",
+            }}
+          >
+            {messageDemand}
+          </Typography>
+        )}
       </Box>
       <Grid columns={2} spacing={2} container>
         <Grid item xs={2}>
@@ -94,7 +112,7 @@ const SkillMentor = (props: IProps) => {
             )}
             style={{ width: "100%" }}
             renderInput={(params) => (
-              <TextField {...params} label="Chủ đề" placeholder="Favorites" />
+              <TextField {...params} label="Chủ đề" placeholder="Kỹ năng" />
             )}
           />
         </Grid>

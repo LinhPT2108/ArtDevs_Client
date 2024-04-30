@@ -559,7 +559,17 @@ const HomeProfile = ({ session }: IPros) => {
 
       await setDataProfile(user);
     } else {
-      await setDataProfile(session?.user);
+      const user = await sendRequest<UserLogin>({
+        url: GLOBAL_URL + "/api/get-user-by-id",
+        method: "GET",
+        headers: {
+          authorization: `Bearer ${session?.access_token}`,
+        },
+        queryParams: {
+          id: session?.user?.userId,
+        },
+      });
+      await setDataProfile(user);
     }
   };
 

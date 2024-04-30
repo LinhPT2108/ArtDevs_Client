@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Row,
   useGlobalFilter,
@@ -9,35 +9,26 @@ import {
   useTable,
 } from "react-table";
 
-import CardMenu from "@/components/admin/card/CardMenu";
 import Card from "@/components/admin/card";
-import Progress from "@/components/admin/progress";
-import { DiApple, DiAndroid, DiWindows } from "react-icons/di";
+import { sendRequest } from "@/components/utils/api";
+import { Loader } from "@/components/utils/component.global";
+import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import { SendOutlined } from "@mui/icons-material";
 import {
   Box,
   Button,
   Dialog,
-  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogTitle,
   Modal,
   Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { sendRequest } from "@/components/utils/api";
-import useSWR, { SWRResponse } from "swr";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
-import { FilterTable } from "../../report/component/FilterTable";
 import moment from "moment";
-import FeedbackDetail from "./FeedbackDetail";
-import { SendOutlined } from "@mui/icons-material";
-import { Loader } from "@/components/utils/component.global";
+import useSWR, { SWRResponse } from "swr";
+import { FilterTable } from "../../report/component/FilterTable";
 import CancelUpgrade from "./CancelUpgrade";
-import KnowlegdeSign from "@/components/sign/sign-up/knowledge.sign";
 import SkillMentor from "./skillMentor";
 
 type Props = {
@@ -72,6 +63,8 @@ const UpgradeTable = (props: Props) => {
   const [selectedRow, setSelectedRow] = useState<Row<FeedbackDTO> | null>(null);
   const [feedbackReply, setFeedbackReply] = useState("");
   const [listSkillOfMentor, setListSkillOfMentor] = useState<String[]>([]);
+  const [errorDemand, setErrorDemand] = useState<boolean>(false);
+  const [messageDemand, setMessageDemand] = useState<string>("");
   // modal loading
   const [openLoading, setOpenLoading] = useState(false);
 
@@ -122,6 +115,7 @@ const UpgradeTable = (props: Props) => {
       revalidateOnFocus: false,
     }
   );
+  console.log("check data...", reponseAPI);
   const handleListSkillOfUser = (
     myLanguageProgram: MyLanguageProgram[],
     userId: String
@@ -132,6 +126,13 @@ const UpgradeTable = (props: Props) => {
         (item) => item.languageName
       );
     }
+    if (myLanguageProgram.length > 0) {
+      setErrorDemand(false);
+      setMessageDemand("");
+    } else {
+      setErrorDemand(true);
+      setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
+    }
     setListSkillOfMentor(arrayOfValues);
     // setData((prevData) => ({
     //   ...prevData,
@@ -140,31 +141,40 @@ const UpgradeTable = (props: Props) => {
   };
   const handleAcceptUpgrade = async (userId: String, FeedbackId: number) => {
     try {
-      const fetchData = await sendRequest<ReponseFeedbackFormAdmin>({
-        url: `${GLOBAL_URL}/api/admin/accept-upgrade`,
-        method: "POST",
-        queryParams: { listSkillOfMentor, userId, FeedbackId },
-      });
-      setMessageReponseApi(fetchData.message);
-      handleOpenSnackbar();
+      if (listSkillOfMentor.length > 0) {
+        setErrorDemand(false);
+        setMessageDemand("");
+        handleClickOpenLoading();
+        const fetchData = await sendRequest<ReponseFeedbackFormAdmin>({
+          url: `${GLOBAL_URL}/api/admin/accept-upgrade`,
+          method: "POST",
+          queryParams: { listSkillOfMentor, userId, FeedbackId },
+        });
+        setMessageReponseApi(fetchData.message);
+        handleOpenSnackbar();
 
-      if (fetchData.statusCode === 200) {
-        // Sao chép mảng model để tránh cập nhật trực tiếp
-        handleCloseLoading();
-        handleCloseModalDetail();
-        const updatedModel = [...dataForTableUpgrade];
+        if (fetchData.statusCode === 200) {
+          // Sao chép mảng model để tránh cập nhật trực tiếp
+          handleCloseLoading();
+          handleCloseModalDetail();
+          const updatedModel = [...dataForTableUpgrade];
+          //@ts-ignore
+          const newdataupdate: FeedbackDTO = fetchData.model;
+          const index = updatedModel.findIndex(
+            (item: FeedbackDTO) => item.id === FeedbackId
+          );
 
-        const newdataupdate: FeedbackDTO = fetchData.model;
-        const index = updatedModel.findIndex(
-          (item: FeedbackDTO) => item.id === FeedbackId
-        );
-
-        if (index !== -1) {
-          // Thay thế phần tử tại index bằng newdataupdate
-          updatedModel.splice(index, 1, newdataupdate);
-          setDataForTableUpgrade(updatedModel);
+          if (index !== -1) {
+            // Thay thế phần tử tại index bằng newdataupdate
+            updatedModel.splice(index, 1, newdataupdate);
+            setDataForTableUpgrade(updatedModel);
+          }
+          handleCloseLoading();
+          handleCloseModalAcceptUpgrade();
         }
-        handleCloseModalAcceptUpgrade();
+      } else {
+        setErrorDemand(true);
+        setMessageDemand("Chọn ít nhất một danh mục quan tâm !");
       }
     } catch (error) {
       console.error("Error deleting:", error);
@@ -219,6 +229,7 @@ const UpgradeTable = (props: Props) => {
         // Sao chép mảng model để tránh cập nhật trực tiếp
         handleCloseLoading();
         const updatedModel = [...dataForTableUpgrade];
+        //@ts-ignore
         const newdataupdate: FeedbackDTO = fetchData.model;
         const index = updatedModel.findIndex(
           (item: FeedbackDTO) => item.id === FeedbackId
@@ -277,7 +288,7 @@ const UpgradeTable = (props: Props) => {
     <Card className={"w-full h-full p-4"}>
       <div className="relative flex items-center justify-between">
         <div className="text-xl font-bold text-navy-700 dark:text-white">
-          Phản hồi của người dùng
+          Phê duyệt yêu cầu nâng cấp tài khoản
         </div>
         <div className="flex items-center justify-center space-x-2">
           <FilterTable
@@ -578,6 +589,8 @@ const UpgradeTable = (props: Props) => {
             programingLanguage={responseLanguage}
             userId={dataHastagFeedback?.userId}
             handleListSkillOfUser={handleListSkillOfUser}
+            errorDemand={errorDemand}
+            messageDemand={messageDemand}
           />
           <Button
             variant="outlined"
@@ -589,6 +602,7 @@ const UpgradeTable = (props: Props) => {
                 dataHastagFeedback?.id
               )
             }
+            sx={{ marginTop: "12px" }}
           >
             Xác Nhận
           </Button>
@@ -614,8 +628,7 @@ const UpgradeTable = (props: Props) => {
                 marginTop: "12px ",
               }}
             >
-              Đang gửi mail trả lời phản hồi của người dùng <br /> Vui lòng chờ
-              trong giây lát{" "}
+              Loading
             </Typography>
           </DialogContentText>
         </DialogContent>
