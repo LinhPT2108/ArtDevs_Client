@@ -14,6 +14,7 @@ export const GLOBAL_UPLOAD_POST_MESSAGE: string = "Đăng bài viết thành cô
 export const GLOBAL_UPDATE_POST_MESSAGE: string = "Cập Nhật bài viết thành công";
 export const GLOBAL_REPORT_POST: string = "Báo cáo bài viết thành công";
 export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
+export const GLOBAL_UPDATE_MESSAGE: string = "Cập nhật thành công";
 export const GLOBAL_DELETE_COMMENT_MESSAGE: string = "Xóa bình luận thành công";
 export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công";
 export const GLOBAL_DELETE_POST_SHARE_MESSAGE: string = "Xóa bài viết đã chia sẻ thành công";
