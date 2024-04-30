@@ -277,13 +277,7 @@ const HashtagTable = (props: Props) => {
                 >
                   {row.cells.map((cell, index) => {
                     let renderData;
-                    if (cell.column.Header === "ID") {
-                      renderData = (
-                        <p className="text-sm font-bold text-navy-700 dark:text-white">
-                          {row.original.id}
-                        </p>
-                      );
-                    } else if (cell.column.Header === "Tên Hashtag") {
+                    if (cell.column.Header === "Tên Hashtag") {
                       renderData = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {row.original.hashtagText}
@@ -299,6 +293,25 @@ const HashtagTable = (props: Props) => {
                       renderData = (
                         <p className="text-sm font-bold text-navy-700 dark:text-white">
                           {row.original.totalPostUseHashtag}
+                        </p>
+                      );
+                    } else if (cell.column.Header === "Báo Cáo") {
+                      // Chuyển đổi giá trị thành số nguyên
+                      const reportValue = row.original.report;
+
+                      // Thiết lập màu sắc dựa trên ngưỡng
+                      const textColor =
+                        reportValue > 99
+                          ? "red"
+                          : reportValue > 50
+                          ? "orange"
+                          : "inherit";
+                      renderData = (
+                        <p
+                          className="text-sm font-bold text-navy-700 dark:text-white"
+                          style={{ color: textColor }}
+                        >
+                          {row.original.report}
                         </p>
                       );
                     } else if (cell.column.Header === "Thao Tác") {
