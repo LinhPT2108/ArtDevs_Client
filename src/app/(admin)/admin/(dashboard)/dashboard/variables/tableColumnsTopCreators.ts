@@ -1,10 +1,10 @@
 export const tableColumnsTopCreators = [
   {
-    Header: "UserID",
-    accessor: "userid",
+    Header: "ID",
+    accessor: "id",
   },
   {
-    Header: "createDate",
+    Header: "Ngày tạo",
     accessor: "createdate",
   },
   {
@@ -12,8 +12,7 @@ export const tableColumnsTopCreators = [
     accessor: "rating",
   },
   {
-    Header: "Role",
+    Header: "Vai trò",
     accessor: "role",
   },
-
 ];

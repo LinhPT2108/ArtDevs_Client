@@ -266,20 +266,22 @@ const Banner = (ip: ip) => {
       {/* Post followers */}
       <div className="mt-6 mb-3 flex gap-4 md:!gap-14">
         <div className="flex flex-col items-center justify-center">
-          <p className="text-2xl font-bold text-navy-700 dark:text-white">17</p>
-          <p className="text-sm font-normal text-gray-600">Posts</p>
-        </div>
-        <div className="flex flex-col items-center justify-center">
           <p className="text-2xl font-bold text-navy-700 dark:text-white">
             {user.totalPost}
           </p>
-          <p className="text-sm font-normal text-gray-600">Friend</p>
+          <p className="text-sm font-normal text-gray-600">Bài viết</p>
+        </div>
+        <div className="flex flex-col items-center justify-center">
+          <p className="text-2xl font-bold text-navy-700 dark:text-white">
+            {user.totalFriend}
+          </p>
+          <p className="text-sm font-normal text-gray-600">Bạn</p>
         </div>
         <div className="flex flex-col items-center justify-center">
           <p className="text-2xl font-bold text-navy-700 dark:text-white">
             {user.totalReport}
           </p>
-          <p className="text-sm font-normal text-gray-600">Report</p>
+          <p className="text-sm font-normal text-gray-600">Báo cáo</p>
         </div>
       </div>
       <div className="mt-4 flex items-center gap-3">
@@ -301,14 +303,14 @@ const Banner = (ip: ip) => {
             className="toggle-button"
             sx={toggleButtonStyles}
           >
-            Mentor
+            Người hướng dẫn
           </ToggleButton>
           <ToggleButton
             value="user"
             className="toggle-button"
             sx={toggleButtonStyles}
           >
-            User
+            Học viên
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
@@ -323,7 +325,7 @@ const Banner = (ip: ip) => {
           htmlFor="switch2"
           className="grid grid-cols-[auto,auto] gap-2 text-base font-medium text-navy-700 dark:text-white cursor-pointer"
         >
-          <span>Account is Locked</span>
+          <span>Khóa tài khoản</span>
         </label>
       </div>
       <Dialog

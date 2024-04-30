@@ -31,6 +31,7 @@ import moment from "moment";
 import useSWR, { SWRResponse } from "swr";
 import { FilterTable } from "../../report/component/FilterTable";
 import FeedbackDetail from "./FeedbackDetail";
+import { formatDayVN } from "@/components/utils/utils";
 
 type Props = {
   columnsData: any[];
@@ -345,18 +346,18 @@ const FeddbackTable = (props: Props) => {
                         </p>
                       );
                     } else if (cell.column.Header === "Ngày Phản Hồi") {
-                      const formattedDate = moment(
-                        row.original.createFeedback
-                      ).format("MMMM Do YYYY");
+                      const formattedDate = row.original.createFeedback
+                        ? formatDayVN(row.original.createFeedback)
+                        : "";
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
                           {formattedDate}
                         </p>
                       );
                     } else if (cell.column.Header === "Ngày Trả Lời Phản Hồi") {
-                      const formattedDate = moment(
-                        row.original.dateHandle
-                      ).format("MMMM Do YYYY");
+                      const formattedDate = row.original.dateHandle
+                        ? formatDayVN(row.original.dateHandle)
+                        : "";
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
                           {formattedDate}

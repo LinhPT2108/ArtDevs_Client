@@ -15,6 +15,7 @@ import { sendRequest } from "@/components/utils/api";
 import { GLOBAL_URL } from "@/components/utils/veriable.global";
 import useSWR, { SWRResponse } from "swr";
 import { Badge } from "@mui/material";
+import { formatDayVN } from "@/components/utils/utils";
 
 type Props = {
   columnsData: any[];
@@ -184,7 +185,7 @@ function TopCreatorTable(props: Props) {
                 >
                   {row.cells.map((cell, index) => {
                     let renderData;
-                    if (cell.column.Header === "UserID") {
+                    if (cell.column.Header === "ID") {
                       renderData = (
                         <div className="flex items-center gap-2">
                           {isNewRow ? (
@@ -227,10 +228,10 @@ function TopCreatorTable(props: Props) {
                           </p>
                         </div>
                       );
-                    } else if (cell.column.Header === "createDate") {
-                      const formattedDate = moment(
+                    } else if (cell.column.Header === "Ngày tạo") {
+                      const formattedDate = formatDayVN(
                         row.original.createDate
-                      ).format("MMMM Do YYYY");
+                      );
                       renderData = (
                         <p className="text-md font-medium text-gray-600 dark:text-white">
                           {formattedDate}
@@ -244,11 +245,15 @@ function TopCreatorTable(props: Props) {
                           </p>
                         </div>
                       );
-                    } else if (cell.column.Header === "Role") {
+                    } else if (cell.column.Header === "Vai trò") {
                       renderData = (
                         <div className="mx-2 flex font-bold">
                           <p className="text-md font-medium text-gray-600 dark:text-white">
-                            {row.original.role.roleName}
+                            {row.original.role.roleName == "user"
+                              ? "Học viên"
+                              : row.original.role.roleName == "mentor"
+                              ? "Người hướng dẫn"
+                              : "admin"}
                           </p>
                         </div>
                       );

@@ -123,7 +123,6 @@ export const columnsFeedbackTable = [
   },
 ];
 export const columnsProgramingLanguageTable = [
-
   {
     Header: "Tên Ngôn Ngữ Lập Trình",
     accessor: "languagename",
@@ -141,4 +140,3 @@ export const columnsProgramingLanguageTable = [
     accessor: "action",
   },
 ];
-
