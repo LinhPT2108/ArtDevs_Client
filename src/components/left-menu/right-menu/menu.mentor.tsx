@@ -76,7 +76,7 @@ const MenuMentor = ({ session }: IPros) => {
   }, [data]);
   console.log(">>> check data: ", data);
   const handleRedirect = (id: string) => {
-    router.push(`/mentor/${id}`);
+    router.push(`/profile?id=${id}`);
   };
   const sendMatchRequest = async (mentorId: string): Promise<boolean> => {
     try {
@@ -251,7 +251,7 @@ const MenuMentor = ({ session }: IPros) => {
                           sx={{
                             top: "4px",
                             left: "4px",
-                            backgroundColor: item?.isReady
+                            backgroundColor: item?.online
                               ? "#16D6B5"
                               : "#e60839",
                             border: "1px solid white",
@@ -272,9 +272,9 @@ const MenuMentor = ({ session }: IPros) => {
                               width: "12px",
                               height: "12px",
                               borderRadius: "50%",
-                              backgroundColor: item?.isReady
+                              backgroundColor: item?.online
                                 ? "white"
-                                : "black",
+                                : "white",
                               marginRight: "8px",
                             }}
                           ></Box>
@@ -285,7 +285,7 @@ const MenuMentor = ({ session }: IPros) => {
                               color: "white",
                             }}
                           >
-                            {item?.isReady ? "Online" : "Offline"}
+                            {item?.online ? "Online" : "Offline"}
                           </Typography>
                         </Box>
                         {item.fullname}

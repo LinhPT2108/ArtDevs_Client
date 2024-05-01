@@ -66,7 +66,7 @@ const HashtagPost = ({ hashtags, session, programingLanguage }: IPros) => {
         }
 
         console.log(">>> check data content: ", hashtags);
-      }, 3000);
+      }, 20000);
     }
     return () => {
       clearTimeout(timer);

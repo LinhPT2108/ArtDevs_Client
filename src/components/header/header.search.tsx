@@ -20,7 +20,7 @@ export default function SearchComponent() {
   }, [searchParams.get("keyword") as string]);
   return (
     <Paper
-      component="form"
+      component="div"
       sx={{
         p: "2px 12px",
         margin: "0 12px",

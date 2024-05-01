@@ -11,7 +11,7 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 interface IProps {
   programingLanguage: MyLanguageProgram[];
-  role: Role;
+  role: Role | undefined;
   handleListDemandOfUser: (value: MyLanguageProgram[]) => void;
   handleListSkillOfUser: (value: MyLanguageProgram[]) => void;
   data: UserRegister | UserLogin;
@@ -41,7 +41,7 @@ const KnowlegdeSign = (props: IProps) => {
 
   const handleTopicChange = (event: any, value: any) => {
     setSelectedTopics(value);
-    if (role.roleName === "user") {
+    if (role?.roleName === "user") {
       handleListDemandOfUser(value);
       console.log(">>> check value: ", value);
       handleListSkillOfUser([]);
@@ -61,14 +61,14 @@ const KnowlegdeSign = (props: IProps) => {
         }}
       >
         Chọn chủ đề bạn quan tâm
-        <Typography
+        {/* <Typography
           component={"p"}
           sx={{
             fontSize: "14px",
           }}
         >
           (sắp xếp theo độ ưu tiên giảm dần)
-        </Typography>
+        </Typography> */}
         {errorDemand && (
           <Typography
             component={"p"}

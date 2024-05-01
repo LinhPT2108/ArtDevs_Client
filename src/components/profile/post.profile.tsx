@@ -1,31 +1,24 @@
 "use client";
 import { AddPhotoAlternate } from "@mui/icons-material";
-import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckIcon from "@mui/icons-material/Check";
 import ClearIcon from "@mui/icons-material/Clear";
 import CommentIcon from "@mui/icons-material/Comment";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import EditIcon from "@mui/icons-material/Edit";
 import LockIcon from "@mui/icons-material/Lock";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import VerifiedIcon from "@mui/icons-material/Verified";
-import EditIcon from "@mui/icons-material/Edit";
 import SendIcon from "@mui/icons-material/Send";
 import ShareIcon from "@mui/icons-material/Share";
 import SubdirectoryArrowRightIcon from "@mui/icons-material/SubdirectoryArrowRight";
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
-import VideoFileIcon from "@mui/icons-material/VideoFile";
+import VerifiedIcon from "@mui/icons-material/Verified";
 import ImageViewer2 from "react-simple-image-viewer";
-import * as nsfwjs from "nsfwjs";
-import { badWords, blackList } from "vn-badwords";
+import { badWords } from "vn-badwords";
 
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css/free-mode";
-import "swiper/css/pagination";
-import "swiper/css";
-import { FreeMode, Pagination } from "swiper/modules";
-import { CldUploadWidget } from "next-cloudinary";
+import CloseIcon from "@mui/icons-material/Close";
 import CommentsDisabledIcon from "@mui/icons-material/CommentsDisabled";
+import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
 import {
   Alert,
   AppBar,
@@ -51,8 +44,6 @@ import {
   FormHelperText,
   Grid,
   IconButton,
-  ImageList,
-  ImageListItem,
   LinearProgress,
   ListItemIcon,
   Modal,
@@ -77,16 +68,17 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { red } from "@mui/material/colors";
 import { TransitionProps } from "@mui/material/transitions";
+import { CldUploadWidget } from "next-cloudinary";
 import Link from "next/link";
 import React, { useCallback, useEffect, useState } from "react";
+import "swiper/css";
+import "swiper/css/free-mode";
+import "swiper/css/pagination";
+import { FreeMode, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
-import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
-import ReportGmailerrorredOutlinedIcon from "@mui/icons-material/ReportGmailerrorredOutlined";
-import CloseIcon from "@mui/icons-material/Close";
 import {
-  CubeSpan,
-  CustomizedDialogs,
   ImageReplyViewerEdit,
   ImageViewer,
   ImageViewerEdit,
@@ -101,6 +93,13 @@ import postCommentApi, {
   postReplyCommentApi,
 } from "../utils/utils";
 
+import Image from "next/image";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import SockJS from "sockjs-client";
+import Stomp from "stompjs";
+import InfiniteScroll from "../hash-tag/Infinite.scroll";
+import PostSkeleton from "../posts/post.skeleton";
+import { analyzeImage, findMaxValue } from "../utils/sightengineAPI";
 import {
   GLOBAL_BG,
   GLOBAL_BG_BLUE_900,
@@ -121,18 +120,9 @@ import {
   GLOBAL_UPDATE_POST_MESSAGE,
   GLOBAL_UPLOAD_POST_MESSAGE,
   GLOBAL_URL,
-  GLOBAL_URL_SOCKET,
-  // stompClient,
 } from "../utils/veriable.global";
-import SockJS from "sockjs-client";
-import Stomp from "stompjs";
-import { useRouter, useSearchParams } from "next/navigation";
-import InfiniteScroll from "../hash-tag/Infinite.scroll";
-import PostSkeleton from "../posts/post.skeleton";
 import ContentPost from "./post.content";
 import HashtagPost from "./post.hashtag";
-import { analyzeImage, findMaxValue } from "../utils/sightengineAPI";
-import Image from "next/image";
 const options = ["Riêng tư", "Công khai"];
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -354,16 +344,16 @@ const PostProfile = ({
   });
   let url = profile
     ? profile
-    : // : hashTagText
-      // ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
-      // : search
-      // ? search
-      // : friendPost
-      // ? friendPost
-      "/news-feed";
+    : hashTagText
+    ? `/${hashTagText ? `detailhashtag/${hashTagText}` : "post-by-user-logged"}`
+    : search
+    ? search
+    : friendPost
+    ? friendPost
+    : "/news-feed";
   // console.log(">>> check url: ", url);
   const searchParams = useSearchParams();
-
+  const path = usePathname();
   //get data bài đăng
   const fetchData = async (url: string) => {
     return await sendRequest<IModelPaginate<ResPost>>({
@@ -446,6 +436,7 @@ const PostProfile = ({
   };
 
   const handleCloses = (index: number) => {
+    ``;
     const newOpenArray = [...open2] as boolean[];
     newOpenArray[index] = false;
 
@@ -662,7 +653,7 @@ const PostProfile = ({
     const selectedPrivacy = post?.postId?.privacyPostDetails.find(
       (privacy) => privacy?.status == true
     );
-    console.log(post?.postId?.listImageofPost);
+    console.log(post?.postId?.listImageofPost); 
     const editedPostData: AddPost = {
       postId: post?.postId?.postId,
       content: post?.postId?.content,
@@ -1178,6 +1169,7 @@ const PostProfile = ({
       setAnchorElArrayReply(newAnchorElArray);
     }
   };
+
   const handleEditCommentOrReplyComment = (
     commentObject: any,
     isComment: boolean,
@@ -1500,6 +1492,7 @@ const PostProfile = ({
       }));
     }
   };
+
   const toggleShowReplyCmt = (cmtId: any) => {
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
@@ -2045,7 +2038,7 @@ const PostProfile = ({
               type: "commentShare",
             };
             stompClient.send(
-              `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
+              `${GLOBAL_NOTIFI}/${formDataCommentOfShare?.userReceive}`,
               {},
               JSON.stringify(notificationToPostDTO)
             );
@@ -2061,7 +2054,7 @@ const PostProfile = ({
               type: "comment",
             };
             stompClient.send(
-              `${GLOBAL_NOTIFI}/${formDataCommentOfShare?.userReceive}`,
+              `${GLOBAL_NOTIFI}/${formDataComment?.userReceive}`,
               {},
               JSON.stringify(notificationToPostDTO)
             );
@@ -2387,6 +2380,30 @@ const PostProfile = ({
     setIsViewerOpen(false);
     setListStringImg([]);
   };
+  const [descriptionHashtag, setDescriptionHashtag] = React.useState<{
+    hashtag: string;
+    description: string;
+  } | null>(null);
+  useEffect(() => {
+    if (path.includes("hash-tag")) {
+      const fetchHashtag = async () => {
+        let index = path.lastIndexOf("/");
+        let hashtagText = path.substring(index + 1, path.length);
+        const resp = await sendRequest<any>({
+          url: `${GLOBAL_URL}/api/search-hashtag/${hashtagText}`,
+          method: "GET",
+        });
+        console.log(hashtagText);
+        console.log(resp);
+
+        setDescriptionHashtag({
+          hashtag: hashTagText ? hashtagText : "",
+          description: resp.message,
+        });
+      };
+      fetchHashtag();
+    }
+  }, []);
 
   if (isLoading) {
     return <PostSkeleton />;
@@ -2394,7 +2411,31 @@ const PostProfile = ({
   // console.log(">>> check posts123: ", posts);
   return (
     <>
-      {!searchParams.get("id") && (
+      {path.includes("hash-tag") && (
+        <>
+          <Box sx={{ marginY: "12px" }}>
+            <Typography
+              variant="h4"
+              component={"h4"}
+              sx={{ color: GLOBAL_COLOR_MENU }}
+            >
+              <IconButton
+                aria-label="delete"
+                size="large"
+                onClick={() => router.back()}
+              >
+                <ArrowBackIcon fontSize="inherit" />
+              </IconButton>
+              Hashtag
+              {" " + descriptionHashtag?.hashtag}
+            </Typography>
+            <Typography sx={{ fontWeight: "300" }}>
+              {descriptionHashtag?.description}
+            </Typography>
+          </Box>
+        </>
+      )}
+      {!searchParams.get("id") && !path.match("hash-tag") && (
         <Box
           sx={{
             borderRadius: "5px",
@@ -2628,14 +2669,14 @@ const PostProfile = ({
                     options={hashtagData as any[]}
                     // value={postData.listHashtag as any}
                     value={
-                      hashtagData.length > 0
-                        ? postData.listHashtag?.map((oldTag) => {
+                      hashtagData?.length > 0
+                        ? postData?.listHashtag?.map((oldTag) => {
                             const matchingTag = hashtagData.find(
                               (newTag) => newTag.hashtagText === oldTag
                             );
                             return matchingTag ? matchingTag : oldTag;
-                          }) || postData.listHashtag
-                        : (postData.listHashtag as any)
+                          }) || postData?.listHashtag
+                        : (postData?.listHashtag as any)
                     }
                     getOptionLabel={(option: any) => {
                       return formatHashtagText(
@@ -2918,7 +2959,7 @@ const PostProfile = ({
           </Dialog>
         </Box>
       )}
-      {posts.length == 0 && (
+      {(posts?.length == 0 || !posts) && (
         <Typography
           sx={{
             display: "flex",
@@ -3304,7 +3345,7 @@ const PostProfile = ({
                 />
               )}
               {item?.typePost !== "share" &&
-                item?.postId?.listHashtag.length > 0 && (
+                item?.postId?.listHashtag?.length > 0 && (
                   <Typography
                     sx={{
                       fontSize: "14px",
@@ -3838,7 +3879,7 @@ const PostProfile = ({
                   </Link>
                 )}
                 {item?.typePost === "share" &&
-                  item?.postId?.listHashtag.length > 0 && (
+                  item?.postId?.listHashtag?.length > 0 && (
                     <Typography
                       sx={{
                         fontSize: "14px",

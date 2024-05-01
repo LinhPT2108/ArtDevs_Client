@@ -63,7 +63,7 @@ export const authOptions: AuthOptions = {
             password: "",
             dateOfBirth: "",
             provider: `${account?.provider}`,
-            profilePicUrl: `${token?.picture}`,
+            profilePicUrl: ``,
             city: "",
             district: "",
             ward: "",
@@ -76,9 +76,9 @@ export const authOptions: AuthOptions = {
           },
         });
         if (res.userdto) {
-          if (!res.userdto.profileImageUrl && token.picture) {
-            res.userdto.profileImageUrl = token.picture;
-          }
+          // if (!res.userdto.profileImageUrl && token.picture) {
+          //   res.userdto.profileImageUrl = token.picture;
+          // }
           token.access_token = res.token;
           token.refresh_token = res.refeshToken;
           token.user = res.userdto;

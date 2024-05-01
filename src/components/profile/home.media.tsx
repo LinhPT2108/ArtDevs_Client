@@ -1,10 +1,11 @@
-import { Box, ImageList, Tabs, Typography } from "@mui/material";
+import { Box, Grid, ImageList, Tabs, Typography } from "@mui/material";
 import ImageListItem from "@mui/material/ImageListItem";
 import Tab from "@mui/material/Tab";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 import { sendRequest } from "../utils/api";
 import { GLOBAL_URL } from "../utils/veriable.global";
+import ImageViewer from "react-simple-image-viewer";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -14,6 +15,7 @@ interface TabPanelProps {
 
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
+
   return (
     <div
       role="tabpanel"
@@ -40,13 +42,31 @@ function a11yProps(index: number) {
 
 interface IPros {
   session: User;
+  dataProfile: UserLogin | undefined;
 }
-const HomeMedia = ({ session }: IPros) => {
+const HomeMedia = ({ session, dataProfile }: IPros) => {
+  const [currentImage, setCurrentImage] = useState(0);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [listStringImg, setListStringImg] = useState<string[]>([]);
+  const openImageViewer = useCallback((index: any, item: ImageofPost[]) => {
+    setCurrentImage(index);
+    setIsViewerOpen(true);
+    console.log(index);
+    setListStringImg(item?.map((i) => i.imageUrl));
+    console.log(item);
+  }, []);
+
+  const closeImageViewer = () => {
+    setCurrentImage(0);
+    setIsViewerOpen(false);
+    setListStringImg([]);
+  };
+
   const fetchDataAvatar = async (url: string) => {
     return await sendRequest<ImageofPost[]>({
       url: url,
       method: "GET",
-      headers: { authorization: `Bearer ${session?.access_token}` },
+      // headers: { authorization: `Bearer ${session?.access_token}` },
     });
   };
   const {
@@ -55,7 +75,7 @@ const HomeMedia = ({ session }: IPros) => {
     isLoading: isLoadingAvatar,
     mutate: mutateAvatar,
   }: SWRResponse<ImageofPost[], any> = useSWR(
-    GLOBAL_URL + "/api/picture/true",
+    GLOBAL_URL + `/api/picture/true/${dataProfile?.userId}`,
     fetchDataAvatar,
     {
       shouldRetryOnError: false,
@@ -76,7 +96,7 @@ const HomeMedia = ({ session }: IPros) => {
     isLoading: isLoadingBG,
     mutate: mutateBG,
   }: SWRResponse<ImageofPost[], any> = useSWR(
-    GLOBAL_URL + "/api/picture/false",
+    GLOBAL_URL + `/api/picture/false/${dataProfile?.userId}`,
     fetchDataBG,
     {
       shouldRetryOnError: false,
@@ -91,6 +111,26 @@ const HomeMedia = ({ session }: IPros) => {
 
   return (
     <Box sx={{ width: "100%" }}>
+      {isViewerOpen && (
+        <Box
+          sx={{
+            "& .react-simple-image-viewer__modal": {
+              zIndex: 999999,
+              "& img": {
+                width: "auto",
+              },
+            },
+          }}
+        >
+          <ImageViewer
+            src={listStringImg}
+            currentIndex={currentImage}
+            disableScroll={false}
+            closeOnClickOutside={true}
+            onClose={closeImageViewer}
+          />
+        </Box>
+      )}
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
           value={value}
@@ -102,42 +142,50 @@ const HomeMedia = ({ session }: IPros) => {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        <ImageList>
-          <ImageListItem key="Subheader" cols={6}></ImageListItem>
+        <Grid container columns={12} spacing={2}>
           {avatars &&
-            avatars.map((item) => (
-              <ImageListItem
+            avatars.map((item, index) => (
+              <Grid
+                item
+                xs={3}
                 sx={{ "& img": { border: "1px solid #80808080" } }}
                 key={item.cloudinaryPublicId}
+                onClick={() => openImageViewer(index, avatars)}
               >
                 <img
                   srcSet={`${item.imageUrl}?w=248&fit=crop&auto=format&dpr=2 2x`}
                   src={`${item.imageUrl}?w=248&fit=crop&auto=format`}
                   alt={item.imageUrl}
                   loading="lazy"
+                  width={"100%"}
+                  height={"100%"}
                 />
-              </ImageListItem>
+              </Grid>
             ))}
-        </ImageList>
+        </Grid>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        <ImageList>
-          <ImageListItem key="Subheader" cols={6}></ImageListItem>
+        <Grid container columns={12} spacing={2}>
           {backgrounds &&
-            backgrounds.map((item) => (
-              <ImageListItem
+            backgrounds.map((item, index) => (
+              <Grid
+                item
+                xs={3}
                 sx={{ "& img": { border: "1px solid #80808080" } }}
                 key={item.cloudinaryPublicId}
+                onClick={() => openImageViewer(index, backgrounds)}
               >
                 <img
                   srcSet={`${item.imageUrl}?w=248&fit=crop&auto=format&dpr=2 2x`}
                   src={`${item.imageUrl}?w=248&fit=crop&auto=format`}
                   alt={item.imageUrl}
                   loading="lazy"
+                  width={"100%"}
+                  height={"100%"}
                 />
-              </ImageListItem>
+              </Grid>
             ))}
-        </ImageList>
+        </Grid>
       </CustomTabPanel>
     </Box>
   );

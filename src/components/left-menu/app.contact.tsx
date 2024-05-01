@@ -19,6 +19,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
+import PersonOffIcon from "@mui/icons-material/PersonOff";
 import React, { useEffect, useState } from "react";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ChatMessagesForm from "../chat/chat.form";
@@ -26,6 +27,7 @@ import { styled } from "@mui/system";
 import useSWR, { SWRResponse, mutate } from "swr";
 import { sendRequest } from "../utils/api";
 import CloseIcon from "@mui/icons-material/Close";
+import ExploreOffIcon from "@mui/icons-material/ExploreOff";
 import {
   GLOBAL_BG,
   GLOBAL_BG_NAV,
@@ -550,176 +552,192 @@ const ContactMenu = (pros: IPros) => {
             </ListSubheader>
           }
         >
-          {ListFriend && ListFriend.length > 0
-            ? (["right"] as const).map((anchor) => (
-                <React.Fragment key={anchor}>
-                  {ListFriend?.slice(0, 6).map(
-                    (item: UserMessage, index: number) => {
-                      return (
-                        <ListItemButton
-                          sx={{
-                            padding: { xs: "6px 6px 6px 18px" },
-                            margin: "0",
-                          }}
-                          key={index}
-                          // selected={selectedIndex === index}
-                          onClick={() => {
-                            if (pageUrl === "home") {
-                              toggleDrawer(anchor, true, item);
-                            } else {
-                              getUser && getUser(item);
-                            }
-                          }}
-                        >
-                          {item?.profilePicUrl ? (
-                            <Avatar
-                              sx={{
-                                marginRight: { xs: "6px" },
-                                boxShadow: "0 0 3px 1px #494949",
-                              }}
-                              alt={item?.profilePicUrl || ""}
-                              src={item?.profilePicUrl}
-                            />
-                          ) : (
-                            <ListItemIcon
-                              sx={{
-                                color: "white",
-                                backgroundColor: "grey",
-                                padding: "8px",
-                                minWidth: "40px",
-                                marginRight: { xs: "6px" },
-                                borderRadius: "100%",
-                                boxShadow: "0 0 3px 1px #494949",
-                              }}
-                            >
-                              <AccountCircleIcon />
-                            </ListItemIcon>
-                          )}
-
-                          <ListItemText
-                            primary={item?.fullname}
-                            secondary={`${item?.online ? "Online" : "Offline"}`}
+          {ListFriend && ListFriend.length > 0 ? (
+            (["right"] as const).map((anchor) => (
+              <React.Fragment key={anchor}>
+                {ListFriend?.slice(0, 6).map(
+                  (item: UserMessage, index: number) => {
+                    return (
+                      <ListItemButton
+                        sx={{
+                          padding: { xs: "6px 6px 6px 18px" },
+                          margin: "0",
+                        }}
+                        key={index}
+                        // selected={selectedIndex === index}
+                        onClick={() => {
+                          if (pageUrl === "home") {
+                            toggleDrawer(anchor, true, item);
+                          } else {
+                            getUser && getUser(item);
+                          }
+                        }}
+                      >
+                        {item?.profilePicUrl ? (
+                          <Avatar
+                            sx={{
+                              marginRight: { xs: "6px" },
+                              boxShadow: "0 0 3px 1px #494949",
+                            }}
+                            alt={item?.profilePicUrl || ""}
+                            src={item?.profilePicUrl}
                           />
-
+                        ) : (
                           <ListItemIcon
                             sx={{
                               color: "white",
-                              backgroundColor: `${
-                                item?.online ? "success.main" : "#7a837e"
-                              }`,
-                              padding: "6px",
-                              minWidth: "6px",
+                              backgroundColor: "grey",
+                              padding: "8px",
+                              minWidth: "40px",
+                              marginRight: { xs: "6px" },
                               borderRadius: "100%",
+                              boxShadow: "0 0 3px 1px #494949",
                             }}
-                          ></ListItemIcon>
-                        </ListItemButton>
-                      );
-                    }
-                  )}
-                  <Drawer
-                    className="hello"
-                    anchor={anchor}
-                    open={state[anchor]}
-                    sx={{
+                          >
+                            <AccountCircleIcon />
+                          </ListItemIcon>
+                        )}
+
+                        <ListItemText
+                          primary={item?.fullname}
+                          secondary={`${item?.online ? "Online" : "Offline"}`}
+                        />
+
+                        <ListItemIcon
+                          sx={{
+                            color: "white",
+                            backgroundColor: `${
+                              item?.online ? "success.main" : "#7a837e"
+                            }`,
+                            padding: "6px",
+                            minWidth: "6px",
+                            borderRadius: "100%",
+                          }}
+                        ></ListItemIcon>
+                      </ListItemButton>
+                    );
+                  }
+                )}
+                <Drawer
+                  className="hello"
+                  anchor={anchor}
+                  open={state[anchor]}
+                  sx={{
+                    top: "auto",
+                    left: "auto",
+                    right: "auto",
+                    bottom: "auto",
+                    overflow: "auto",
+                    "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                      height: "400px",
+                      borderRadius: "6px 6px 0 0",
+                    },
+                    "& .MuiBackdrop-root": {
                       top: "auto",
                       left: "auto",
                       right: "auto",
                       bottom: "auto",
-                      overflow: "auto",
-                      "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-                        height: "400px",
-                        borderRadius: "6px 6px 0 0",
+                    },
+                    "& .MuiPaper-root": {
+                      top: "auto",
+                      right: `${openContact ? "250px" : 0}`,
+                      "@media (min-width: 600px)": {
+                        bottom: "56px",
                       },
-                      "& .MuiBackdrop-root": {
-                        top: "auto",
-                        left: "auto",
-                        right: "auto",
-                        bottom: "auto",
+                      "@media (min-width: 900px)": {
+                        bottom: "0",
                       },
-                      "& .MuiPaper-root": {
-                        top: "auto",
-                        right: `${openContact ? "250px" : 0}`,
-                        "@media (min-width: 600px)": {
-                          bottom: "56px",
-                        },
-                        "@media (min-width: 900px)": {
-                          bottom: "0",
-                        },
-                      },
-                    }}
-                  >
-                    {list(anchor)}
-                  </Drawer>
-                </React.Fragment>
-              ))
-            : //@ts-ignore
-              !listUserSuitable?.statusCode &&
-              listUserSuitable?.result?.slice(0, 6).map((item, index) => {
-                return (
-                  <ListItemButton
-                    sx={{
-                      padding: { xs: "6px 6px 6px 18px" },
-                      margin: "0",
-                    }}
-                    key={index}
-                  >
-                    {item?.profilePicUrl ? (
-                      <Avatar
-                        sx={{
-                          boxShadow: "0 0 3px 1px #494949",
-                          marginRight: { xs: "6px" },
-                        }}
-                        alt={item?.profilePicUrl || ""}
-                        src={item?.profilePicUrl}
-                      />
-                    ) : (
-                      <ListItemIcon
-                        sx={{
-                          color: "white",
-                          backgroundColor: "grey",
-                          padding: "8px",
-                          minWidth: "40px",
-                          marginRight: { xs: "6px" },
-                          borderRadius: "100%",
-                          boxShadow: "0 0 3px 1px #494949",
-                        }}
-                      >
-                        <AccountCircleIcon />
-                      </ListItemIcon>
-                    )}
+                    },
+                  }}
+                >
+                  {list(anchor)}
+                </Drawer>
+              </React.Fragment>
+            ))
+          ) : (
+            //@ts-ignore
+            // !listUserSuitable?.statusCode &&
+            // listUserSuitable?.result?.slice(0, 6).map((item, index) => {
+            //   return (
+            //     <ListItemButton
+            //       sx={{
+            //         padding: { xs: "6px 6px 6px 18px" },
+            //         margin: "0",
+            //       }}
+            //       key={index}
+            //     >
+            //       {item?.profilePicUrl ? (
+            //         <Avatar
+            //           sx={{
+            //             boxShadow: "0 0 3px 1px #494949",
+            //             marginRight: { xs: "6px" },
+            //           }}
+            //           alt={item?.profilePicUrl || ""}
+            //           src={item?.profilePicUrl}
+            //         />
+            //       ) : (
+            //         <ListItemIcon
+            //           sx={{
+            //             color: "white",
+            //             backgroundColor: "grey",
+            //             padding: "8px",
+            //             minWidth: "40px",
+            //             marginRight: { xs: "6px" },
+            //             borderRadius: "100%",
+            //             boxShadow: "0 0 3px 1px #494949",
+            //           }}
+            //         >
+            //           <AccountCircleIcon />
+            //         </ListItemIcon>
+            //       )}
 
-                    <ListItemText
-                      sx={{ marginLeft: "12px" }}
-                      primary={item?.fullname}
-                      secondary={
-                        item?.sendStatus ? (
-                          <Button
-                            color="primary"
-                            variant="contained"
-                            size="small"
-                            sx={{ fontSize: "11px" }}
-                            onClick={() =>
-                              handlerefusedAddfriend(item?.userId, false, 0)
-                            }
-                          >
-                            Hủy gửi yêu cầu
-                          </Button>
-                        ) : (
-                          <Button
-                            color="primary"
-                            variant="contained"
-                            size="small"
-                            sx={{ fontSize: "11px" }}
-                            onClick={() => handsenddAddfriend(item?.userId)}
-                          >
-                            Thêm bạn bè
-                          </Button>
-                        )
-                      }
-                    />
-                  </ListItemButton>
-                );
-              })}
+            //       <ListItemText
+            //         sx={{ marginLeft: "12px" }}
+            //         primary={item?.fullname}
+            //         secondary={
+            //           item?.sendStatus ? (
+            //             <Button
+            //               color="primary"
+            //               variant="contained"
+            //               size="small"
+            //               sx={{ fontSize: "11px" }}
+            //               onClick={() =>
+            //                 handlerefusedAddfriend(item?.userId, false, 0)
+            //               }
+            //             >
+            //               Hủy gửi yêu cầu
+            //             </Button>
+            //           ) : (
+            //             <Button
+            //               color="primary"
+            //               variant="contained"
+            //               size="small"
+            //               sx={{ fontSize: "11px" }}
+            //               onClick={() => handsenddAddfriend(item?.userId)}
+            //             >
+            //               Thêm bạn bè
+            //             </Button>
+            //           )
+            //         }
+            //       />
+            //     </ListItemButton>
+            //   );
+            // }
+            // )
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                color: "gray",
+                height: "35vh",
+              }}
+            >
+              <PersonOffIcon sx={{ fontSize: "55px" }} />
+              <Typography variant="h6">Chưa có bạn bè</Typography>
+            </Box>
+          )}
         </List>
         <List
           sx={{
@@ -751,167 +769,182 @@ const ContactMenu = (pros: IPros) => {
             </ListSubheader>
           }
         >
-          {ListMentor && ListMentor.length > 0
-            ? (["right"] as const).map((anchor) => (
-                <React.Fragment key={anchor}>
-                  {ListMentor?.slice(0, 6).map(
-                    (item: UserMessage, index: number) => {
-                      return (
-                        <ListItemButton
-                          sx={{
-                            padding: { xs: "6px 6px 6px 18px" },
-                            margin: "0",
-                          }}
-                          key={index}
-                          // selected={selectedIndex === index}
-                          onClick={() => {
-                            if (pageUrl === "home") {
-                              toggleDrawer(anchor, true, item);
-                            } else {
-                              getUser && getUser(item);
-                            }
-                          }}
-                        >
-                          {item?.profilePicUrl ? (
-                            <Avatar
-                              sx={{
-                                marginRight: { xs: "6px" },
-                                boxShadow: "0 0 3px 1px #494949",
-                              }}
-                              alt={item?.profilePicUrl || ""}
-                              src={item?.profilePicUrl}
-                            />
-                          ) : (
-                            <ListItemIcon
-                              sx={{
-                                color: "white",
-                                backgroundColor: "grey",
-                                padding: "8px",
-                                minWidth: "40px",
-                                marginRight: { xs: "6px" },
-                                borderRadius: "100%",
-                                boxShadow: "0 0 3px 1px #494949",
-                              }}
-                            >
-                              <AccountCircleIcon />
-                            </ListItemIcon>
-                          )}
-
-                          <ListItemText
-                            primary={item?.fullname}
-                            secondary={`${item?.online ? "Online" : "Offline"}`}
+          {ListMentor && ListMentor.length > 0 ? (
+            (["right"] as const).map((anchor) => (
+              <React.Fragment key={anchor}>
+                {ListMentor?.slice(0, 6).map(
+                  (item: UserMessage, index: number) => {
+                    return (
+                      <ListItemButton
+                        sx={{
+                          padding: { xs: "6px 6px 6px 18px" },
+                          margin: "0",
+                        }}
+                        key={index}
+                        // selected={selectedIndex === index}
+                        onClick={() => {
+                          if (pageUrl === "home") {
+                            toggleDrawer(anchor, true, item);
+                          } else {
+                            getUser && getUser(item);
+                          }
+                        }}
+                      >
+                        {item?.profilePicUrl ? (
+                          <Avatar
+                            sx={{
+                              marginRight: { xs: "6px" },
+                              boxShadow: "0 0 3px 1px #494949",
+                            }}
+                            alt={item?.profilePicUrl || ""}
+                            src={item?.profilePicUrl}
                           />
-
+                        ) : (
                           <ListItemIcon
                             sx={{
                               color: "white",
-                              backgroundColor: `${
-                                item?.online ? "success.main" : "#7a837e"
-                              }`,
-                              padding: "6px",
-                              minWidth: "6px",
+                              backgroundColor: "grey",
+                              padding: "8px",
+                              minWidth: "40px",
+                              marginRight: { xs: "6px" },
                               borderRadius: "100%",
+                              boxShadow: "0 0 3px 1px #494949",
                             }}
-                          ></ListItemIcon>
-                        </ListItemButton>
-                      );
-                    }
-                  )}
-                  <Drawer
-                    className="hello"
-                    anchor={anchor}
-                    open={state[anchor]}
-                    sx={{
+                          >
+                            <AccountCircleIcon />
+                          </ListItemIcon>
+                        )}
+
+                        <ListItemText
+                          primary={item?.fullname}
+                          secondary={`${item?.online ? "Online" : "Offline"}`}
+                        />
+
+                        <ListItemIcon
+                          sx={{
+                            color: "white",
+                            backgroundColor: `${
+                              item?.online ? "success.main" : "#7a837e"
+                            }`,
+                            padding: "6px",
+                            minWidth: "6px",
+                            borderRadius: "100%",
+                          }}
+                        ></ListItemIcon>
+                      </ListItemButton>
+                    );
+                  }
+                )}
+                <Drawer
+                  className="hello"
+                  anchor={anchor}
+                  open={state[anchor]}
+                  sx={{
+                    top: "auto",
+                    left: "auto",
+                    right: "auto",
+                    bottom: "auto",
+                    overflow: "auto",
+                    "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
+                      height: "400px",
+                      borderRadius: "6px 6px 0 0",
+                    },
+                    "& .MuiBackdrop-root": {
                       top: "auto",
                       left: "auto",
                       right: "auto",
                       bottom: "auto",
-                      overflow: "auto",
-                      "& .css-1160xiw-MuiPaper-root-MuiDrawer-paper": {
-                        height: "400px",
-                        borderRadius: "6px 6px 0 0",
+                    },
+                    "& .MuiPaper-root": {
+                      top: "auto",
+                      right: `${openContact ? "250px" : 0}`,
+                      "@media (min-width: 600px)": {
+                        bottom: "56px",
                       },
-                      "& .MuiBackdrop-root": {
-                        top: "auto",
-                        left: "auto",
-                        right: "auto",
-                        bottom: "auto",
+                      "@media (min-width: 900px)": {
+                        bottom: "0",
                       },
-                      "& .MuiPaper-root": {
-                        top: "auto",
-                        right: `${openContact ? "250px" : 0}`,
-                        "@media (min-width: 600px)": {
-                          bottom: "56px",
-                        },
-                        "@media (min-width: 900px)": {
-                          bottom: "0",
-                        },
-                      },
-                    }}
-                  >
-                    {list(anchor)}
-                  </Drawer>
-                </React.Fragment>
-              ))
-            : //@ts-ignore
-              !dataMentorSuitables?.statusCode &&
-              dataMentorSuitables?.slice(0, 6).map((item, index) => {
-                return (
-                  <ListItemButton
-                    sx={{
-                      padding: { xs: "6px 6px 6px 18px" },
-                      margin: "0",
-                    }}
-                    key={index}
-                  >
-                    {item?.profilePicUrl ? (
-                      <Avatar
-                        sx={{
-                          boxShadow: "0 0 3px 1px #494949",
-                          marginRight: { xs: "6px" },
-                        }}
-                        alt={item?.profilePicUrl || ""}
-                        src={item?.profilePicUrl}
-                      />
-                    ) : (
-                      <ListItemIcon
-                        sx={{
-                          color: "white",
-                          backgroundColor: "grey",
-                          padding: "8px",
-                          minWidth: "40px",
-                          marginRight: { xs: "6px" },
-                          borderRadius: "100%",
-                          boxShadow: "0 0 3px 1px #494949",
-                        }}
-                      >
-                        <AccountCircleIcon />
-                      </ListItemIcon>
-                    )}
+                    },
+                  }}
+                >
+                  {list(anchor)}
+                </Drawer>
+              </React.Fragment>
+            ))
+          ) : (
+            //@ts-ignore
+            // !dataMentorSuitables?.statusCode &&
+            // dataMentorSuitables?.slice(0, 6).map((item, index) => {
+            //   return (
+            //     <ListItemButton
+            //       sx={{
+            //         padding: { xs: "6px 6px 6px 18px" },
+            //         margin: "0",
+            //       }}
+            //       key={index}
+            //     >
+            //       {item?.profilePicUrl ? (
+            //         <Avatar
+            //           sx={{
+            //             boxShadow: "0 0 3px 1px #494949",
+            //             marginRight: { xs: "6px" },
+            //           }}
+            //           alt={item?.profilePicUrl || ""}
+            //           src={item?.profilePicUrl}
+            //         />
+            //       ) : (
+            //         <ListItemIcon
+            //           sx={{
+            //             color: "white",
+            //             backgroundColor: "grey",
+            //             padding: "8px",
+            //             minWidth: "40px",
+            //             marginRight: { xs: "6px" },
+            //             borderRadius: "100%",
+            //             boxShadow: "0 0 3px 1px #494949",
+            //           }}
+            //         >
+            //           <AccountCircleIcon />
+            //         </ListItemIcon>
+            //       )}
 
-                    <ListItemText
-                      sx={{ marginLeft: "12px" }}
-                      primary={item?.fullname}
-                      secondary={
-                        <Button
-                          color="primary"
-                          variant="contained"
-                          size="small"
-                          sx={{ fontSize: "11px" }}
-                          onClick={() =>
-                            handleClickOpenSendMatch(
-                              item?.userId,
-                              item?.isReady
-                            )
-                          }
-                        >
-                          Gửi yêu cầu hỗ trợ
-                        </Button>
-                      }
-                    />
-                  </ListItemButton>
-                );
-              })}
+            //       <ListItemText
+            //         sx={{ marginLeft: "12px" }}
+            //         primary={item?.fullname}
+            //         secondary={
+            //           <Button
+            //             color="primary"
+            //             variant="contained"
+            //             size="small"
+            //             sx={{ fontSize: "11px" }}
+            //             onClick={() =>
+            //               handleClickOpenSendMatch(
+            //                 item?.userId,
+            //                 item?.isReady
+            //               )
+            //             }
+            //           >
+            //             Gửi yêu cầu hỗ trợ
+            //           </Button>
+            //         }
+            //       />
+            //     </ListItemButton>
+            //   );
+            // })
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                color: "gray",
+                height: "35vh",
+              }}
+            >
+              <ExploreOffIcon sx={{ fontSize: "55px" }} />
+              <Typography variant="h6">Chưa có người hướng dẫn</Typography>
+            </Box>
+          )}
         </List>
         <Dialog
           open={openSendMatch}

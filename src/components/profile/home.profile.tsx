@@ -52,7 +52,7 @@ import "../../style/style.css";
 import KnowledgeSign from "../sign/sign-up/knowledge.sign";
 import { sendRequest } from "../utils/api";
 import { ProcessingLoading } from "../utils/component.global";
-import { deleteSpace, formatBirthDay } from "../utils/utils";
+import { deleteSpace, formatBirthDay, formatDayVN } from "../utils/utils";
 import { GLOBAL_SEND_FRIEND, GLOBAL_URL } from "../utils/veriable.global";
 import PostProfile from "./post.profile";
 import HomeMedia from "./home.media";
@@ -127,12 +127,14 @@ const HomeProfile = ({ session }: IPros) => {
   const [previewBgImg, setPreviewBgImg] = useState<string>();
 
   const handleClickOpenDialogAvatar = () => {
-    setPreview(
-      session?.user?.profileImageUrl
-        ? session?.user?.profileImageUrl
-        : "/profile/user.jpg"
-    );
-    setOpenDialogAvatar(true);
+    if (!searchParams.get("id")) {
+      setPreview(
+        session?.user?.profileImageUrl
+          ? session?.user?.profileImageUrl
+          : "/profile/user.jpg"
+      );
+      setOpenDialogAvatar(true);
+    }
   };
   const handleCloseDialogAvatar = () => {
     setSelectedFile(null);
@@ -181,6 +183,7 @@ const HomeProfile = ({ session }: IPros) => {
   //xử lý mở modal cập nhật
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const [number, setNumber] = useState<number>(5);
   const [open, setOpen] = useState<boolean>(false);
   const [openBackdrop, setOpenBackdrop] = useState<boolean>(false);
   const [openAlert, setOpenAlert] = React.useState({
@@ -1238,8 +1241,8 @@ const HomeProfile = ({ session }: IPros) => {
             aria-label="basic tabs example"
           >
             <Tab label="Bài viết" {...a11yProps(0)} />
-            <Tab label="Giới thiệu" {...a11yProps(1)} />
-            <Tab label="Ảnh" {...a11yProps(2)} />
+            {/* <Tab label="Giới thiệu" {...a11yProps(1)} /> */}
+            <Tab label="Ảnh" {...a11yProps(1)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
@@ -1323,7 +1326,62 @@ const HomeProfile = ({ session }: IPros) => {
                       {dataProfile?.city ? `, ${dataProfile?.city}` : ""}
                     </Typography>
                   </Box>
-
+                  <Box
+                    sx={{
+                      width: "100%",
+                      paddingX: "16px",
+                      display: "flex",
+                      mt: 1,
+                    }}
+                  >
+                    <Typography
+                      component={"p"}
+                      sx={{
+                        textWrap: "nowrap",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Ngày sinh:
+                    </Typography>
+                    <Typography
+                      component={"p"}
+                      sx={{
+                        marginLeft: "6px",
+                        fontSize: { xs: "16px", sm: "12px", md: "16px" },
+                      }}
+                    >
+                      {formatDayVN(dataProfile?.birthday)}
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      paddingX: "16px",
+                      display: "flex",
+                      mt: 1,
+                    }}
+                  >
+                    <Typography
+                      component={"p"}
+                      sx={{
+                        textWrap: "nowrap",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Giới tính:
+                    </Typography>
+                    <Typography
+                      component={"p"}
+                      sx={{
+                        marginLeft: "6px",
+                        fontSize: { xs: "16px", sm: "12px", md: "16px" },
+                      }}
+                    >
+                      {dataProfile?.gender == 1 ? "Nam" : "Nữ"}
+                    </Typography>
+                  </Box>
                   <Box
                     sx={{
                       marginTop: "16px",
@@ -1356,38 +1414,65 @@ const HomeProfile = ({ session }: IPros) => {
                       }}
                     >
                       {demandOfUserLogin &&
-                        demandOfUserLogin?.map((demandOfUser, index) => (
-                          <ListItem key={index} sx={{ paddingX: "0" }}>
-                            <Typography sx={{ marginRight: "6px" }}>
-                              {`${index + 1}. `}
-                            </Typography>
-                            <ListItemText
-                              primary={demandOfUser?.programingLanguage}
-                            />
+                        demandOfUserLogin
+                          ?.slice(0, number)
+                          .map((demandOfUser, index) => (
+                            <ListItem key={index} sx={{ paddingX: "0" }}>
+                              <Typography sx={{ marginRight: "6px" }}>
+                                {`${index + 1}. `}
+                              </Typography>
+                              <ListItemText
+                                primary={demandOfUser?.programingLanguage}
+                              />
 
-                            {demandOfUserLogin?.length > 3
-                              ? index < 3 && (
-                                  // <Avatar>
-                                  <Image
-                                    src="/priority.png"
-                                    width={20}
-                                    height={20}
-                                    alt="Ưu tiên"
-                                  />
-                                  // </Avatar>
-                                )
-                              : index < 1 && (
-                                  // <Avatar>
-                                  <Image
-                                    src="/priority.png"
-                                    width={20}
-                                    height={20}
-                                    alt="Ưu tiên"
-                                  />
-                                  // </Avatar>
-                                )}
-                          </ListItem>
-                        ))}
+                              {demandOfUserLogin?.length > 3
+                                ? index < 3 && (
+                                    // <Avatar>
+                                    <Image
+                                      src="/priority.png"
+                                      width={20}
+                                      height={20}
+                                      alt="Ưu tiên"
+                                    />
+                                    // </Avatar>
+                                  )
+                                : index < 1 && (
+                                    // <Avatar>
+                                    <Image
+                                      src="/priority.png"
+                                      width={20}
+                                      height={20}
+                                      alt="Ưu tiên"
+                                    />
+                                    // </Avatar>
+                                  )}
+                            </ListItem>
+                          ))}
+                      {number < demandOfUserLogin.length ? (
+                        <Button
+                          fullWidth
+                          variant="text"
+                          onClick={() => {
+                            setNumber(demandOfUserLogin.length);
+                          }}
+                        >
+                          xem thêm {demandOfUserLogin.length - number} danh mục
+                          quan tâm
+                        </Button>
+                      ) : (
+                        demandOfUserLogin?.length > 5 && (
+                          <Button
+                            fullWidth
+                            variant="text"
+                            onClick={() => {
+                              setNumber(5);
+                            }}
+                          >
+                            {" "}
+                            Ẩn bớt
+                          </Button>
+                        )
+                      )}
                     </List>
                   </Box>
 
@@ -1483,7 +1568,7 @@ const HomeProfile = ({ session }: IPros) => {
                             name="first-name"
                             autoComplete="new-first-name"
                             autoFocus
-                            value={data?.firstName}
+                            value={dataProfile?.firstName}
                             error={errorFirstName}
                             helperText={messageFirstName}
                             sx={{
@@ -1512,7 +1597,7 @@ const HomeProfile = ({ session }: IPros) => {
                             name="middle-name"
                             autoComplete="new-middle-name"
                             autoFocus
-                            value={data?.middleName}
+                            value={dataProfile?.middleName}
                             sx={{ marginBottom: "0" }}
                           />
                         </Grid>
@@ -1538,7 +1623,7 @@ const HomeProfile = ({ session }: IPros) => {
                             name="last-name"
                             autoComplete="new-last-name"
                             autoFocus
-                            value={data?.lastName}
+                            value={dataProfile?.lastName}
                             error={errorLastName}
                             helperText={messageLastName}
                             sx={{ marginBottom: "0" }}
@@ -1577,7 +1662,7 @@ const HomeProfile = ({ session }: IPros) => {
                             name="date-of-birth"
                             autoComplete="new-date-of-birth"
                             autoFocus
-                            value={formatBirthDay(data?.birthday)}
+                            value={formatBirthDay(dataProfile?.birthday)}
                             error={errorDateOfBirth}
                             helperText={messageDateOfBirth}
                             sx={{
@@ -1602,7 +1687,7 @@ const HomeProfile = ({ session }: IPros) => {
                               row
                               aria-labelledby="demo-row-radio-buttons-group-label"
                               name="row-radio-buttons-group"
-                              value={data?.gender}
+                              value={dataProfile?.gender}
                               onChange={(e) => {
                                 handleGender(+e.target.value);
                               }}
@@ -1626,10 +1711,10 @@ const HomeProfile = ({ session }: IPros) => {
                       </Box>
                       <KnowledgeSign
                         programingLanguage={programingLanguage}
-                        role={data.role}
+                        role={dataProfile?.role}
                         handleListDemandOfUser={handleListDemandOfUser}
                         handleListSkillOfUser={handleListSkillOfUser}
-                        data={data}
+                        data={dataProfile!}
                         errorDemand={errorDemand}
                         messageDemand={messageDemand}
                       />
@@ -1657,7 +1742,7 @@ const HomeProfile = ({ session }: IPros) => {
                             }
                             value={provinces.find(
                               (province) =>
-                                province?.province_name === data?.city
+                                province?.province_name === dataProfile?.city
                             )}
                             onChange={(event, newValue) => {
                               handleCity(newValue!);
@@ -1693,7 +1778,8 @@ const HomeProfile = ({ session }: IPros) => {
                               districts.length > 0
                                 ? districts?.find(
                                     (district) =>
-                                      district.district_name === data?.district
+                                      district.district_name ===
+                                      dataProfile?.district
                                   )
                                 : null
                             }
@@ -1728,7 +1814,8 @@ const HomeProfile = ({ session }: IPros) => {
                             value={
                               wards.length > 0
                                 ? wards.find(
-                                    (ward) => ward.ward_name === data?.ward
+                                    (ward) =>
+                                      ward.ward_name === dataProfile?.ward
                                   )
                                 : null
                             }
@@ -1777,129 +1864,6 @@ const HomeProfile = ({ session }: IPros) => {
                     </DialogActions>
                   </Dialog>
                 </Box>
-
-                <Box
-                  sx={{
-                    borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    padding: "10px",
-                    marginBottom: "15px",
-                    position: "relative",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      fontSize: "16px",
-                      color: "#333",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Hình ảnh
-                  </Box>
-
-                  <Box
-                    sx={{
-                      fontSize: "14px",
-                      position: "absolute",
-                      right: "10px",
-                      top: "10px",
-                      "& a": { textDecoration: "none", color: "#1771E6" },
-                      "&hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    <a href="#">Xem tất cả</a>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, 1fr)",
-                      gridColumnGap: "3px",
-                      padding: "10px 0px 0px 0px",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        "& img": {
-                          width: "100%",
-                          height: "80px",
-                          cursor: "pointer",
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                        },
-                      }}
-                    >
-                      {/* chưa set hình ảnh */}
-                      <img src="/profile/cover-image.jpg" />
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box
-                  sx={{
-                    borderRadius: "5px",
-                    boxShadow: "0px 1px 2px #3335",
-                    backgroundColor: "#fff",
-                    padding: "10px",
-                    marginBottom: "15px",
-                    position: "relative",
-                    "& p": {
-                      fontSize: "14px",
-                      color: "#3339",
-                      marginTop: "5px",
-                    },
-                  }}
-                >
-                  <span>
-                    Bạn bè <br />
-                    <p>
-                      <span> 0 </span>
-                      bạn
-                    </p>
-                  </span>
-
-                  <Box
-                    sx={{
-                      fontSize: "14px",
-                      position: "absolute",
-                      right: "10px",
-                      top: "10px",
-                      "& a": { textDecoration: "none", color: "#1771E6" },
-                      "&hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    <a href="#">Xem tất cả</a>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, 1fr)",
-                      gridColumnGap: "3px",
-                      padding: "10px 0px 0px 0px",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        "& img": {
-                          width: "100%",
-                          height: "80px",
-                          cursor: "pointer",
-                          objectFit: "cover",
-                          borderRadius: "5px",
-                        },
-                        "& a": {
-                          textDecoration: "none",
-                          color: "#333",
-                          "&hover": { textDecoration: "underline" },
-                        },
-                      }}
-                    >
-                      <img src="/profile/cover-image.jpg" alt="cover-image" />
-                    </Box>
-                  </Box>
-                </Box>
               </Box>
               <Box
                 sx={{
@@ -1921,7 +1885,7 @@ const HomeProfile = ({ session }: IPros) => {
             </Box>
           </Box>
         </CustomTabPanel>
-        <CustomTabPanel value={value} index={1}>
+        {/* <CustomTabPanel value={value} index={1}>
           <Box
             sx={{
               width: "100%",
@@ -1948,8 +1912,8 @@ const HomeProfile = ({ session }: IPros) => {
               <HomeAbout session={session} />
             </Box>
           </Box>
-        </CustomTabPanel>
-        <CustomTabPanel value={value} index={2}>
+        </CustomTabPanel> */}
+        <CustomTabPanel value={value} index={1}>
           <Box
             sx={{
               width: "100%",
@@ -1965,7 +1929,7 @@ const HomeProfile = ({ session }: IPros) => {
                 alignItems: "center",
               }}
             >
-              <HomeMedia session={session} />
+              <HomeMedia session={session} dataProfile={dataProfile} />
             </Box>
           </Box>
         </CustomTabPanel>{" "}

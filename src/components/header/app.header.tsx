@@ -308,12 +308,17 @@ export default function AppHeader(pros: IPros) {
   const menuId = "primary-search-account-menu";
   const handleActivity = () => {
     router.push("/activity?tab=like");
+    handleMenuClose()
+
   };
   const handleUpgradeemntro = () => {
     router.push("/upgrade-mentor");
+    handleMenuClose()
+
   };
   const handleProfile = () => {
     router.push("/profile");
+    handleMenuClose()
   };
   const renderMenu = (
     <Menu
@@ -331,7 +336,7 @@ export default function AppHeader(pros: IPros) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Trang cá nhân</MenuItem>
+      <MenuItem onClick={handleProfile}>Trang cá nhân</MenuItem>
       <MenuItem onClick={handleActivity}>Lịch sử hoạt động</MenuItem>
       <MenuItem onClick={handleUpgradeemntro}>
         Nâng cấp thành người hướng dẫn
@@ -1144,30 +1149,7 @@ export default function AppHeader(pros: IPros) {
                             </Popper>
                           </Box>
                           <Divider sx={{ marginBottom: "6px" }} />
-                          <ToggleButtonGroup
-                            color="primary"
-                            value={alignment}
-                            exclusive
-                            onChange={handleChange}
-                            aria-label="Platform"
-                          >
-                            <ToggleButton
-                              value="all"
-                              sx={{
-                                color: GLOBAL_COLOR_NOTIFY,
-                              }}
-                            >
-                              Tất cả
-                            </ToggleButton>
-                            <ToggleButton
-                              value="false"
-                              sx={{
-                                color: GLOBAL_COLOR_NOTIFY,
-                              }}
-                            >
-                              Chưa đọc
-                            </ToggleButton>
-                          </ToggleButtonGroup>
+                     
                         </Box>
                         <List
                           sx={{

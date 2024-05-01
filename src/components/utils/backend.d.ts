@@ -292,7 +292,7 @@ declare global {
     content: string;
     listSkillOfMentor: string[];
     gender: integer;
-    isOnline: boolean;
+    online: boolean;
     isReady: boolean;
     fullname: string;
     priceMatch: number;

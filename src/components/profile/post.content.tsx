@@ -60,7 +60,7 @@ const ContentPost = ({
             queryParams: { languages: listLanguage },
           });
         }
-      }, 3000);
+      }, 20000);
     }
     return () => {
       clearTimeout(timer);

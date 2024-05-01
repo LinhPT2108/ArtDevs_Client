@@ -23,7 +23,7 @@ const AppMentor = async () => {
         </Typography>
       </Box>
       <Divider />
-     {session && <HomeHashtag session={session}/>}
+      {session && <HomeHashtag session={session} />}
     </Box>
   );
 };

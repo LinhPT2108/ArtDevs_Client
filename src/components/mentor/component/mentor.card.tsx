@@ -126,7 +126,7 @@ const CardMentor = ({
               sx={{
                 top: "30px",
                 left: "30px",
-                backgroundColor: mentor?.isReady ? "#16D6B5" : "#e60839",
+                backgroundColor: mentor?.online ? "#16D6B5" : "#e60839",
                 border: "1px solid white",
                 borderRadius: "12px",
                 padding: "2px 6px",
@@ -141,7 +141,7 @@ const CardMentor = ({
                   width: "8px",
                   height: "8px",
                   borderRadius: "50%",
-                  backgroundColor: mentor?.isReady ? "#f5f5f5" : "#f5f5f5",
+                  backgroundColor: mentor?.online ? "#f5f5f5" : "#f5f5f5",
                   marginRight: "4px",
                 }}
               ></Box>
@@ -151,7 +151,7 @@ const CardMentor = ({
                   color: "white",
                 }}
               >
-                {mentor?.isReady ? "Online" : "Offline"}
+                {mentor?.online ? "Online" : "Offline"}
               </Typography>
             </Box>
             <CardMedia

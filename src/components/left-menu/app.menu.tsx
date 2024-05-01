@@ -79,7 +79,7 @@ const AppMenu = ({ session }: { session: User }) => {
     },
     {
       index: 1,
-      content: `${session?.user?.role?.id == 3 ? "Match" : "Giảng viên"}`,
+      content: `${session?.user?.role?.id == 3 ? "Match" : "Người hướng dẫn"}`,
       icon: <SchoolIcon />,
       bgColor: "#004AAD",
       url: "/mentor?tab=all",
@@ -93,7 +93,7 @@ const AppMenu = ({ session }: { session: User }) => {
     },
     {
       index: 3,
-      content: "Hash tag",
+      content: "Hashtags",
       icon: <BookmarksIcon />,
       bgColor: "#004AAD",
       url: "/hash-tag",
@@ -123,20 +123,13 @@ const AppMenu = ({ session }: { session: User }) => {
     },
     {
       index: 7,
-      content: "Thông tin chung",
-      icon: <InfoIcon />,
-      bgColor: "#004AAD",
-      url: "/infor",
-    },
-    {
-      index: 8,
       content: "Đóng góp ý kiến",
       icon: <FeedbackIcon />,
       bgColor: "#004AAD",
       url: "/feedback",
     },
     {
-      index: 9,
+      index: 8,
       content: "Đăng xuất",
       icon: <LogoutIcon />,
       bgColor: "#004AAD",
@@ -151,7 +144,7 @@ const AppMenu = ({ session }: { session: User }) => {
     event: React.MouseEvent<HTMLDivElement, MouseEvent>,
     index: number
   ) => {
-    if (index == 9) {
+    if (index == 8) {
       handleOpen();
     }
     setSelectedIndex(index);

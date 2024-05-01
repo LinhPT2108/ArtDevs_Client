@@ -57,7 +57,7 @@ const MentorIsReady = ({ session }: IPros) => {
 
   console.log(">>> check data online : ", data);
   const handleRedirect = (id: string) => {
-    router.push(`/mentor/${id}`);
+    router.push(`/profile?id=${id}`);
   };
   const sendMatchRequest = async (mentorId: string): Promise<boolean> => {
     try {
@@ -80,32 +80,28 @@ const MentorIsReady = ({ session }: IPros) => {
     }
   };
   const handleSendmatch = async () => {
-    if (isready === true) {
-      try {
-        // Gọi hàm thực hiện cuộc gọi API
-        const apiResult = await sendMatchRequest(mentorId);
+    try {
+      // Gọi hàm thực hiện cuộc gọi API
+      const apiResult = await sendMatchRequest(mentorId);
 
-        console.log("test Result" + apiResult);
-        // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
-        if (apiResult === true) {
-          // Thành công, chuyển hướng đến trang mới
-          showSnackbar();
-          data &&
-            mentorId &&
-            mutate(
-              data.filter((m) => m.userId != mentorId),
-              false
-            );
-          setOpen(false);
-        } else {
-          // Xử lý khi có lỗi trong cuộc gọi API
-          console.error("Match request failed.");
-        }
-      } catch (error) {
-        console.error("Error sending match:", error);
+      console.log("test Result" + apiResult);
+      // Kiểm tra kết quả của cuộc gọi API và thực hiện các hành động tương ứng
+      if (apiResult === true) {
+        // Thành công, chuyển hướng đến trang mới
+        showSnackbar();
+        data &&
+          mentorId &&
+          mutate(
+            data.filter((m) => m.userId != mentorId),
+            false
+          );
+        setOpen(false);
+      } else {
+        // Xử lý khi có lỗi trong cuộc gọi API
+        console.error("Match request failed.");
       }
-    } else {
-      showSnackbar2();
+    } catch (error) {
+      console.error("Error sending match:", error);
     }
   };
   const handleClickOpen = (

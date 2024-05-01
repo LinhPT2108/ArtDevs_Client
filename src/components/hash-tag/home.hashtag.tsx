@@ -55,7 +55,7 @@ import InfiniteScroll from "./Infinite.scroll";
 import { Loader } from "../utils/component.global";
 import CircularProgress from "@mui/material/CircularProgress";
 import { TransitionProps } from "react-transition-group/Transition";
-
+import BlockOutlinedIcon from "@mui/icons-material/BlockOutlined";
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<any, any>;
@@ -1082,10 +1082,27 @@ const HomeHashtag = ({ session }: Ips) => {
                 </Card>
               </Grid>
             ))}
-          {data?.result?.length == 0 ? (
-            <Box sx={{ margin: "16px" }}>Không tìm thấy hashtag !</Box>
-          ) : (
-            ""
+          {data?.result?.length == 0 && (
+            <Box
+              sx={{
+                margin: "16px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                width: "100%",
+                minHeight: "200px",
+                color: "gray",
+              }}
+            >
+              <BlockOutlinedIcon
+                sx={{
+                  fontSize: "80px",
+                  mb: 4,
+                }}
+              />
+              <Typography variant="h4">Bạn không có hashtag</Typography>
+            </Box>
           )}
         </Grid>
       </InfiniteScroll>
