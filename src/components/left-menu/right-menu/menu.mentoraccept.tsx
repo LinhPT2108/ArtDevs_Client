@@ -19,7 +19,11 @@ import {
 import { sendRequest } from "@/components/utils/api";
 import useSWR, { SWRResponse } from "swr";
 import { calculateTimeDifference } from "@/components/utils/utils";
-import { GLOBAL_URL } from "@/components/utils/veriable.global";
+import {
+  GLOBAL_BG,
+  GLOBAL_BG_NOTIFY,
+  GLOBAL_URL,
+} from "@/components/utils/veriable.global";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -146,216 +150,227 @@ const MentorAccept = ({ session }: IPros) => {
   };
   console.log("check data>>", data);
   return (
-    <Box
-      sx={{
-        width: "100%",
-        maxWidth: 250,
-        bgcolor: "#293145",
-      }}
-    >
-      <List
-        sx={{
-          width: "100%",
-
-          color: "white",
-          marginTop: "12px",
-          "& p": {
-            color: "white",
-          },
-        }}
-        className="rounded-md"
-        component="nav"
-        aria-label="main mailbox folders"
-        subheader={
-          <ListSubheader
+    <>
+      {data &&
+        //@ts-ignore
+        !data?.statusCode &&
+        data?.length > 0 && (
+          <Box
             sx={{
-              bgcolor: "#293145",
-              color: "white",
-              fontWeight: "bold",
-              zIndex: "0",
-              position: "relative",
-              "@media (min-width: 900px)": {
-                "&": {
-                  fontSize: "12px",
-                },
-              },
-              "@media (min-width: 1023px)": {
-                "&": {
-                  fontSize: "14px",
-                },
-              },
+              width: "100%",
+              maxWidth: 250,
+              bgcolor: GLOBAL_BG_NOTIFY,
             }}
-            component="div"
-            id="nested-list-subheader"
-            className="rounded-md"
           >
-            Yêu cầu Match
-          </ListSubheader>
-        }
-      >
-        {data &&
-          data.length &&
-          data.slice(0, 4).map((item, index) => {
-            return (
-              <Box
-                key={index}
+            <List
+              sx={{
+                width: "100%",
+
+                color: "black",
+                marginTop: "12px",
+                "& p": {
+                  color: "black",
+                },
+              }}
+              className="rounded-md"
+              component="nav"
+              aria-label="main mailbox folders"
+              subheader={
+                <ListSubheader
+                  sx={{
+                    bgcolor: GLOBAL_BG_NOTIFY,
+                    color: "black",
+                    fontWeight: "bold",
+                    zIndex: "0",
+                    position: "relative",
+                    "@media (min-width: 900px)": {
+                      "&": {
+                        fontSize: "12px",
+                      },
+                    },
+                    "@media (min-width: 1023px)": {
+                      "&": {
+                        fontSize: "14px",
+                      },
+                    },
+                  }}
+                  component="div"
+                  id="nested-list-subheader"
+                  className="rounded-md"
+                >
+                  Yêu cầu hỗ trợ
+                </ListSubheader>
+              }
+            >
+              {data &&
+                data.length &&
+                data.slice(0, 4).map((item, index) => {
+                  return (
+                    <Box
+                      key={index}
+                      sx={{
+                        paddingBottom: "24px",
+                        "& p": {
+                          fontSize: { md: "10px", lg: "14px" },
+                        },
+                        "& span": {
+                          fontSize: { md: "14px", lg: "16px" },
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        },
+                      }}
+                      className={`${index < data.length - 1 ? "border-b" : ""}`}
+                    >
+                      <ListItemButton
+                        onClick={() => handleRedirect(item.userAction.userId)}
+                        sx={{ padding: "6px 12px", margin: " 0" }}
+                        //   selected={selectedIndex === item.index}
+                        //   onClick={(event) => handleListItemClick(event, item.index)}
+                      >
+                        <ListItemIcon
+                          sx={{
+                            color: "white",
+                            backgroundColor: `gray`,
+                            padding: "8px",
+                            minWidth: "40px",
+                            marginRight: { md: "6px", lg: "24px" },
+                            borderRadius: "100%",
+                          }}
+                        >
+                          <Avatar
+                            alt="Remy Sharp"
+                            src={item.userAction.profilePicUrl || "/OIP.jpg"}
+                            sx={{ width: 56, height: 56 }}
+                          />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={item.userAction.fullname}
+                          secondary={calculateTimeDifference(
+                            item?.timeRelation
+                          )}
+                        />
+                      </ListItemButton>
+                      <Stack
+                        direction="row"
+                        spacing={0}
+                        className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
+                        sx={{
+                          justifyContent: "space-evenly",
+                        }}
+                      >
+                        <Button
+                          variant="contained"
+                          color="success"
+                          onClick={() =>
+                            handleacceptMatch(item?.userAction?.userId)
+                          }
+                          sx={{
+                            borderRadius: "30px",
+
+                            // "@media (min-width: 900px)": {
+                            //   "&": {
+                            //     fontSize: "10px",
+                            //     paddingX: "4px",
+                            //   },
+                            // },
+                            // "@media (min-width: 1023px)": {
+                            //   "&": {
+                            //     paddingX: "12px",
+                            //   },
+                            // },
+                            // "@media (min-width: 1200px)": {
+                            //   "&": {
+                            //     fontSize: "14px",
+                            //     paddingX: "16px",
+                            //   },
+                            // },
+                          }}
+                        >
+                          Đồng ý
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() =>
+                            handrefusedacceptMatch(item?.userAction?.userId)
+                          }
+                          sx={{
+                            borderRadius: "30px",
+                            backgroundColor: "#eeeeee",
+                            color: "#4d3869",
+                            border: "none",
+                            marginLeft: "4px",
+                            "&:hover": {
+                              backgroundColor: "#c7c7c7",
+                              outline: "none",
+                              border: "none",
+                            },
+                            // "@media (min-width: 900px)": {
+                            //   "&": {
+                            //     fontSize: "10px",
+                            //     marginLeft: "4px",
+                            //     paddingX: "10px",
+                            //   },
+                            // },
+                            // "@media (min-width: 1200px)": {
+                            //   "&": {
+                            //     fontSize: "14px",
+                            //     marginLeft: "8px",
+                            //     paddingX: "16px",
+                            //   },
+                            // },
+                          }}
+                        >
+                          Từ chối
+                        </Button>
+                      </Stack>
+                    </Box>
+                  );
+                })}
+            </List>
+            <CardActions className="justify-center">
+              <Button
+                size="small"
+                variant="contained"
+                onClick={() => handleRedirectFriend()}
                 sx={{
-                  paddingBottom: "24px",
-                  "& p": {
-                    fontSize: { md: "10px", lg: "14px" },
-                  },
-                  "& span": {
-                    fontSize: { md: "14px", lg: "16px" },
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
+                  borderRadius: "30px",
+                  backgroundColor: "#eeeeee",
+                  color: "#4d3869",
+                  display: data && data.length > 3 ? "flex" : "none",
+                  "&:hover": {
+                    backgroundColor: "#ffffff",
+                    outline: "none",
+                    border: "none",
                   },
                 }}
-                className={`${index < data.length - 1 ? "border-b" : ""}`}
               >
-                <ListItemButton
-                  onClick={() => handleRedirect(item.userAction.userId)}
-                  sx={{ padding: "6px 12px", margin: " 0" }}
-                  //   selected={selectedIndex === item.index}
-                  //   onClick={(event) => handleListItemClick(event, item.index)}
-                >
-                  <ListItemIcon
-                    sx={{
-                      color: "white",
-                      backgroundColor: `gray`,
-                      padding: "8px",
-                      minWidth: "40px",
-                      marginRight: { md: "6px", lg: "24px" },
-                      borderRadius: "100%",
-                    }}
-                  >
-                    <Avatar
-                      alt="Remy Sharp"
-                      src={item.userAction.profilePicUrl || "/OIP.jpg"}
-                      sx={{ width: 56, height: 56 }}
-                    />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.userAction.userId}
-                    secondary={calculateTimeDifference(item?.timeRelation)}
-                  />
-                </ListItemButton>
-                <Stack
-                  direction="row"
-                  spacing={0}
-                  className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
-                  sx={{
-                    justifyContent: "space-evenly",
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleacceptMatch(item?.userAction?.userId)}
-                    sx={{
-                      borderRadius: "30px",
-
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     paddingX: "4px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1023px)": {
-                      //   "&": {
-                      //     paddingX: "12px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
-                    }}
-                  >
-                    Đồng ý
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      handrefusedacceptMatch(item?.userAction?.userId)
-                    }
-                    sx={{
-                      borderRadius: "30px",
-                      backgroundColor: "#eeeeee",
-                      color: "#4d3869",
-                      border: "none",
-                      marginLeft: "4px",
-                      "&:hover": {
-                        backgroundColor: "#c7c7c7",
-                        outline: "none",
-                        border: "none",
-                      },
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     marginLeft: "4px",
-                      //     paddingX: "10px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     marginLeft: "8px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
-                    }}
-                  >
-                    Từ chối
-                  </Button>
-                </Stack>
-              </Box>
-            );
-          })}
-      </List>
-      <CardActions className="justify-center">
-        <Button
-          size="small"
-          variant="contained"
-          onClick={() => handleRedirectFriend()}
-          sx={{
-            borderRadius: "30px",
-            backgroundColor: "#eeeeee",
-            color: "#4d3869",
-            display: data && data.length > 3 ? "flex" : "none",
-            "&:hover": {
-              backgroundColor: "#ffffff",
-              outline: "none",
-              border: "none",
-            },
-          }}
-        >
-          Tất cả yêu cầu
-        </Button>
-      </CardActions>
-      <Snackbar
-        open={snackbarOpen}
-        message="Addfriend successfully!"
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        sx={{
-          color: "white",
-          backgroundColor: "#4CAF50",
-        }}
-      />
-      <Snackbar
-        open={snackbar2Open}
-        message="Refused to make friends!"
-        autoHideDuration={3000}
-        onClose={() => setSnackbar2Open(false)}
-        sx={{
-          color: "black",
-          backgroundColor: "##e60839",
-        }}
-      />
-    </Box>
+                Tất cả yêu cầu
+              </Button>
+            </CardActions>
+            <Snackbar
+              open={snackbarOpen}
+              message="Addfriend successfully!"
+              autoHideDuration={3000}
+              onClose={() => setSnackbarOpen(false)}
+              sx={{
+                color: "white",
+                backgroundColor: "#4CAF50",
+              }}
+            />
+            <Snackbar
+              open={snackbar2Open}
+              message="Refused to make friends!"
+              autoHideDuration={3000}
+              onClose={() => setSnackbar2Open(false)}
+              sx={{
+                color: "black",
+                backgroundColor: "#e60839",
+              }}
+            />
+          </Box>
+        )}
+    </>
   );
 };
 export default MentorAccept;

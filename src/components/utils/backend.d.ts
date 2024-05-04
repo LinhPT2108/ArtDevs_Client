@@ -147,7 +147,6 @@ declare global {
     username: string;
     role: Role;
     birthday: string;
-    profileImageUrl: string;
     gender: number;
     status?: number;
     listDemandOfUser?: string[];

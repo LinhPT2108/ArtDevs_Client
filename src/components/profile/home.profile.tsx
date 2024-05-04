@@ -129,8 +129,8 @@ const HomeProfile = ({ session }: IPros) => {
   const handleClickOpenDialogAvatar = () => {
     if (!searchParams.get("id")) {
       setPreview(
-        session?.user?.profileImageUrl
-          ? session?.user?.profileImageUrl
+        dataProfile?.profileImageUrl
+          ? dataProfile?.profileImageUrl
           : "/profile/user.jpg"
       );
       setOpenDialogAvatar(true);
@@ -582,7 +582,7 @@ const HomeProfile = ({ session }: IPros) => {
 
   useEffect(() => {
     if (!selectedBgImg) {
-      setPreviewBgImg(session?.user?.backgroundImageUrl);
+      setPreviewBgImg(dataProfile?.backgroundImageUrl);
       return;
     }
 
@@ -626,6 +626,7 @@ const HomeProfile = ({ session }: IPros) => {
         };
         await sessionUpdate(updatedUserData);
         setDataProfile({ ...session?.user, profileImageUrl: data?.imageUrl });
+        setData({ ...session?.user, profileImageUrl: data?.imageUrl });
         handleCloseBackdrop();
         handleClickAlertAvatar();
         handleCloseDialogAvatar();
@@ -665,6 +666,7 @@ const HomeProfile = ({ session }: IPros) => {
           backgroundImageUrl: data?.imageUrl,
         });
 
+        setData({ ...session?.user, backgroundImageUrl: data?.imageUrl });
         setSelectedBgImg(null);
         // setPreviewBgImg(data?.imageUrl);
 

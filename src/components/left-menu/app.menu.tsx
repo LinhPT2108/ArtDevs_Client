@@ -79,7 +79,9 @@ const AppMenu = ({ session }: { session: User }) => {
     },
     {
       index: 1,
-      content: `${session?.user?.role?.id == 3 ? "Match" : "Người hướng dẫn"}`,
+      content: `${
+        session?.user?.role?.id == 3 ? "Yêu cầu hỗ trợ" : "Người hướng dẫn"
+      }`,
       icon: <SchoolIcon />,
       bgColor: "#004AAD",
       url: "/mentor?tab=all",

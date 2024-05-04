@@ -38,6 +38,7 @@ import {
 } from "../utils/veriable.global";
 import SkeletonPeople from "./skeleton.people";
 import { TransitionProps } from "react-transition-group/Transition";
+import CardMentor from "../mentor/component/mentor.card";
 
 const Transition = React.forwardRef(function Transition(
   props: TransitionProps & {
@@ -171,14 +172,20 @@ export default function SearchMentor({ session, dataFilterMentors }: IPros) {
 
   //xử lý chuyển hướng
   const handleRedirect = (id: string) => {
-    router.push(`/mentor/${id}`);
+    router.push(`/profile?id=${id}`);
   };
 
+  const [mentorName, setMentorName] = useState(String);
   //mở modal send match
-  const handleClickOpen = (mentorId: string, isReady: boolean) => {
+  const handleClickOpen = (
+    mentorName: string,
+    mentorId: string,
+    isReady: boolean
+  ) => {
     setOpen(true);
     setMentorId(mentorId);
     setIsReady(isReady);
+    setMentorName(mentorName);
   };
 
   // đóng modal send match
@@ -279,206 +286,12 @@ export default function SearchMentor({ session, dataFilterMentors }: IPros) {
             //@ts-ignore
             !data?.statusCode &&
               data?.result?.map((item) => (
-                <Grid
-                  key={item.userId}
-                  item
-                  xs={12}
-                  md={6}
-                  sx={{ paddingX: "6px" }}
-                >
-                  <Card
-                    sx={{
-                      background:
-                        "linear-gradient(45deg, rgba(58,180,156,0.24693627450980393) 0%, rgba(243,245,245,0.10407913165266103) 100%)",
-                      border: "40px radius",
-                      overflow: "hidden",
-                      transition: "transform 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "scale(1.02)",
-                      },
-                      cursor: "pointer",
-                      // margin: "15px",
-                    }}
-                  >
-                    <Grid
-                      item
-                      xs={12}
-                      md={12}
-                      onClick={() => {
-                        handleRedirect(item?.userId);
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          top: "4px",
-                          left: "4px",
-                          backgroundColor: item?.isReady
-                            ? "#16D6B5"
-                            : "#e60839",
-                          border: "1px solid white",
-                          borderRadius: "11px",
-                          width: "fit-content",
-                          height: "32px",
-                          padding: "6px",
-                          boxSizing: "border-box",
-                          display: "flex",
-                          flexDirection: "row",
-                          alignItems: "center",
-                          position: "relative",
-                        }}
-                      >
-                        {/* Nested Box and Typography */}
-                        <Box
-                          sx={{
-                            width: "12px",
-                            height: "12px",
-                            borderRadius: "50%",
-                            backgroundColor: item?.isReady
-                              ? "#f5f5f5"
-                              : "#f5f5f5",
-                            marginRight: "8px",
-                          }}
-                        ></Box>
-                        <Typography
-                          sx={{
-                            fontSize: "16px",
-                            fontWeight: "800",
-                            color: "white",
-                          }}
-                        >
-                          {item?.isReady ? "Online" : "Offline"}
-                        </Typography>
-                      </Box>
-
-                      <Typography
-                        gutterBottom
-                        component="div"
-                        padding="5px 5px 3px 20px"
-                        textAlign="center"
-                        sx={{
-                          fontSize: "24px",
-                          fontWeight: "500",
-                          fontStyle: "bold",
-                        }}
-                      >
-                        Người Hướng Dẫn
-                      </Typography>
-                    </Grid>
-                    <Grid item container spacing={2} padding="5px">
-                      <Grid
-                        item
-                        xs={4}
-                        md={4}
-                        onClick={() => {
-                          handleRedirect(item?.userId);
-                        }}
-                      >
-                        <CardMedia
-                          component="img"
-                          alt="green iguana"
-                          height="180"
-                          image={item?.profilePicUrl || "/OIP.jpg"}
-                          sx={{
-                            borderRadius: "8px",
-                            objectFit: "cover",
-                            marginLeft: "5px",
-                            paddingLeft: "5px",
-                          }}
-                        />
-                      </Grid>
-                      <Grid
-                        item
-                        xs={8}
-                        md={8}
-                        onClick={() => {
-                          handleRedirect(item?.userId);
-                        }}
-                      >
-                        <CardContent>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            display="flex"
-                            flexWrap="wrap"
-                          >
-                            {item?.listSkillOfMentor?.map((skill, index) => (
-                              <Box key={`skill${index}`} marginRight="5px">
-                                <Typography
-                                  gutterBottom
-                                  variant="h6"
-                                  component="div"
-                                >
-                                  <Box
-                                    sx={{
-                                      width: "auto",
-                                      padding: "0 12px",
-                                      minWidth: "80px",
-                                      textDecoration: "none",
-                                      fontWeight: "bold",
-                                      boxShadow: `0 0 3px 1px ${GLOBAL_BG_BLUE_900}`,
-                                      textAlign: "center",
-                                      color: GLOBAL_BG_BLUE_900,
-                                      borderRadius: "16px",
-                                      transition: "all .2s",
-                                    }}
-                                  >
-                                    {skill}
-                                  </Box>
-                                </Typography>
-                              </Box>
-                            ))}
-                          </Typography>
-                        </CardContent>
-                      </Grid>
-                      <Grid item xs={12} md={12}>
-                        <CardActions
-                          sx={{
-                            justifyContent: "space-between",
-                          }}
-                        >
-                          <Typography
-                            gutterBottom
-                            component="div"
-                            padding="5px 5px 3px 20px"
-                            textAlign="center"
-                            sx={{
-                              fontSize: "24px",
-                              fontWeight: "500",
-                              fontStyle: "bold",
-                            }}
-                            onClick={() => {
-                              handleRedirect(item?.userId);
-                            }}
-                          >
-                            {item?.fullname}
-                          </Typography>
-                          <Box
-                            sx={{
-                              background:
-                                "linear-gradient(45deg, rgba(74,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                              border: "5px ",
-                              marginRight: "12px",
-                              borderRadius: "30px",
-                              padding: "8px 16px",
-                              ":hover": {
-                                background:
-                                  "linear-gradient(45deg, rgba(99,58,180,1) 0%, rgba(69,252,235,0.10407913165266103) 100%)",
-                                boxShadow: GLOBAL_BOXSHADOW,
-                              },
-                            }}
-                            onClick={() =>
-                              handleClickOpen(item?.userId, item?.isReady)
-                            }
-                          >
-                            Yêu Cầu Hỗ Trợ !
-                          </Box>
-                        </CardActions>
-                      </Grid>
-                    </Grid>
-                  </Card>
-                </Grid>
-              ))
-          }
+                <CardMentor
+              handleRedirect={handleRedirect}
+              handleClickOpen={handleClickOpen}
+              data={item}
+            />))}
+         
           {
             //@ts-ignore
             ((!data?.statusCode && data?.result?.length == 0) ||
@@ -554,19 +367,24 @@ export default function SearchMentor({ session, dataFilterMentors }: IPros) {
           },
         }}
       >
-        <DialogTitle>{"Bạn có muốn gửi yêu cầu hỗ trợ không?"}</DialogTitle>
-        <IconButton
-          aria-label="close"
-          onClick={handleClose}
+        <DialogTitle
           sx={{
-            position: "absolute",
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500],
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
           }}
         >
-          <CloseIcon />
-        </IconButton>
+          Bạn có muốn nhờ{" "}
+          <Typography
+            sx={{
+              color: "rgba(103, 186, 186)",
+              fontWeight: "bold",
+              fontSize: "24px",
+              marginX: "6px",
+            }}
+          >{` ${mentorName} `}</Typography>{" "}
+          giúp đỡ không?
+        </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
             Đồng hành với Người Hướng Dẫn IT, học viên không chỉ chinh phục
@@ -575,14 +393,14 @@ export default function SearchMentor({ session, dataFilterMentors }: IPros) {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button variant="outlined" color="error" onClick={handleClose}>
+          <Button color="error" variant="outlined" onClick={handleClose}>
             Thoát
           </Button>
           <Button
-            variant="contained"
             color="success"
+            variant="contained"
+            sx={{ minWidth: "150px", marginRight: "20px" }}
             onClick={handleSendmatch}
-            sx={{ marginRight: "16px", minWidth: 150 }}
           >
             Đồng ý
           </Button>

@@ -653,7 +653,7 @@ const PostProfile = ({
     const selectedPrivacy = post?.postId?.privacyPostDetails.find(
       (privacy) => privacy?.status == true
     );
-    console.log(post?.postId?.listImageofPost); 
+    console.log(post?.postId?.listImageofPost);
     const editedPostData: AddPost = {
       postId: post?.postId?.postId,
       content: post?.postId?.content,
@@ -3054,10 +3054,8 @@ const PostProfile = ({
                     {item?.typePost === "share" ? (
                       <img
                         src={`${
-                          //@ts-ignore
-                          url == item?.userPostDto?.profilePicUrl
-                            ? //@ts-ignore
-                              item?.userPostDto?.profilePicUrl
+                          sessionGuest?.profileImageUrl
+                            ? sessionGuest?.profileImageUrl
                             : "/profile/user.jpg"
                         }`}
                       />

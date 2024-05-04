@@ -107,9 +107,19 @@ const Messsages = (pros: IPros) => {
               maxWidth: "100px",
             }}
           >
-            <CardMedia component="img" image="/wave.gif" alt="hello" />
+            <CardMedia
+              component="img"
+              image="https://cdn0.iconfinder.com/data/icons/smileys-people-hand-gestures-add-on-vol-2/48/v-20-512.png"
+              alt="hello"
+            />
           </Box>
-          <Typography variant="body1" color="initial" px={5} textAlign={"center"} fontWeight={"bold"}>
+          <Typography
+            variant="body1"
+            color="initial"
+            px={5}
+            textAlign={"center"}
+            fontWeight={"bold"}
+          >
             Hãy gửi một tin nhắn để bắt đầu cuộc trò chuyện !
           </Typography>
         </Box>
@@ -165,20 +175,22 @@ const Messsages = (pros: IPros) => {
                   arrow
                 >
                   <Stack justifyContent="center" alignItems="flex-start">
-                    {_e.content&&<Box
-                      sx={{
-                        backgroundColor: "orange",
-                        borderRadius: "30px 30px 30px 0",
-                        color: "black",
-                        maxWidth: "100%",
-                        padding: "10px 20px",
-                        whiteSpace: "pre-wrap",
-                        wordWrap: "break-word",
-                        width: "fit-content",
-                      }}
-                    >
-                      {_e.content}
-                    </Box>}
+                    {_e.content && (
+                      <Box
+                        sx={{
+                          backgroundColor: "orange",
+                          borderRadius: "30px 30px 30px 0",
+                          color: "black",
+                          maxWidth: "100%",
+                          padding: "10px 20px",
+                          whiteSpace: "pre-wrap",
+                          wordWrap: "break-word",
+                          width: "fit-content",
+                        }}
+                      >
+                        {_e.content}
+                      </Box>
+                    )}
                     <Box sx={{ display: "flex", mt: "8px" }}>
                       {_e.pictureOfMessages.length > 0 &&
                         _e.pictureOfMessages.map((p, index) => {
@@ -233,20 +245,22 @@ const Messsages = (pros: IPros) => {
                     justifyContent="center"
                     alignItems="flex-end"
                   >
-                   {_e.content&&<Box
-                      sx={{
-                        backgroundColor: "aqua",
-                        borderRadius: "30px 30px 0 30px",
-                        color: "black",
-                        padding: "10px 20px",
-                        whiteSpace: "pre-wrap",
-                        wordWrap: "break-word",
-                        width: "fit-content",
-                        float: "right",
-                      }}
-                    >
-                      {_e.content}
-                    </Box>}
+                    {_e.content && (
+                      <Box
+                        sx={{
+                          backgroundColor: "aqua",
+                          borderRadius: "30px 30px 0 30px",
+                          color: "black",
+                          padding: "10px 20px",
+                          whiteSpace: "pre-wrap",
+                          wordWrap: "break-word",
+                          width: "fit-content",
+                          float: "right",
+                        }}
+                      >
+                        {_e.content}
+                      </Box>
+                    )}
                     <Box
                       sx={{
                         float: "right",
