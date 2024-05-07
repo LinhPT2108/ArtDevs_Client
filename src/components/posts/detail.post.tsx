@@ -196,11 +196,19 @@ const DetailPost = ({ session }: { session: User }) => {
     setAnchorElReport(null);
   };
 
+  const [open2, setOpen2] = React.useState([]);
+
+  const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
+    null
+  );
+  const [postModal, setPostModal] = useState<Post | null>(null);
+  const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
   //xử lý quyền
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const open = Boolean(anchorEl);
 
+  const [isLoadingComment, setIsLoadingComment] = useState(false);
   const [actionDialog, setActionDialog] = useState<any>({
     actionType: "",
     data: {},
@@ -451,8 +459,6 @@ const DetailPost = ({ session }: { session: User }) => {
     handleClose3(index, isComment2);
   };
 
-  const [isLoadingEditComment, setIsLoadingEditComment] = useState(false);
-
   const handleCloseSnackbar = (
     event: React.SyntheticEvent | Event,
     reason?: string
@@ -557,13 +563,6 @@ const DetailPost = ({ session }: { session: User }) => {
       }
     }
   };
-
-  const [open2, setOpen2] = React.useState([]);
-
-  const [selectedItemId, setSelectedItemId] = React.useState<string | null>(
-    null
-  );
-  const [postModal, setPostModal] = useState<Post | null>(null);
 
   const handleDeletePost = async (postId: string | null, ind: number) => {
     console.log(">>> check postID: ", postId);
@@ -992,7 +991,6 @@ const DetailPost = ({ session }: { session: User }) => {
     setIsShowReplies((prev) => (prev === cmtId ? null : cmtId));
   };
 
-  const [isLoadingComment, setIsLoadingComment] = useState(false);
   const handlePostComment = async () => {
     if (isComment) {
       console.log(formDataComment);
