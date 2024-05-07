@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { sendRequest } from "@/components/utils/api";
 import { GLOBAL_URL } from "@/components/utils/veriable.global";
 import {
@@ -15,15 +15,14 @@ import {
 import { useState } from "react";
 import useSWR, { SWRResponse } from "swr";
 const MenuSuggestFriend = ({ session }: { session: User }) => {
-
   const fetchData = async (url: string) => {
-    return await sendRequest<SuggestFriend[]>({
+    return await sendRequest<any>({
       url: url,
       method: "GET",
       headers: { authorization: `Bearer ${session?.access_token}` },
     });
   };
-  const { data, error, isLoading }: SWRResponse<SuggestFriend[], any> = useSWR(
+  const { data, error, isLoading }: SWRResponse<any, any> = useSWR(
     GLOBAL_URL + "/api/get-userOfDemand",
     fetchData,
     {
@@ -73,7 +72,7 @@ const MenuSuggestFriend = ({ session }: { session: User }) => {
     } catch (error) {
       console.error("Error sending match:", error);
     }
-  }
+  };
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const showSnackbar = () => {
@@ -82,7 +81,6 @@ const MenuSuggestFriend = ({ session }: { session: User }) => {
   };
 
   console.log("check dataSuggest: ", data);
-  
 
   return (
     <Box
@@ -131,122 +129,120 @@ const MenuSuggestFriend = ({ session }: { session: User }) => {
           </ListSubheader>
         }
       >
-
-        {//@ts-ignore
-          !data?.statusCode && data?.map((item, index) => {
-
-            return (
-              <Box
-                key={index}
-                sx={{
-                  paddingBottom: "24px",
-                  "& p": {
-                    fontSize: { md: "10px", lg: "14px" },
-                  },
-                  "& span": {
-                    fontSize: { md: "14px", lg: "16px" },
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  },
-                }}
-                className={`${index < data?.length - 1 ? "border-b" : ""}`}
-              >
-                <ListItemButton
-                  sx={{ padding: "6px 12px", margin: " 0" }}
-                //   selected={selectedIndex === item.index}
-                //   onClick={(event) => handleListItemClick(event, item.index)}
+        {
+          //@ts-ignore
+          !data?.statusCode &&
+            //@ts-ignore
+            data?.map((item, index) => {
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    paddingBottom: "24px",
+                    "& p": {
+                      fontSize: { md: "10px", lg: "14px" },
+                    },
+                    "& span": {
+                      fontSize: { md: "14px", lg: "16px" },
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                  className={`${index < data?.length - 1 ? "border-b" : ""}`}
                 >
-                  <ListItemIcon
-                    sx={{
-                      color: "white",
-                      backgroundColor: `gray`,
-                      padding: "8px",
-                      minWidth: "40px",
-                      marginRight: { md: "6px", lg: "24px" },
-                      borderRadius: "100%",
-                      width: "40px",
-                      height: "40px"
-                    }}
+                  <ListItemButton
+                    sx={{ padding: "6px 12px", margin: " 0" }}
+                    //   selected={selectedIndex === item.index}
+                    //   onClick={(event) => handleListItemClick(event, item.index)}
                   >
-                    {item.profileImageUrl}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={item.fullname}
-
-                  />
-                </ListItemButton>
-                <Stack
-                  direction="row"
-                  spacing={0}
-                  className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
-                >
-                  <Button
-                    variant="contained"
-                    color="success"
-                    onClick={() => handleSendAddFriend(item.id)}
-                    sx={{
-                      borderRadius: "30px",
-
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     paddingX: "4px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1023px)": {
-                      //   "&": {
-                      //     paddingX: "12px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
-                    }}
+                    <ListItemIcon
+                      sx={{
+                        color: "white",
+                        backgroundColor: `gray`,
+                        padding: "8px",
+                        minWidth: "40px",
+                        marginRight: { md: "6px", lg: "24px" },
+                        borderRadius: "100%",
+                        width: "40px",
+                        height: "40px",
+                      }}
+                    >
+                      {item.profileImageUrl}
+                    </ListItemIcon>
+                    <ListItemText primary={item.fullname} />
+                  </ListItemButton>
+                  <Stack
+                    direction="row"
+                    spacing={0}
+                    className="flex min-[1023px]:pl-3 justify-center min-[1023px]:justify-start"
                   >
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleSendAddFriend(item.id)}
+                      sx={{
+                        borderRadius: "30px",
 
-                    Thêm bạn bè
-                  </Button>
-                  
-                  <Button
-                    variant="outlined"
-                    sx={{
-                      borderRadius: "30px",
-                      backgroundColor: "#eeeeee",
-                      color: "#4d3869",
-                      border: "none",
-                      marginLeft: "4px",
-                      width: "20px",
-                      "&:hover": {
-                        backgroundColor: "#c7c7c7",
-                        outline: "none",
+                        // "@media (min-width: 900px)": {
+                        //   "&": {
+                        //     fontSize: "10px",
+                        //     paddingX: "4px",
+                        //   },
+                        // },
+                        // "@media (min-width: 1023px)": {
+                        //   "&": {
+                        //     paddingX: "12px",
+                        //   },
+                        // },
+                        // "@media (min-width: 1200px)": {
+                        //   "&": {
+                        //     fontSize: "14px",
+                        //     paddingX: "16px",
+                        //   },
+                        // },
+                      }}
+                    >
+                      Thêm bạn bè
+                    </Button>
+
+                    <Button
+                      variant="outlined"
+                      sx={{
+                        borderRadius: "30px",
+                        backgroundColor: "#eeeeee",
+                        color: "#4d3869",
                         border: "none",
-                      },
-                      // "@media (min-width: 900px)": {
-                      //   "&": {
-                      //     fontSize: "10px",
-                      //     marginLeft: "4px",
-                      //     paddingX: "10px",
-                      //   },
-                      // },
-                      // "@media (min-width: 1200px)": {
-                      //   "&": {
-                      //     fontSize: "14px",
-                      //     marginLeft: "8px",
-                      //     paddingX: "16px",
-                      //   },
-                      // },
-                    }}
-                  >
-                    Xóa
-                  </Button>
-                </Stack>
-              </Box>
-            );
-          })}
+                        marginLeft: "4px",
+                        width: "20px",
+                        "&:hover": {
+                          backgroundColor: "#c7c7c7",
+                          outline: "none",
+                          border: "none",
+                        },
+                        // "@media (min-width: 900px)": {
+                        //   "&": {
+                        //     fontSize: "10px",
+                        //     marginLeft: "4px",
+                        //     paddingX: "10px",
+                        //   },
+                        // },
+                        // "@media (min-width: 1200px)": {
+                        //   "&": {
+                        //     fontSize: "14px",
+                        //     marginLeft: "8px",
+                        //     paddingX: "16px",
+                        //   },
+                        // },
+                      }}
+                    >
+                      Xóa
+                    </Button>
+                  </Stack>
+                </Box>
+              );
+            })
+        }
       </List>
       <Snackbar
         open={snackbarOpen}
