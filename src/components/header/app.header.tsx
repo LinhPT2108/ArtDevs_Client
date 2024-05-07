@@ -77,6 +77,7 @@ import {
 } from "../utils/veriable.global";
 import IconTabs from "./header.nav";
 import SearchComponent from "./header.search";
+import BottomNavbar from "./header.bottom";
 
 type Anchor = "top" | "left" | "bottom" | "right";
 interface AppBarProps extends MuiAppBarProps {
@@ -114,7 +115,8 @@ interface IPros {
   pageUrl: string;
   session: User | null;
 }
-const socket = new SockJS("http://localhost:8080/wss");
+// const socket = new SockJS("http://localhost:8080/wss");
+const socket = new SockJS("https://artdevs-server.azurewebsites.net/wss");
 const stompClient = Stomp.over(socket);
 
 export default function AppHeader(pros: IPros) {
@@ -308,17 +310,15 @@ export default function AppHeader(pros: IPros) {
   const menuId = "primary-search-account-menu";
   const handleActivity = () => {
     router.push("/activity?tab=like");
-    handleMenuClose()
-
+    handleMenuClose();
   };
   const handleUpgradeemntro = () => {
     router.push("/upgrade-mentor");
-    handleMenuClose()
-
+    handleMenuClose();
   };
   const handleProfile = () => {
     router.push("/profile");
-    handleMenuClose()
+    handleMenuClose();
   };
   const renderMenu = (
     <Menu
@@ -506,7 +506,8 @@ export default function AppHeader(pros: IPros) {
 
   const { data, error, isLoading }: SWRResponse<notificationToGetDTO[], any> =
     useSWR(
-      `http://localhost:8080/api/notifications/${user?.user?.userId}`,
+      `https://artdevs-server.azurewebsites.net/api/notifications/${user?.user?.userId}`,
+      // `http://localhost:8080/api/notifications/${user?.user?.userId}`,
       fetchData,
       {
         shouldRetryOnError: false, // Ngăn SWR thử lại yêu cầu khi có lỗi
@@ -965,7 +966,7 @@ export default function AppHeader(pros: IPros) {
                       minWidth: { xs: "32px", md: "48px" },
                     }}
                   >
-                    <Badge badgeContent={11} color="error">
+                    <Badge color="error">
                       <MailIcon
                         sx={{
                           backgroundColor: GLOBAL_BG_NAV,
@@ -1149,7 +1150,6 @@ export default function AppHeader(pros: IPros) {
                             </Popper>
                           </Box>
                           <Divider sx={{ marginBottom: "6px" }} />
-                     
                         </Box>
                         <List
                           sx={{
@@ -1210,18 +1210,21 @@ export default function AppHeader(pros: IPros) {
                                               padding={"5px"}
                                               sx={{
                                                 backgroundColor:
-                                                  e.message == "like" || "likeShare"
+                                                  e.message == "like" ||
+                                                  "likeShare"
                                                     ? "#0683FE"
                                                     : e.message == "share"
                                                     ? "#666768"
                                                     : e.message == "comment" ||
-                                                      "replyComment" ||"commentShare"
+                                                      "replyComment" ||
+                                                      "commentShare"
                                                     ? "#61e081"
                                                     : "",
                                                 borderRadius: "50%",
                                               }}
                                             >
-                                              {e.message == "like" ||"likeShare" ? (
+                                              {e.message == "like" ||
+                                              "likeShare" ? (
                                                 <ThumbUpIcon
                                                   fontSize="small"
                                                   sx={{ color: "white" }}
@@ -1276,10 +1279,10 @@ export default function AppHeader(pros: IPros) {
                                             >
                                               {e.message == "like"
                                                 ? " đã thích bài viết của bạn"
-                                                :e.message == "likeShare"
-                                                ?" đã thích bài viết bạn đã chia sẻ"
-                                                :e.message == "commentShare"
-                                                ?" đã bình luận bài viết bạn đã chia sẻ"
+                                                : e.message == "likeShare"
+                                                ? " đã thích bài viết bạn đã chia sẻ"
+                                                : e.message == "commentShare"
+                                                ? " đã bình luận bài viết bạn đã chia sẻ"
                                                 : e.message == "share"
                                                 ? " đã chia sẻ bài viết của bạn"
                                                 : e.message == "comment"
@@ -1480,6 +1483,9 @@ export default function AppHeader(pros: IPros) {
           </Box>
         </Toolbar>
       </AppBar>
+      <Box sx={{ display: { xs: "block", sm: "none" } }}>
+        <BottomNavbar />
+      </Box>
       {renderMenu}
     </Box>
   );

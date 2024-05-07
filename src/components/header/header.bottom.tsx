@@ -1,18 +1,56 @@
 "use client";
-import Box from "@mui/material/Box";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import HomeIcon from "@mui/icons-material/Home";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
+import SchoolIcon from "@mui/icons-material/School";
 import BottomNavigation from "@mui/material/BottomNavigation";
 import BottomNavigationAction from "@mui/material/BottomNavigationAction";
-import RestoreIcon from "@mui/icons-material/Restore";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ArchiveIcon from "@mui/icons-material/Archive";
+import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const BottomNavbar = (pros: any) => {
-  const [value, setValue] = useState<number>(pros?.tabValue);
+const BottomNavbar = () => {
+  // gắn giá trị định hình vị trí tab đang chọn
+  const [value, setValue] = useState<number | null>(0);
+
+  // lấy url hiện tại
+  const currentPath = usePathname();
+
+  //tạo biến router xử lý chuyển hướng tab
+  const router = useRouter();
+
+  // xử lý khi change tab
+  const handleChangeNavTab = (newValue: number | null) => {
+    if (newValue == 4) {
+      if (currentPath == "/") {
+        setValue(0);
+      } else if (currentPath == "/friend-post") {
+        setValue(1);
+      } else if (currentPath == "/mentor") {
+        setValue(2);
+      } else if (currentPath == "/profile") {
+        setValue(3);
+      } else {
+        setValue(4);
+      }
+    } else {
+      if (newValue == 0 && currentPath !== "/") {
+        router.push("/");
+      } else if (newValue == 1 && currentPath != "/friend-post") {
+        router.push("/friend-post");
+      } else if (newValue == 2 && currentPath != "/mentor") {
+        router.push("/mentor?tab=all");
+      } else if (newValue == 3 && currentPath != "/profile") {
+        router.push("/profile");
+      } else {
+      }
+    }
+  };
+
   useEffect(() => {
-    setValue(pros?.tabValue);
-  }, [pros?.tabValue]);
+    handleChangeNavTab(4);
+  }, [currentPath]);
 
   return (
     <Box sx={{ pb: 7 }}>
@@ -24,14 +62,22 @@ const BottomNavbar = (pros: any) => {
           showLabels
           value={value}
           onChange={(event, newValue) => {
-            setValue(newValue);
-            pros.handleChangeTab(newValue);
+            handleChangeNavTab(newValue);
           }}
         >
-          <BottomNavigationAction label="Recents" icon={<RestoreIcon />} />
-          <BottomNavigationAction label="Favorites" icon={<FavoriteIcon />} />
-          <BottomNavigationAction label="Archive" icon={<ArchiveIcon />} />
-          <BottomNavigationAction label="ABC" icon={<ArchiveIcon />} />
+          <BottomNavigationAction label="Trang chủ" icon={<HomeIcon />} />
+          <BottomNavigationAction
+            label="Bài viết bạn bè"
+            icon={<SchoolIcon />}
+          />
+          <BottomNavigationAction
+            label="Giảng viên"
+            icon={<RecentActorsIcon />}
+          />
+          <BottomNavigationAction
+            label="Trang cá nhân"
+            icon={<AccountCircleIcon />}
+          />
         </BottomNavigation>
       </Paper>
     </Box>

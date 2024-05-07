@@ -1019,9 +1019,8 @@ const HomeProfile = ({ session }: IPros) => {
           width: {
             xs: "98%",
             sm: "95%",
-            md: "90%",
-            lg: "80%",
-            xl: "70%",
+            md: "100%",
+            lg: "85%",
           },
         }}
       >
@@ -1260,11 +1259,9 @@ const HomeProfile = ({ session }: IPros) => {
                 width: {
                   xs: "98%",
                   sm: "95%",
-                  md: "90%",
-                  lg: "80%",
-                  xl: "70%",
+                  md: "100%",
+                  lg: "85%",
                 },
-                maxWidth: "1000px",
                 margin: " auto",
                 display: " grid",
                 gridTemplateColumns: { xs: "1fr", sm: " 2fr 3fr" },

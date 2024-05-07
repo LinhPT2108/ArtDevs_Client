@@ -172,7 +172,8 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-const socket = new SockJS("http://localhost:8080/wss");
+// const socket = new SockJS("http://localhost:8080/wss");
+const socket = new SockJS("https://artdevs-server.azurewebsites.net/wss");
 const stompClient = Stomp.over(socket);
 
 const DetailPost = ({ session }: { session: User }) => {

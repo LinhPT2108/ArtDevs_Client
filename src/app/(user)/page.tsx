@@ -24,7 +24,7 @@ export default async function Home() {
         </Box>
         <Box
           sx={{
-            display: { xs: "none", md: "flex" },
+            display: { xs: "none", lg: "flex" },
             padding: "0 0 0 28px",
             justifyContent: "flex-start",
             maxWidth: "250px",

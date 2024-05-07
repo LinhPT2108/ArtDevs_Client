@@ -9,6 +9,8 @@ import {
   CardActions,
   CardContent,
   CardMedia,
+  Divider,
+  Grid,
   Snackbar,
   Typography,
 } from "@mui/material";
@@ -168,7 +170,10 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string, status: number): Promise<boolean> => {
+  const refusedAddfriend = async (
+    UserId: string,
+    status: number
+  ): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
@@ -192,9 +197,13 @@ const HomeFriend = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string, type: boolean, status:number) => {
+  const handlerefusedAddfriend = async (
+    UserId: string,
+    type: boolean,
+    status: number
+  ) => {
     try {
-      const apiResult = await refusedAddfriend(UserId,status);
+      const apiResult = await refusedAddfriend(UserId, status);
 
       console.log("test Result" + apiResult);
       if (apiResult === true) {
@@ -439,35 +448,20 @@ const HomeFriend = ({ session }: IPros) => {
             <CardContent
               sx={{
                 // Màu chữ
-                fontSize: "32px", // Kích thước chữ
+                fontSize: "24px", // Kích thước chữ
                 fontWeight: "bold", // Độ đậm của chữ
                 padding: "8px",
               }}
             >
-              Friend Request
+              Yêu cầu kết bạn
             </CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-              }}
-              className="cube-"
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "flex-start",
-                }}
-              >
-                {listDataSendFriend?.map((item) => (
+            <Grid container columns={12} spacing={2} sx={{}}>
+              {listDataSendFriend?.map((item) => (
+                <Grid item xs={12} sm={6} lg={4} xl={3}>
                   <Card
                     key={item.id + "listSendFriend"}
                     sx={{
                       backgroundColor: "#c0c0d7",
-                      marginTop: "24px",
-                      marginLeft: "24px",
-                      width: { xs: "230px" },
 
                       flexGrow: listDataSendFriend.length >= 12 ? 1 : "auto",
                     }}
@@ -522,7 +516,11 @@ const HomeFriend = ({ session }: IPros) => {
                       <Button
                         variant="outlined"
                         onClick={() =>
-                          handlerefusedAddfriend(item?.userAction?.userId, true,0)
+                          handlerefusedAddfriend(
+                            item?.userAction?.userId,
+                            true,
+                            0
+                          )
                         }
                         sx={{
                           borderRadius: "30px",
@@ -541,38 +539,40 @@ const HomeFriend = ({ session }: IPros) => {
                       </Button>
                     </CardActions>
                   </Card>
-                ))}
-              </Box>
-            </Box>
-            <CardActions>
-              <Button
-                size="large"
-                variant="contained"
-                sx={{
-                  width: "100%",
-                  backgroundColor: "#eeeeee",
-                  color: "#4d3869",
-                  display: "flex",
-                  justifyContent: "center",
-                  padding: "8px 0",
-                  "&:hover": {
-                    backgroundColor: "#ffffff",
-                    outline: "none",
-                    border: "none",
-                  },
-                }}
-              >
-                Xem thêm
-              </Button>
-            </CardActions>
-            <hr></hr>
+                </Grid>
+              ))}
+            </Grid>
+            {listDataSendFriend?.length >= 8 && (
+              <CardActions>
+                <Button
+                  size="large"
+                  variant="contained"
+                  sx={{
+                    width: "100%",
+                    backgroundColor: "#eeeeee",
+                    color: "#4d3869",
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "8px 0",
+                    "&:hover": {
+                      backgroundColor: "#ffffff",
+                      outline: "none",
+                      border: "none",
+                    },
+                  }}
+                >
+                  Xem thêm
+                </Button>
+              </CardActions>
+            )}
+            <Divider sx={{ margin: "12px 0" }} />
           </>
         )
       }
       <CardContent
         sx={{
           // Màu chữ
-          fontSize: "32px", // Kích thước chữ
+          fontSize: "24px", // Kích thước chữ
           fontWeight: "bold", // Độ đậm của chữ
           padding: "8px",
         }}
@@ -586,179 +586,172 @@ const HomeFriend = ({ session }: IPros) => {
         }}
         className="cube-"
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "flex-start",
-          }}
-        >
+        <Grid container columns={12} spacing={1} sx={{}}>
           {
             //@ts-ignore
             !listDataUserSuitable?.statusCode &&
               listDataUserSuitable?.map(
                 (item) =>
                   item.userId != session.user.userId && (
-                    <Card
-                      key={item.userId}
-                      sx={{
-                        backgroundColor: "#c0c0d7",
-                        marginTop: "24px",
-                        marginLeft: "24px",
-                        width: { xs: "215px" },
-                        flexGrow:
-                          listDataUserSuitable.length >= 12 ? 1 : "auto",
-                      }}
-                    >
-                      <CardMedia
-                        sx={{ height: 300, cursor: "pointer" }}
-                        image={item.profilePicUrl || "/OIP.jpg"}
-                        title="green iguana"
-                        onClick={() => handleRouterProfile(item?.userId)}
-                      />
-                      <CardContent
+                    <Grid item xs={12} sm={6} lg={4} xl={3}>
+                      <Card
+                        key={item.userId}
                         sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          paddingY: "0",
-                          marginTop: "16px",
+                          backgroundColor: "#c0c0d7",
+                          flexGrow:
+                            listDataUserSuitable.length >= 12 ? 1 : "auto",
                         }}
                       >
-                        <Typography
-                          gutterBottom
-                          variant="h5"
-                          component="div"
-                          sx={{
-                            marginBottom: "0",
-                            cursor: "pointer",
-                          }}
+                        <CardMedia
+                          sx={{ height: 300, cursor: "pointer" }}
+                          image={item.profilePicUrl || "/OIP.jpg"}
+                          title="green iguana"
                           onClick={() => handleRouterProfile(item?.userId)}
-                        >
-                          {item?.fullname}
-                        </Typography>
-                      </CardContent>
-                      {!item.sendStatus ? (
-                        <CardActions
+                        />
+                        <CardContent
                           sx={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
+                            paddingY: "0",
+                            marginTop: "16px",
                           }}
                         >
-                          <Box
-                            onClick={() => handsenddAddfriend(item?.userId)}
+                          <Typography
+                            gutterBottom
+                            variant="h5"
+                            component="div"
                             sx={{
-                              minWidth: "90px",
-                              textAlign: "center",
-                              borderRadius: "30px",
-                              padding: "8px 16px",
-                              boxShadow: GLOBAL_BOXSHADOW,
-                              background: GLOBAL_BG_BLUE_900,
-                              fontWeight: "bold",
-                              color: GLOBAL_COLOR_WHITE,
+                              marginBottom: "0",
                               cursor: "pointer",
-                              transition: "all 0.2s",
-                              "&:hover": {
-                                transform: "scale(1.03)",
-                                backgroundColor: GLOBAL_BG_BLUE_300,
-                              },
+                            }}
+                            onClick={() => handleRouterProfile(item?.userId)}
+                          >
+                            {item?.fullname}
+                          </Typography>
+                        </CardContent>
+                        {!item.sendStatus ? (
+                          <CardActions
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            Kết Bạn
-                          </Box>
-                          <Box
-                            onClick={() =>
-                              handremoveUserofListfriendSuitable(item?.userId)
-                            }
+                            <Box
+                              onClick={() => handsenddAddfriend(item?.userId)}
+                              sx={{
+                                minWidth: "90px",
+                                textAlign: "center",
+                                borderRadius: "30px",
+                                padding: "8px 16px",
+                                boxShadow: GLOBAL_BOXSHADOW,
+                                background: GLOBAL_BG_BLUE_900,
+                                fontWeight: "bold",
+                                color: GLOBAL_COLOR_WHITE,
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                "&:hover": {
+                                  transform: "scale(1.03)",
+                                  backgroundColor: GLOBAL_BG_BLUE_300,
+                                },
+                              }}
+                            >
+                              Kết Bạn
+                            </Box>
+                            <Box
+                              onClick={() =>
+                                handremoveUserofListfriendSuitable(item?.userId)
+                              }
+                              sx={{
+                                minWidth: "90px",
+                                borderRadius: "30px",
+                                backgroundColor: "#eeeeee",
+                                textAlign: "center",
+                                color: "#4d3869",
+                                marginLeft: "4px",
+                                padding: "8px 16px",
+                                boxShadow: GLOBAL_BOXSHADOW,
+                                fontWeight: "bold",
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                "&:hover": {
+                                  transform: "scale(1.03)",
+                                  backgroundColor: "#e3dede",
+                                  outline: "none",
+                                },
+                              }}
+                            >
+                              Xóa
+                            </Box>
+                          </CardActions>
+                        ) : (
+                          <CardActions
                             sx={{
-                              minWidth: "90px",
-                              borderRadius: "30px",
-                              backgroundColor: "#eeeeee",
-                              textAlign: "center",
-                              color: "#4d3869",
-                              marginLeft: "4px",
-                              padding: "8px 16px",
-                              boxShadow: GLOBAL_BOXSHADOW,
-                              fontWeight: "bold",
-                              cursor: "pointer",
-                              transition: "all 0.2s",
-                              "&:hover": {
-                                transform: "scale(1.03)",
-                                backgroundColor: "#e3dede",
-                                outline: "none",
-                              },
-                            }}
-                          >
-                            Xóa
-                          </Box>
-                        </CardActions>
-                      ) : (
-                        <CardActions
-                          sx={{
-                            display: "flex",
+                              display: "flex",
 
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Box
-                            onClick={() =>
-                              handlerefusedAddfriend(item?.userId, false,0)
-                            }
-                            sx={{
-                              minWidth: "90px",
-                              textAlign: "center",
-                              borderRadius: "30px",
-                              padding: "8px 16px",
-                              boxShadow: GLOBAL_BOXSHADOW,
-                              background: GLOBAL_BG_BLUE_900,
-                              fontWeight: "bold",
-                              color: GLOBAL_COLOR_WHITE,
-                              cursor: "pointer",
-                              transition: "all 0.2s",
-                              "&:hover": {
-                                transform: "scale(1.03)",
-                                backgroundColor: GLOBAL_BG_BLUE_300,
-                              },
+                              alignItems: "center",
+                              justifyContent: "center",
                             }}
                           >
-                            Hủy kết Bạn
-                          </Box>
-                          <Button
-                            variant="outlined"
-                            onClick={() =>
-                              handremoveUserofListfriendSuitable(item?.userId)
-                            }
-                            sx={{
-                              borderRadius: "30px",
-                              backgroundColor: "#eeeeee",
-                              color: "#4d3869",
-                              border: "none",
-                              marginLeft: "4px",
-                              "&:hover": {
-                                backgroundColor: "#c7c7c7",
-                                outline: "none",
+                            <Box
+                              onClick={() =>
+                                handlerefusedAddfriend(item?.userId, false, 0)
+                              }
+                              sx={{
+                                minWidth: "90px",
+                                textAlign: "center",
+                                borderRadius: "30px",
+                                padding: "8px 16px",
+                                boxShadow: GLOBAL_BOXSHADOW,
+                                background: GLOBAL_BG_BLUE_900,
+                                fontWeight: "bold",
+                                color: GLOBAL_COLOR_WHITE,
+                                cursor: "pointer",
+                                transition: "all 0.2s",
+                                "&:hover": {
+                                  transform: "scale(1.03)",
+                                  backgroundColor: GLOBAL_BG_BLUE_300,
+                                },
+                              }}
+                            >
+                              Hủy kết Bạn
+                            </Box>
+                            <Button
+                              variant="outlined"
+                              onClick={() =>
+                                handremoveUserofListfriendSuitable(item?.userId)
+                              }
+                              sx={{
+                                borderRadius: "30px",
+                                backgroundColor: "#eeeeee",
+                                color: "#4d3869",
                                 border: "none",
-                              },
-                            }}
-                          >
-                            Xóa
-                          </Button>
-                        </CardActions>
-                      )}
-                    </Card>
+                                marginLeft: "4px",
+                                "&:hover": {
+                                  backgroundColor: "#c7c7c7",
+                                  outline: "none",
+                                  border: "none",
+                                },
+                              }}
+                            >
+                              Xóa
+                            </Button>
+                          </CardActions>
+                        )}
+                      </Card>
+                    </Grid>
                   )
               )
           }
-        </Box>
+        </Grid>
       </Box>
 
       <Button
         fullWidth
         color="primary"
         variant="contained"
-        sx={{ margin: "12px" }}
+        sx={{ margin: "12px 0" }}
         onClick={() => setPage((pre) => pre + 1)}
       >
         Xem thêm

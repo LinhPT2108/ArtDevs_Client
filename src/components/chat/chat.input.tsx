@@ -22,7 +22,8 @@ interface IPros {
   session: User;
 }
 
-const socket = new SockJS("http://localhost:8080/wss");
+// const socket = new SockJS("http://localhost:8080/wss");
+const socket = new SockJS("https://artdevs-server.azurewebsites.net/wss");
 const stompClient = Stomp.over(socket);
 
 const MessageBox = (pros: IPros) => {
@@ -218,9 +219,15 @@ const MessageBox = (pros: IPros) => {
                 />
               ) : null}
               {url.match("video") != null ? (
-                <video src={url} controls width="200" height="70" style={{
-                  borderRadius: "16px",
-                }} ></video>
+                <video
+                  src={url}
+                  controls
+                  width="200"
+                  height="70"
+                  style={{
+                    borderRadius: "16px",
+                  }}
+                ></video>
               ) : null}
               <Button
                 sx={{
@@ -230,9 +237,9 @@ const MessageBox = (pros: IPros) => {
                   minWidth: "20px",
                   transform: "Translate(30%, 0%)",
                   color: "#7b7b7b",
-                  bgcolor:"#bababa",
-                  p:0,
-                  borderRadius:"50%"
+                  bgcolor: "#bababa",
+                  p: 0,
+                  borderRadius: "50%",
                 }}
                 onClick={() => handleRemoveImage(index)}
               >

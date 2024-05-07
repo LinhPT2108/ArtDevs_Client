@@ -294,7 +294,8 @@ interface IPros {
   search?: string;
   friendPost?: string;
 }
-const socket = new SockJS("http://localhost:8080/wss");
+// const socket = new SockJS("http://localhost:8080/wss");
+const socket = new SockJS("https://artdevs-server.azurewebsites.net/wss");
 const stompClient = Stomp.over(socket);
 const PostProfile = ({
   session,
@@ -2499,7 +2500,7 @@ const PostProfile = ({
                   left: "15px",
                   top: "50%",
                   transform: "translateY(-50%)",
-                  fontSize: "15px",
+                  fontSize: { xs: "12px", sm: "15px" },
                   color: "#333",
                 }}
               >

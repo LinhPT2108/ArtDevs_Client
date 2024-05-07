@@ -30,9 +30,10 @@ const BodyWrapper = ({ children, session }: IPros) => {
             flexGrow: 1,
             marginTop: "0px",
             backgroundColor: "#FBFCFE",
-            paddingTop: { xs: "50px", sm: "85px" },
+            paddingTop: { xs: "0px", sm: "85px" },
             minHeight: "100vh",
             paddingX: { xs: "0" },
+            paddingBottom: { xs: "36px", sm: 0 },
           }}
         >
           <MainHome openContact={drawerOpen} session={session}>

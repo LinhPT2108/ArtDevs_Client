@@ -139,11 +139,11 @@ const AllMentor = ({ session }: IPros) => {
 
   if (isLoading) {
     return (
-      <Grid container columns={12} spacing={1}>
+      <Grid container columns={12} spacing={0}>
         <Grid
           item
           xs={12}
-          md={6}
+          // md={6}
           lg={4}
           sx={{
             padding: "0px",
@@ -154,7 +154,7 @@ const AllMentor = ({ session }: IPros) => {
         <Grid
           item
           xs={12}
-          md={6}
+          // md={6}
           lg={4}
           sx={{
             padding: "0px",
@@ -165,7 +165,7 @@ const AllMentor = ({ session }: IPros) => {
         <Grid
           item
           xs={12}
-          md={6}
+          // md={6}
           lg={4}
           sx={{
             padding: "0px",
@@ -176,7 +176,7 @@ const AllMentor = ({ session }: IPros) => {
         <Grid
           item
           xs={12}
-          md={6}
+          // md={6}
           lg={4}
           sx={{
             padding: "0px",

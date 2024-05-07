@@ -89,7 +89,8 @@ const UserAccept = ({ session }: IPros) => {
   const [listDataUserRequest, setListDataUserRequest] = useState<Relation[]>(
     []
   );
-  const socket = new SockJS("http://localhost:8080/friend");
+  // const socket = new SockJS("http://localhost:8080/friend");
+  const socket = new SockJS("https://artdevs-server.azurewebsites.net/friend");
   const stompClient = Stomp.over(socket);
   const connectAndSubscribe = () => {
     stompClient.connect(
@@ -200,7 +201,10 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const refusedAddfriend = async (UserId: string, status:number): Promise<boolean> => {
+  const refusedAddfriend = async (
+    UserId: string,
+    status: number
+  ): Promise<boolean> => {
     try {
       // Thực hiện cuộc gọi API ở đây
       const response = await fetch(
@@ -224,7 +228,11 @@ const UserAccept = ({ session }: IPros) => {
     }
   };
 
-  const handlerefusedAddfriend = async (UserId: string, type: boolean, status:number) => {
+  const handlerefusedAddfriend = async (
+    UserId: string,
+    type: boolean,
+    status: number
+  ) => {
     try {
       const apiResult = await refusedAddfriend(UserId, status);
 
@@ -472,7 +480,11 @@ const UserAccept = ({ session }: IPros) => {
                     </Box>
                     <Box
                       onClick={() =>
-                        handlerefusedAddfriend(item?.userAction?.userId, true,0)
+                        handlerefusedAddfriend(
+                          item?.userAction?.userId,
+                          true,
+                          0
+                        )
                       }
                       sx={{
                         minWidth: "60px",

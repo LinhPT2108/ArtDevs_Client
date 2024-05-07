@@ -101,7 +101,7 @@ const HomeMentor = ({ user }: IPros) => {
       <Grid
         container
         columns={12}
-        spacing={2}
+        spacing={0}
         sx={{
           "& .MuiGrid-item": {
             padding: { xs: "0 0 16px 16px", md: "0 0 0 16px" },
@@ -121,8 +121,14 @@ const HomeMentor = ({ user }: IPros) => {
           >
             <Box>
               {/* Header */}
-              <div className="mt-2 mb-8 w-full">
-                <div style={{ display: "flex", alignItems: "center" }}>
+              <div className="mt-2 mb-8 ">
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: { xs: "flex-start", sm: "center" },
+                    flexDirection: { xs: "column", sm: "row" },
+                  }}
+                >
                   <h2 className="px-2 text-2xl font-bold text-navy-700 dark:text-white">
                     Người hướng dẫn
                   </h2>
@@ -159,8 +165,8 @@ const HomeMentor = ({ user }: IPros) => {
                       />
                     </Tabs>
                   </div>
-                </div>
-                <p className="mt-2 px-2 text-lg text-gray-600">
+                </Box>
+                <p className="mt-2 px-2 text-lg text-gray-600 text-justify">
                   Người hướng dẫn trong lập trình đóng vai trò quan trọng trong
                   việc hỗ trợ người mới học. Họ cung cấp kiến thức cơ bản, giúp
                   giải quyết vấn đề, chia sẻ kinh nghiệm và lời khuyên, cùng hỗ

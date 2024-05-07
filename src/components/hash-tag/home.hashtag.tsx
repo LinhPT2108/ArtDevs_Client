@@ -531,7 +531,7 @@ const HomeHashtag = ({ session }: Ips) => {
           }}
         >
           {Array.from({ length: 11 }).map((_, index) => (
-            <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
+            <Grid key={index} item xs={12} sm={6} lg={3}>
               <HashtagSkeleton />
             </Grid>
           ))}
@@ -872,7 +872,7 @@ const HomeHashtag = ({ session }: Ips) => {
         >
           {data &&
             data?.result?.map((item, index) => (
-              <Grid key={index} item xs={12} sm={6} md={4} lg={3}>
+              <Grid key={index} item xs={12} sm={6} lg={3}>
                 <Card sx={{ padding: "12px" }}>
                   <Stack spacing={1}>
                     <Box

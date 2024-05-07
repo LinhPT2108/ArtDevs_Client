@@ -82,7 +82,7 @@ const CardMentor = ({
     <Grid
       item
       xs={12}
-      md={6}
+      lg={6}
       sx={{
         padding: "0px",
       }}
@@ -121,7 +121,7 @@ const CardMentor = ({
             paddingBottom: "12px",
           }}
         >
-          <Grid item xs={5} sx={{ position: "relative" }}>
+          <Grid item xs={4} sx={{ position: "relative" }}>
             <Box
               sx={{
                 top: "30px",
@@ -180,7 +180,7 @@ const CardMentor = ({
                 fontSize: "24px",
                 fontWeight: "500",
                 fontStyle: "bold",
-
+                textWrap: "nowrap",
                 color: "white",
               }}
               onClick={() => {
@@ -192,7 +192,7 @@ const CardMentor = ({
           </Grid>
           <Grid
             item
-            xs={7}
+            xs={8}
             sx={{
               display: "flex",
               justifyContent: "center",
@@ -215,7 +215,15 @@ const CardMentor = ({
               Kỹ năng
             </Typography>
             <CardContent sx={{ flexGrow: 1, paddingY: "0px" }}>
-              <Box display="flex" flexWrap="wrap">
+              <Box
+                display="flex"
+                flexWrap="wrap"
+                sx={{
+                  justifyContent: { xs: "center" },
+                  maxHeight: { xs: 140, lg: "auto" },
+                  overflow: "hidden",
+                }}
+              >
                 {mentor?.listSkillOfMentor?.map((skill, index) => (
                   <React.Fragment key={`skill${index}`}>
                     {index < 6 && (

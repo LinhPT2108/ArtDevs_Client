@@ -3,7 +3,8 @@ import SockJS from "sockjs-client";
 
 // witdh of menu
 export const DRAWER_WIDTH: number = 240;
-export const GLOBAL_URL: string = "http://localhost:8080";
+// export const GLOBAL_URL: string = "http://localhost:8080";
+export const GLOBAL_URL: string = "https://artdevs-server.azurewebsites.net";
 export const GLOBAL_URL_SOCKET: string = "/wss";
 export const GLOBAL_NOTIFI: string = "/app/send-notification";
 export const GLOBAL_SEND_MESSAGE: string = "/app/send-message";
@@ -11,13 +12,15 @@ export const GLOBAL_SEND_IMAGE: string = "/app/image";
 export const GLOBAL_SEND_FRIEND: string = "/app/send-friend";
 
 export const GLOBAL_UPLOAD_POST_MESSAGE: string = "Đăng bài viết thành công";
-export const GLOBAL_UPDATE_POST_MESSAGE: string = "Cập Nhật bài viết thành công";
+export const GLOBAL_UPDATE_POST_MESSAGE: string =
+  "Cập Nhật bài viết thành công";
 export const GLOBAL_REPORT_POST: string = "Báo cáo bài viết thành công";
 export const GLOBAL_SHARE_MESSAGE: string = "Chia sẻ thành công";
 export const GLOBAL_UPDATE_MESSAGE: string = "Cập nhật thành công";
 export const GLOBAL_DELETE_COMMENT_MESSAGE: string = "Xóa bình luận thành công";
 export const GLOBAL_DELETE_POST_MESSAGE: string = "Xóa bài viết thành công";
-export const GLOBAL_DELETE_POST_SHARE_MESSAGE: string = "Xóa bài viết đã chia sẻ thành công";
+export const GLOBAL_DELETE_POST_SHARE_MESSAGE: string =
+  "Xóa bài viết đã chia sẻ thành công";
 export const GLOBAL_ERROR_MESSAGE: string = "Có lỗi xảy ra !";
 export const GLOBAL_BG: string = "#fff";
 export const GLOBAL_BG_NAV: string = "#f5f5f5";

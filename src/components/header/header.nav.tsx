@@ -1,15 +1,13 @@
 "use client";
-import Tabs from "@mui/material/Tabs";
-import Tab from "@mui/material/Tab";
-import HomeIcon from "@mui/icons-material/Home";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import PersonPinIcon from "@mui/icons-material/PersonPin";
-import { GLOBAL_BG_NAV, GLOBAL_COLOR_NAV } from "../utils/veriable.global";
-import { useEffect, useState } from "react";
+import HomeIcon from "@mui/icons-material/Home";
+import RecentActorsIcon from "@mui/icons-material/RecentActors";
 import SchoolIcon from "@mui/icons-material/School";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { GLOBAL_BG_NAV, GLOBAL_COLOR_NAV } from "../utils/veriable.global";
 
 const IconTabs = () => {
   // gắn giá trị định hình vị trí tab đang chọn
