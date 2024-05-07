@@ -123,7 +123,7 @@ const IntroAbout = () => {
       <Box
         sx={{
           position: "absolute",
-          top: "-30%",
+          top: { xs: 0, sm: "-30%" },
           right: 0,
           left: { xs: "auto", sm: "auto" },
           zIndex: "0",
