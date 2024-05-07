@@ -641,11 +641,12 @@ const ContactMenu = (pros: IPros) => {
                     "& .MuiPaper-root": {
                       top: "auto",
                       right: `${openContact ? "250px" : 0}`,
-                      "@media (min-width: 600px)": {
-                        bottom: "56px",
-                      },
+                      // "@media (min-width: 600px)": {
+                      //   bottom: "56px",
+                      // },
                       "@media (min-width: 900px)": {
                         bottom: "0",
+                        height: "44vh",
                       },
                     },
                   }}
