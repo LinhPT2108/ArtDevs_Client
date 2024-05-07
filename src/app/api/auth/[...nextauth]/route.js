@@ -7,11 +7,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { generateUniqueId } from "@/components/utils/utils";
 import {
   GLOBAL_URL,
-  getGlobalUser,
   setGlobalUser,
 } from "@/components/utils/veriable.global";
 
-export const authOptions: AuthOptions = {
+export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
@@ -21,7 +20,7 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        const res = await sendRequest<IBackendRes<UserLogin>>({
+        const res = await sendRequest({
           url: GLOBAL_URL + "/api/login",
           method: "POST",
           body: {
@@ -32,26 +31,26 @@ export const authOptions: AuthOptions = {
         if (res?.userdto) {
           //@ts-ignore
           setGlobalUser(res);
-          return res as any;
+          return ;
         } else {
           //@ts-ignore
-          throw new Error(res?.error as string);
+          throw new Error(res?.error);
         }
       },
     }),
     GithubProvider({
-      clientId: process.env.GITHUB_ID!,
-      clientSecret: process.env.GITHUB_SECRET!,
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
     }),
   ],
   callbacks: {
     async jwt({ token, user, account, profile, trigger, session }) {
       if (trigger === "signIn" && account?.provider !== "credentials") {
-        const res = await sendRequest<IBackendRes<UserLogin>>({
+        const res = await sendRequest({
           url: GLOBAL_URL + "/api/user-social",
           method: "POST",
           body: {
