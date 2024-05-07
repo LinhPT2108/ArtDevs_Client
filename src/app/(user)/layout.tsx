@@ -14,7 +14,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import React from "react";
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import FirstLogin from "@/components/login-first-social/first.login";
 
 export const metadata: Metadata = {

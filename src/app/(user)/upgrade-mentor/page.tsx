@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import HomeUpgradeMentor from "@/components/upgrade-mentor/home.update";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";

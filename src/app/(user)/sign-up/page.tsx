@@ -1,7 +1,7 @@
 import AppSignUp from "@/components/sign/app.sign";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 
 const AppSign = async () => {

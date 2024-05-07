@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import HomeHashtag from "@/components/hash-tag/home.hashtag";
 import { GLOBAL_COLOR_MENU } from "@/components/utils/veriable.global";
 import { Box, Divider, Typography } from "@mui/material";

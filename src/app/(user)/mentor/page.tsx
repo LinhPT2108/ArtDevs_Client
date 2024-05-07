@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import HomeMentor from "@/components/mentor/home.mentor";
 import NextAuthWrapper from "@/lib/next.auth.provider";
 import { getServerSession } from "next-auth";

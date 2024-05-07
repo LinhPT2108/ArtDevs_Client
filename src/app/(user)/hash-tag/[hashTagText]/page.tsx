@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import DetailHashTag from "@/components/hash-tag/detail.hashtag";
 import { getServerSession } from "next-auth";
 

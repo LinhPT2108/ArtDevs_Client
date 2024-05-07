@@ -3,7 +3,7 @@ import Sidebar from "@/components/admin/sidebar";
 import Footer from "@/components/admin/footer/Footer";
 import SidebarProvider from "@/providers/SidebarProvider";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import NextAuthWrapper from "@/lib/next.auth.provider";
 
 export default async function DashboardLayout({
