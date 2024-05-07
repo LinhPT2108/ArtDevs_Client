@@ -198,15 +198,15 @@ const MentorSuitable = ({ session }: IPros) => {
       {
         //@ts-ignore
         !data?.statusCode &&
-          data
-            ?.slice(0, 6)
-            .map((mentor, index) => (
+          data?.slice(0, 6).map((mentor, index) => (
+            <React.Fragment key={index}>
               <CardMentor
                 handleRedirect={handleRedirect}
                 handleClickOpen={handleClickOpen}
                 data={mentor}
               />
-            ))
+            </React.Fragment>
+          ))
       }
       <Snackbar
         open={snackbarOpen}

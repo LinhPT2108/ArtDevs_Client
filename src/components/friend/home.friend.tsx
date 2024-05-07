@@ -456,10 +456,16 @@ const HomeFriend = ({ session }: IPros) => {
               Yêu cầu kết bạn
             </CardContent>
             <Grid container columns={12} spacing={2} sx={{}}>
-              {listDataSendFriend?.map((item) => (
-                <Grid item xs={12} sm={6} lg={4} xl={3}>
+              {listDataSendFriend?.map((item, index) => (
+                <Grid
+                  key={item.id + "listSendFriend"}
+                  item
+                  xs={12}
+                  sm={6}
+                  lg={4}
+                  xl={3}
+                >
                   <Card
-                    key={item.id + "listSendFriend"}
                     sx={{
                       backgroundColor: "#c0c0d7",
 
@@ -593,9 +599,8 @@ const HomeFriend = ({ session }: IPros) => {
               listDataUserSuitable?.map(
                 (item) =>
                   item.userId != session.user.userId && (
-                    <Grid item xs={12} sm={6} lg={4} xl={3}>
+                    <Grid key={item.userId} item xs={12} sm={6} lg={4} xl={3}>
                       <Card
-                        key={item.userId}
                         sx={{
                           backgroundColor: "#c0c0d7",
                           flexGrow:

@@ -42,10 +42,10 @@ const ShareAbout = () => {
               marginTop: { xs: "16px", md: 0 },
             }}
           >
-            Tại "Đăng Bài Hỏi Đáp", chúng tôi mời bạn thảo luận, tìm kiếm giải
-            đáp và chia sẻ kiến thức. Dù bạn đang đối mặt với vấn đề kỹ thuật,
-            cần tư vấn về sự nghiệp, hay muốn tìm hiểu về một chủ đề cụ thể, đây
-            là nơi lý tưởng để đặt những câu hỏi của bạn.
+            Tại Đăng Bài Hỏi Đáp, chúng tôi mời bạn thảo luận, tìm kiếm giải đáp
+            và chia sẻ kiến thức. Dù bạn đang đối mặt với vấn đề kỹ thuật, cần
+            tư vấn về sự nghiệp, hay muốn tìm hiểu về một chủ đề cụ thể, đây là
+            nơi lý tưởng để đặt những câu hỏi của bạn.
           </Box>
         </Grid>
       </Grid>

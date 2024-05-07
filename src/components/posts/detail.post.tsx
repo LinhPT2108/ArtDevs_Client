@@ -200,6 +200,64 @@ const DetailPost = ({ session }: { session: User }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedIndex, setSelectedIndex] = React.useState(-1);
   const open = Boolean(anchorEl);
+
+  const [actionDialog, setActionDialog] = useState<any>({
+    actionType: "",
+    data: {},
+  });
+  const [openAlerts, setOpenAlerts] = useState(false);
+
+  const [openBackdrop, setOpenBackdrop] = React.useState(false);
+  const handleCloseBackdrop = () => {
+    setOpenBackdrop(false);
+  };
+  const handleOpenBackdrop = () => {
+    setOpenBackdrop(true);
+  };
+
+  const [selectPost, setSelectPost] = useState<any>();
+  const [comment, setComment] = useState<CommentOfPost[]>([]);
+  const [editingIndexComment, setEditingIndexComment] = useState<string>("");
+  const [openArray, setOpenArray] = useState([]);
+  const [openArrayReply, setOpenArrayReply] = useState([]);
+  const [anchorElArray, setAnchorElArray] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [anchorElArrayReply, setAnchorElArrayReply] = useState<
+    ((EventTarget & HTMLElement) | null)[]
+  >([]);
+  const [isShowReplies, setIsShowReplies] = useState(null);
+  const [editedContentComment, setEditedContentComment] = useState("");
+  const [editedImageComment, setEditedImageComment] = useState<any>();
+  const [editingIndexReplyComment, setEditingIndexReplyComment] =
+    useState<string>("");
+  const [editedContentReplyComment, setEditedContentReplyComment] =
+    useState("");
+  const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
+
+  const [isComment, setIsComment] = useState<boolean>(false);
+  const [contentSharePost, setContentSharePost] = useState<string>("");
+  const [dataSnackbar, setDataSnackbar] = useState<any>({
+    openSnackbar: false,
+    contentSnackbar: "",
+    type: "success",
+  });
+  const [formDataComment, setFormDataComment] =
+    React.useState<CommentToPostDTO>({
+      content: "",
+      listImageofComment: null,
+      userToPost: session?.user?.userId,
+      postToPost: "",
+      userReceive: "",
+    });
+  const [formDataReplyComment, setFormDataReplyComment] =
+    React.useState<ReplyCommentToPostDTO>({
+      content: "",
+      listImageofComment: null,
+      userToPost: session?.user?.userId,
+      commentToPost: null as unknown as number,
+      userReceive: {} as any,
+    });
   const handleClickListItem = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -338,63 +396,6 @@ const DetailPost = ({ session }: { session: User }) => {
       console.error("Error during API call:", error);
     }
   };
-  const [actionDialog, setActionDialog] = useState<any>({
-    actionType: "",
-    data: {},
-  });
-  const [openAlerts, setOpenAlerts] = useState(false);
-
-  const [openBackdrop, setOpenBackdrop] = React.useState(false);
-  const handleCloseBackdrop = () => {
-    setOpenBackdrop(false);
-  };
-  const handleOpenBackdrop = () => {
-    setOpenBackdrop(true);
-  };
-
-  const [selectPost, setSelectPost] = useState<any>();
-  const [comment, setComment] = useState<CommentOfPost[]>([]);
-  const [editingIndexComment, setEditingIndexComment] = useState<string>("");
-  const [openArray, setOpenArray] = useState([]);
-  const [openArrayReply, setOpenArrayReply] = useState([]);
-  const [anchorElArray, setAnchorElArray] = useState<
-    ((EventTarget & HTMLElement) | null)[]
-  >([]);
-  const [anchorElArrayReply, setAnchorElArrayReply] = useState<
-    ((EventTarget & HTMLElement) | null)[]
-  >([]);
-  const [isShowReplies, setIsShowReplies] = useState(null);
-  const [editedContentComment, setEditedContentComment] = useState("");
-  const [editedImageComment, setEditedImageComment] = useState<any>();
-  const [editingIndexReplyComment, setEditingIndexReplyComment] =
-    useState<string>("");
-  const [editedContentReplyComment, setEditedContentReplyComment] =
-    useState("");
-  const [editedImageReplyComment, setEditedImageReplyComment] = useState<any>();
-
-  const [isComment, setIsComment] = useState<boolean>(false);
-  const [contentSharePost, setContentSharePost] = useState<string>("");
-  const [dataSnackbar, setDataSnackbar] = useState<any>({
-    openSnackbar: false,
-    contentSnackbar: "",
-    type: "success",
-  });
-  const [formDataComment, setFormDataComment] =
-    React.useState<CommentToPostDTO>({
-      content: "",
-      listImageofComment: null,
-      userToPost: session?.user?.userId,
-      postToPost: "",
-      userReceive: "",
-    });
-  const [formDataReplyComment, setFormDataReplyComment] =
-    React.useState<ReplyCommentToPostDTO>({
-      content: "",
-      listImageofComment: null,
-      userToPost: session?.user?.userId,
-      commentToPost: null as unknown as number,
-      userReceive: {} as any,
-    });
 
   const handleDeleteCommentOrReplyComment = async (
     commentObject: any,

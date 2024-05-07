@@ -252,11 +252,11 @@ const SliderAbout = () => {
                       paddingX: { xs: "6px", sm: "8px", md: "12px" },
                     }}
                   >
-                    Tại "Đăng Bài Hỏi Đáp", chúng tôi mời bạn thảo luận, tìm
-                    kiếm giải đáp và chia sẻ kiến thức. Dù bạn đang đối mặt với
-                    vấn đề kỹ thuật, cần tư vấn về sự nghiệp, hay muốn tìm hiểu
-                    về một chủ đề cụ thể, đây là nơi lý tưởng để đặt những câu
-                    hỏi của bạn.
+                    Tại Đăng Bài Hỏi Đáp, chúng tôi mời bạn thảo luận, tìm kiếm
+                    giải đáp và chia sẻ kiến thức. Dù bạn đang đối mặt với vấn
+                    đề kỹ thuật, cần tư vấn về sự nghiệp, hay muốn tìm hiểu về
+                    một chủ đề cụ thể, đây là nơi lý tưởng để đặt những câu hỏi
+                    của bạn.
                   </Box>
                 </Box>
               </Grid>
@@ -326,11 +326,11 @@ const SliderAbout = () => {
                       paddingX: { xs: "6px", sm: "8px", md: "12px" },
                     }}
                   >
-                    Tại "Kết Nối với Mentor," chúng tôi kết nối bạn với cộng
-                    đồng các chuyên gia có sẵn để chia sẻ kiến thức và kinh
-                    nghiệm của họ. Dù bạn là người mới vào ngành nghề hay muốn
-                    phát triển sự nghiệp của mình, đây là nơi bạn có thể tìm
-                    kiếm sự hỗ trợ và tư vấn từ những người có kinh nghiệm.
+                    Tại Kết Nối với Mentor, chúng tôi kết nối bạn với cộng đồng
+                    các chuyên gia có sẵn để chia sẻ kiến thức và kinh nghiệm
+                    của họ. Dù bạn là người mới vào ngành nghề hay muốn phát
+                    triển sự nghiệp của mình, đây là nơi bạn có thể tìm kiếm sự
+                    hỗ trợ và tư vấn từ những người có kinh nghiệm.
                   </Box>
                 </Box>
               </Grid>

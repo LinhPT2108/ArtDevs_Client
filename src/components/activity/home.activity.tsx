@@ -523,8 +523,8 @@ const HomeActivity = ({ session, window }: IPros) => {
               marginBottom: "18px",
             }}
           >
-            {groupedData[date].map((item) => (
-              <ListItem sx={{ boxShadow: GLOBAL_BOXSHADOW }}>
+            {groupedData[date].map((item, index) => (
+              <ListItem sx={{ boxShadow: GLOBAL_BOXSHADOW }} key={index}>
                 <ListItemButton>
                   <ListItemAvatar>
                     <Avatar

@@ -285,13 +285,17 @@ export default function SearchMentor({ session, dataFilterMentors }: IPros) {
           {
             //@ts-ignore
             !data?.statusCode &&
-              data?.result?.map((item) => (
-                <CardMentor
-              handleRedirect={handleRedirect}
-              handleClickOpen={handleClickOpen}
-              data={item}
-            />))}
-         
+              data?.result?.map((item, index) => (
+                <React.Fragment key={index}>
+                  <CardMentor
+                    handleRedirect={handleRedirect}
+                    handleClickOpen={handleClickOpen}
+                    data={item}
+                  />
+                </React.Fragment>
+              ))
+          }
+
           {
             //@ts-ignore
             ((!data?.statusCode && data?.result?.length == 0) ||

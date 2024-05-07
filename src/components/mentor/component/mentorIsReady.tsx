@@ -191,11 +191,13 @@ const MentorIsReady = ({ session }: IPros) => {
         //@ts-ignore
         !data?.statusCode &&
           data?.map((mentor, index) => (
-            <CardMentor
-              handleRedirect={handleRedirect}
-              handleClickOpen={handleClickOpen}
-              data={mentor}
-            />
+            <React.Fragment key={index}>
+              <CardMentor
+                handleRedirect={handleRedirect}
+                handleClickOpen={handleClickOpen}
+                data={mentor}
+              />
+            </React.Fragment>
           ))
       }
       <Snackbar
