@@ -3,7 +3,7 @@ import RightPost from "@/components/left-menu/app.right.menu";
 import PostProfile from "@/components/profile/post.profile";
 import { Box } from "@mui/material";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]";
 
 export default async function Home() {
   const session: User | null = await getServerSession(authOptions);

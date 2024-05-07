@@ -1,7 +1,7 @@
 import AppSearch from "@/components/search/app.search";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]";
 const Search = async () => {
   const session: User | null = await getServerSession(authOptions);
   return (

@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]";
 import HomeFeedback from "@/components/feedback/home.setting";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";

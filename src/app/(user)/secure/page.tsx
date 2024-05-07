@@ -1,7 +1,7 @@
 import HomeSecure from "@/components/secure/home.secure";
 import Box from "@mui/material/Box";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../../api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]";
 
 const Secure = async () => {
   const session: User | null = await getServerSession(authOptions);

@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/api/auth/[...nextauth]";
 import About from "@/components/about/app.about";
 import RightPost from "@/components/left-menu/app.right.menu";
 import PostProfile from "@/components/profile/post.profile";
