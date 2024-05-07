@@ -4,7 +4,7 @@ import Slider from "react-slick";
 import { isImage } from "../utils/utils";
 
 interface CustomPagingProps {
-  imageUrls: ImageofPost[]; // Mảng chứa đường dẫn các hình ảnh từ Cloudinary
+  imageUrls: ImageofPost[];
 }
 
 const CustomPaging: React.FC<CustomPagingProps> = ({ imageUrls }) => {
@@ -13,7 +13,6 @@ const CustomPaging: React.FC<CustomPagingProps> = ({ imageUrls }) => {
       return (
         <a>
           <img src={imageUrls[i].imageUrl} alt={`Image ${i + 1}`} />{" "}
-          {/* Sử dụng imageUrls[i] để lấy đường dẫn */}
         </a>
       );
     },
@@ -31,7 +30,6 @@ const CustomPaging: React.FC<CustomPagingProps> = ({ imageUrls }) => {
         {imageUrls.map((item, index) => (
           <div key={index}>
             <CardMedia
-              key={item.id}
               component={
                 isImage(item.imageUrl) === "image"
                   ? "img"
@@ -39,18 +37,11 @@ const CustomPaging: React.FC<CustomPagingProps> = ({ imageUrls }) => {
                   ? "video"
                   : "div"
               }
-              // autoPlay={isImage(item.imageUrl) === "video"}
               controls={isImage(item.imageUrl) === "video"}
               image={item?.imageUrl}
               alt={item?.postID}
-              //   sx={{
-              //     objectFit: "cover",
-              //     maxWidth: "100%",
-              //     width: `${imageUrls?.length > 1 ? "100%" : "100%"}`,
-              //   }}
             />
-            <img src={item.imageUrl} alt={`Image ${index + 1}`} />{" "}
-            {/* Sử dụng imageUrl để lấy đường dẫn */}
+            <img src={item.imageUrl} alt={`Image ${index + 1}`} />
           </div>
         ))}
       </Slider>
