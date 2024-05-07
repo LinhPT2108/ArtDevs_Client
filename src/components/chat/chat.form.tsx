@@ -98,14 +98,14 @@ const ChatMessagesForm = (pros: IPros) => {
       sx={{
         width: "100%",
         maxWidth: `${pageUrl == "home" ? 320 : "auto"}`,
-        height: `${pageUrl == "home" ? 400 : "86vh"}`,
+        height: `${pageUrl == "home" ? 400 : "44vh"}`,
         backgroundColor: GLOBAL_BG_NAV,
       }}
     >
       {" "}
       <Box
         sx={{
-          height: "100%",
+          height: "44vh",
           // overflow: "auto",
           "&::-webkit-scrollbar": {
             width: "1px",
