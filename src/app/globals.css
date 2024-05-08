@@ -47,7 +47,9 @@ input.defaultCheckbox::before {
 input:checked.defaultCheckbox::before { 
 	opacity: 1;
 }
-
+.MuiDrawer-root>.css-1ab2xsx{
+  height: auto !important;
+}
 /* SCROLLBAR */
 /* width */
 ::-webkit-scrollbar {
